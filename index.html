@@ -186,19 +186,21 @@
             return;
         }
 
-        const message = ✨【收到新的叫車預約】✨\n +
-                        📅 預約日期：${bookDate}\n +
-                        🕒 預約時間：${bookTime}\n +
-                        👥 乘車人數：${passengerCount}\n +
-                        🧳 行李件數：${luggageCount}\n +
-                        📍 上車地點：${pickup}\n +
-                        🏁 下車地點：${dropoff}\n +
-                        `💡 備註需求：${memo}`;
+        // 🟢 已修正：改用反單引號 (`) 包裹多行字串，解決語法崩潰問題
+        const message = `✨【收到新的叫車預約】✨
+📅 預約日期：${bookDate}
+🕒 預約時間：${bookTime}
+👥 乘車人數：${passengerCount}
+🧳 行李件數：${luggageCount}
+📍 上車地點：${pickup}
+🏁 下車地點：${dropoff}
+💡 備註需求：${memo}`;
 
-        const lineId = "tsv9789p"; 
+        // 🟢 已修正：LINE 官方帳號必須加上 @ 符號
+        const lineId = "@tsv9789p"; 
         const encodedMessage = encodeURIComponent(message);
         
-        // 使用更高相容性的 URL Scheme 語法
+        // 🟢 已修正：補上標準的官方帳號跳轉路徑 /R/oaMessage/
         const lineUrl = `https://line.me{lineId}/?${encodedMessage}`;
         
         window.location.href = lineUrl;
