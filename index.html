@@ -173,7 +173,7 @@
     const dateInput = document.getElementById('bookDate');
     const timeInput = document.getElementById('bookTime');
 
-    // 1. 初始化設定：鎖定日曆，不能選今天以前的日期
+    // 初始化設定：鎖定日曆，不能選今天以前的日期
     const today = new Date();
     const yyyy = today.getFullYear();
     const mm = String(today.getMonth() + 1).padStart(2, '0');
@@ -181,23 +181,18 @@
     const todayString = `${yyyy}-${mm}-${dd}`;
     
     dateInput.value = todayString;
-    dateInput.min = todayString; // 限制不能選過去的日期
+    dateInput.min = todayString;
 
-    // 2. 監聽日期更換事件
     dateInput.addEventListener('change', validateTimeLimit);
     timeInput.addEventListener('input', validateTimeLimit);
 
     function validateTimeLimit() {
         const now = new Date();
         const selectedDate = dateInput.value;
-        
-        // 如果選的是今天，就要檢查時間防呆
         if (selectedDate === todayString) {
             const currentHour = String(now.getHours()).padStart(2, '0');
             const currentMinute = String(now.getMinutes()).padStart(2, '0');
             const currentTimeString = `${currentHour}:${currentMinute}`;
-            
-            // 如果使用者手填了過去的時間，予以提示並清空
             if (timeInput.value && timeInput.value < currentTimeString) {
                 alert('預約時間不能選擇過去的時間喔！');
                 timeInput.value = '';
@@ -205,7 +200,6 @@
         }
     }
 
-    // 3. 按鈕點擊主程式
     function directToLineText() {
         const bookDate = dateInput.value;
         const bookTime = timeInput.value;
@@ -215,13 +209,11 @@
         const dropoff = document.getElementById('dropoff').value;
         const memo = document.getElementById('memo').value || "無";
 
-        // 基本必填檢查
         if (!bookDate || !bookTime || !pickup || !dropoff) {
             alert('請完整填寫預約日期、時間與上下車地點！');
             return;
         }
 
-        // 最後一道防線：防範鍵盤盲打過去的時間
         const now = new Date();
         const selectedDateTime = new Date(`${bookDate}T${bookTime}`);
         if (selectedDateTime < now) {
@@ -232,13 +224,11 @@
         // 組合預約文字
         const message = `✨【收到新的叫車預約】✨\n📅 預約日期：${bookDate}\n🕒 預約時間：${bookTime}\n👥 乘車人數：${passengerCount}\n🧳 行李件數：${luggageCount}\n📍 上車地點：${pickup}\n🏁 下車地點：${dropoff}\n💡 備註需求：${memo}`;
 
-        // 您的 LINE 客服官方帳號 ID（已加上 @ 符號）
-        const lineId = "@tsv9789p"; 
-        
-        // 對文字進行 URL 編碼
+        // ❗❗ 核心修正：oaMessage 格式中，ID 請移除 @ 符號
+        const lineId = "tsv9789p"; 
         const encodedMessage = encodeURIComponent(message);
         
-        // 修正後的正確官方網址跳轉格式 (解決找不到網域問題)
+        // 拼接成標準的 LINE 文字外掛網址
         const lineUrl = `https://line.me{lineId}/?${encodedMessage}`;
         
         // 開啟 LINE
