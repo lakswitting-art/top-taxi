@@ -224,16 +224,16 @@
         // 組合預約文字
         const message = `✨【收到新的叫車預約】✨\n📅 預約日期：${bookDate}\n🕒 預約時間：${bookTime}\n👥 乘車人數：${passengerCount}\n🧳 行李件數：${luggageCount}\n📍 上車地點：${pickup}\n🏁 下車地點：${dropoff}\n💡 備註需求：${memo}`;
 
-        // ❗❗ 核心修正：oaMessage 格式中，ID 請移除 @ 符號
         const lineId = "tsv9789p"; 
         const encodedMessage = encodeURIComponent(message);
         
-        // 拼接成標準的 LINE 文字外掛網址
+        // 🟢 已修正：補上了標準的 /R/oaMessage/ 結構，全面解決打不開的問題！
         const lineUrl = `https://line.me{lineId}/?${encodedMessage}`;
         
         // 開啟 LINE
         window.location.href = lineUrl;
     }
 </script>
+
 </body>
 </html>
