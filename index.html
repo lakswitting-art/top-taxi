@@ -4,14 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>TOP Taxi｜線上預約叫車</title>
+<title>TOP Taxi｜預約叫車</title>
+
+<!-- LINE LIFF SDK -->
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
 :root {
-    --primary-color: #06C755;
-    --bg-color: #f4f6f9;
-    --card-bg: #ffffff;
-    --text-color: #333333;
+    --line-green: #06C755;
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #222222;
+    --muted: #777777;
+    --border: #dddddd;
 }
 
 * {
@@ -19,172 +24,142 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        Helvetica, Arial, sans-serif;
-
-    background-color: var(--bg-color);
-    color: var(--text-color);
-
     margin: 0;
-    padding: 20px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
+    padding: 18px;
     min-height: 100vh;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans TC", Arial, sans-serif;
+    color: var(--text);
 }
 
 .container {
-    background-color: var(--card-bg);
-
-    border-radius: 16px;
-
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-
-    padding: 30px;
-
     width: 100%;
-    max-width: 480px;
+    max-width: 520px;
+    margin: 0 auto;
+    background: var(--card);
+    border-radius: 18px;
+    padding: 26px 20px;
+    box-shadow: 0 5px 24px rgba(0,0,0,.08);
 }
 
-h2 {
+.logo-title {
     text-align: center;
-    color: #222;
-
-    margin-top: 0;
-    margin-bottom: 5px;
-
-    font-size: 24px;
+    margin-bottom: 24px;
 }
 
-.subtitle {
-    text-align: center;
+.logo-title h1 {
+    margin: 0 0 8px;
+    font-size: 25px;
+}
 
-    color: #666;
-
+.logo-title p {
+    margin: 0;
+    color: var(--muted);
     font-size: 14px;
+    line-height: 1.6;
+}
 
-    margin-bottom: 25px;
+.line-user {
+    display: none;
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f1fff6;
+    color: #087d39;
+    font-size: 14px;
+}
+
+.row {
+    display: flex;
+    gap: 12px;
 }
 
 .input-group {
-    margin-bottom: 20px;
+    flex: 1;
+    margin-bottom: 18px;
 }
 
 label {
     display: block;
-
-    margin-bottom: 8px;
-
-    font-weight: bold;
-
+    margin-bottom: 7px;
     font-size: 15px;
+    font-weight: 700;
 }
 
 input,
 select {
     width: 100%;
-
-    padding: 12px;
-
-    border: 1px solid #ddd;
-
-    border-radius: 8px;
-
+    min-height: 46px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: #fff;
     font-size: 16px;
-
     outline: none;
-
-    background-color: #fff;
 }
 
 input:focus,
 select:focus {
-    border-color: var(--primary-color);
+    border-color: var(--line-green);
+    box-shadow: 0 0 0 2px rgba(6,199,85,.08);
 }
 
-.row {
-    display: flex;
-    gap: 10px;
-}
-
-.row .input-group {
-    flex: 1;
-}
-
-.line-btn {
+.submit-btn {
     width: 100%;
-
-    background-color: var(--primary-color);
-
-    color: white;
-
-    padding: 15px;
-
-    font-size: 16px;
-
-    font-weight: bold;
-
-    border-radius: 8px;
-
     border: none;
-
+    border-radius: 10px;
+    background: var(--line-green);
+    color: #fff;
+    min-height: 52px;
+    font-size: 17px;
+    font-weight: 800;
     cursor: pointer;
-
-    box-shadow: 0 4px 10px rgba(6,199,85,0.3);
-
-    margin-top: 10px;
+    margin-top: 4px;
 }
 
-.line-btn:hover {
-    opacity: 0.9;
-}
-
-.line-btn:disabled {
-    opacity: 0.6;
+.submit-btn:disabled {
+    opacity: .55;
     cursor: not-allowed;
 }
 
 .notice {
-    font-size: 12px;
-
-    color: #888;
-
     margin-top: 15px;
-
     text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.7;
+}
 
+.status {
+    display: none;
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 14px;
     line-height: 1.6;
 }
 
-.success-message {
-    display: none;
+.status.success {
+    display: block;
+    background: #effff4;
+    color: #087d39;
+}
 
-    background: #ecfff3;
-
-    color: #087a37;
-
-    padding: 15px;
-
-    border-radius: 8px;
-
-    margin-top: 18px;
-
-    text-align: center;
-
-    font-weight: bold;
+.status.error {
+    display: block;
+    background: #fff1f1;
+    color: #bb2525;
 }
 
 @media (max-width: 520px) {
     body {
         padding: 12px;
-        align-items: flex-start;
     }
 
     .container {
-        padding: 22px 18px;
-        margin-top: 10px;
+        padding: 22px 17px;
     }
 
     .row {
@@ -193,497 +168,596 @@ select:focus {
     }
 }
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
 
-<h2>🚕 TOP Taxi 預約叫車</h2>
+    <div class="logo-title">
+        <h1>🚕 TOP Taxi 預約叫車</h1>
+        <p>
+            24H 多元叫車服務<br>
+            填寫完成後，預約內容將直接傳送給客服
+        </p>
+    </div>
 
-<div class="subtitle">
-填寫以下資料，送出後客服將盡快為您確認預約
-</div>
+    <div id="lineUser" class="line-user"></div>
 
-<form id="bookingForm">
+    <form id="bookingForm">
 
-    <div class="row">
+        <div class="row">
+
+            <div class="input-group">
+                <label for="bookDate">📅 預約日期</label>
+                <input
+                    type="date"
+                    id="bookDate"
+                    required
+                >
+            </div>
+
+            <div class="input-group">
+                <label for="bookTime">⏰ 預約時間</label>
+                <input
+                    type="time"
+                    id="bookTime"
+                    required
+                >
+            </div>
+
+        </div>
+
+
+        <div class="row">
+
+            <div class="input-group">
+                <label for="passengerCount">👥 乘車人數</label>
+
+                <select id="passengerCount">
+                    <option value="1人" selected>1 人</option>
+                    <option value="2人">2 人</option>
+                    <option value="3人">3 人</option>
+                    <option value="4人">4 人</option>
+                    <option value="5人以上">5 人以上</option>
+                </select>
+            </div>
+
+
+            <div class="input-group">
+                <label for="luggageCount">🧳 行李件數</label>
+
+                <select id="luggageCount">
+                    <option value="無行李" selected>無行李</option>
+                    <option value="1-2件大行李">1-2 件大行李</option>
+                    <option value="3-4件大行李">3-4 件大行李</option>
+                    <option value="5件以上">5 件以上</option>
+                </select>
+            </div>
+
+        </div>
+
 
         <div class="input-group">
-
-            <label for="bookDate">
-                預約日期
-            </label>
+            <label for="pickup">📍 上車地點</label>
 
             <input
-                type="date"
-                id="bookDate"
+                type="text"
+                id="pickup"
+                placeholder="請輸入完整地址或地標名稱"
                 required
             >
-
         </div>
 
 
         <div class="input-group">
-
-            <label for="bookTime">
-                預約時間
-            </label>
+            <label for="dropoff">🏁 下車地點</label>
 
             <input
-                type="time"
-                id="bookTime"
+                type="text"
+                id="dropoff"
+                placeholder="請輸入完整地址或地標名稱"
                 required
             >
-
-        </div>
-
-    </div>
-
-
-    <div class="row">
-
-        <div class="input-group">
-
-            <label for="passengerCount">
-                👥 乘車人數
-            </label>
-
-            <select id="passengerCount">
-
-                <option value="1人" selected>
-                    1 人
-                </option>
-
-                <option value="2人">
-                    2 人
-                </option>
-
-                <option value="3人">
-                    3 人
-                </option>
-
-                <option value="4人">
-                    4 人
-                </option>
-
-                <option value="5人以上">
-                    5 人以上
-                </option>
-
-            </select>
-
         </div>
 
 
         <div class="input-group">
+            <label for="memo">💡 特殊需求備註（選填）</label>
 
-            <label for="luggageCount">
-                🧳 行李件數
-            </label>
-
-            <select id="luggageCount">
-
-                <option value="無行李" selected>
-                    無行李
-                </option>
-
-                <option value="1-2件大行李">
-                    1-2 件大行李
-                </option>
-
-                <option value="3-4件大行李">
-                    3-4 件大行李
-                </option>
-
-                <option value="5件以上">
-                    5 件以上
-                </option>
-
-            </select>
-
+            <input
+                type="text"
+                id="memo"
+                placeholder="例如：兒童安全座椅、寵物、輪椅..."
+            >
         </div>
 
-    </div>
 
-
-    <div class="input-group">
-
-        <label for="pickup">
-            📍 上車地點
-        </label>
-
-        <input
-            type="text"
-            id="pickup"
-            placeholder="請輸入完整地址或地標名稱"
-            required
+        <button
+            type="button"
+            id="submitBtn"
+            class="submit-btn"
+            onclick="sendBooking()"
         >
+            🚕 確認送出預約
+        </button>
 
+    </form>
+
+
+    <div class="notice">
+        ※ 送出後資料會同步建立於 TOP Taxi 預約系統。<br>
+        ※ 預約是否成立，仍以客服最終確認為準。
     </div>
 
-
-    <div class="input-group">
-
-        <label for="dropoff">
-            🏁 下車地點
-        </label>
-
-        <input
-            type="text"
-            id="dropoff"
-            placeholder="請輸入完整地址或地標名稱"
-            required
-        >
-
-    </div>
-
-
-    <div class="input-group">
-
-        <label for="memo">
-            💡 特殊需求備註（選填）
-        </label>
-
-        <input
-            type="text"
-            id="memo"
-            placeholder="例如：兒童安全座椅、寵物、輪椅..."
-        >
-
-    </div>
-
-
-    <button
-        type="button"
-        id="submitBtn"
-        class="line-btn"
-        onclick="sendBooking()"
-    >
-        🚕 送出預約
-    </button>
-
-</form>
-
-
-<div class="notice">
-
-※ 送出後預約資料會直接傳送至 TOP Taxi 客服系統。<br>
-
-※ 預約是否成立，仍以客服最終確認為準。
-
-</div>
-
-
-<div
-    id="successMessage"
-    class="success-message"
->
-    ✅ 預約資料已送出，客服將盡快為您確認。
-</div>
+    <div id="statusBox" class="status"></div>
 
 </div>
 
 
 <script>
 
-/* ==============================
+/* ============================================
+   TOP Taxi LIFF
+============================================ */
+
+const LIFF_ID = "2011008197-NjjrAoUX";
+
+
+/* ============================================
    n8n Production Webhook
-   ↓↓↓ 請把這裡換成你的正式網址
-================================ */
+============================================ */
 
 const WEBHOOK_URL =
 "https://lakswitting.app.n8n.cloud/webhook/96798dda-c12a-4552-bcaa-e51a1166a1a8";
 
 
-/* ==============================
-   日期與時間設定
-================================ */
-
-const dateInput =
-document.getElementById("bookDate");
-
-const timeInput =
-document.getElementById("bookTime");
+let lineDisplayName = "";
+let lineUserId = "";
 
 
-function getTodayString(){
+/* ============================================
+   初始化 LIFF
+============================================ */
 
-    const today =
-    new Date();
+async function initializeLiff() {
 
-    const yyyy =
-    today.getFullYear();
+    try {
 
-    const mm =
-    String(
-        today.getMonth() + 1
-    ).padStart(2,"0");
+        await liff.init({
+            liffId: LIFF_ID
+        });
 
-    const dd =
-    String(
-        today.getDate()
-    ).padStart(2,"0");
 
-    return `${yyyy}-${mm}-${dd}`;
+        /*
+        如果不是從 LINE 內開啟，
+        先進行 LINE Login
+        */
+
+        if (!liff.isLoggedIn()) {
+
+            liff.login();
+
+            return;
+        }
+
+
+        /*
+        取得 LINE 使用者名稱
+        */
+
+        try {
+
+            const profile =
+                await liff.getProfile();
+
+            lineDisplayName =
+                profile.displayName || "";
+
+            lineUserId =
+                profile.userId || "";
+
+
+            if (lineDisplayName) {
+
+                const userBox =
+                    document.getElementById("lineUser");
+
+                userBox.textContent =
+                    "LINE 使用者：" + lineDisplayName;
+
+                userBox.style.display =
+                    "block";
+            }
+
+        } catch (profileError) {
+
+            console.log(
+                "無法取得 LINE Profile",
+                profileError
+            );
+        }
+
+
+    } catch (error) {
+
+        console.error(
+            "LIFF 初始化失敗",
+            error
+        );
+
+        showStatus(
+            "LINE 系統初始化失敗，請重新從 TOP Taxi 官方帳號開啟預約頁。",
+            "error"
+        );
+    }
 }
 
 
-const todayString =
-getTodayString();
+/* ============================================
+   日期設定
+============================================ */
+
+const dateInput =
+    document.getElementById("bookDate");
+
+const timeInput =
+    document.getElementById("bookTime");
+
+
+function getLocalDateString() {
+
+    const now = new Date();
+
+    const year =
+        now.getFullYear();
+
+    const month =
+        String(
+            now.getMonth() + 1
+        ).padStart(2, "0");
+
+    const day =
+        String(
+            now.getDate()
+        ).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
 
 
 dateInput.value =
-todayString;
+    getLocalDateString();
 
 dateInput.min =
-todayString;
+    getLocalDateString();
 
 
-dateInput.addEventListener(
-    "change",
-    validateTimeLimit
-);
+/* ============================================
+   檢查日期時間
+============================================ */
 
-timeInput.addEventListener(
-    "change",
-    validateTimeLimit
-);
+function validateBookingTime() {
 
-
-function validateTimeLimit(){
-
-    if(
+    if (
         !dateInput.value ||
         !timeInput.value
-    ){
+    ) {
         return true;
     }
 
 
-    const now =
-    new Date();
-
-
-    const selectedDateTime =
-    new Date(
-        `${dateInput.value}T${timeInput.value}`
-    );
-
-
-    if(
-        selectedDateTime < now
-    ){
-
-        alert(
-            "預約時間不能選擇已經過去的時間。"
+    const selected =
+        new Date(
+            `${dateInput.value}T${timeInput.value}`
         );
 
-        timeInput.value =
-        "";
+
+    const now =
+        new Date();
+
+
+    if (selected < now) {
+
+        alert(
+            "預約時間不能早於目前時間。"
+        );
 
         return false;
-
     }
 
 
     return true;
-
 }
 
 
-/* ==============================
-   送出預約
-================================ */
+/* ============================================
+   顯示狀態
+============================================ */
 
-async function sendBooking(){
+function showStatus(message, type) {
+
+    const box =
+        document.getElementById("statusBox");
+
+    box.textContent =
+        message;
+
+    box.className =
+        "status " + type;
+}
+
+
+/* ============================================
+   送出預約
+============================================ */
+
+async function sendBooking() {
+
+    const submitBtn =
+        document.getElementById("submitBtn");
+
 
     const bookDate =
-    dateInput.value;
+        dateInput.value;
 
     const bookTime =
-    timeInput.value;
+        timeInput.value;
 
     const passengerCount =
-    document.getElementById(
-        "passengerCount"
-    ).value;
+        document.getElementById(
+            "passengerCount"
+        ).value;
 
     const luggageCount =
-    document.getElementById(
-        "luggageCount"
-    ).value;
+        document.getElementById(
+            "luggageCount"
+        ).value;
 
     const pickup =
-    document.getElementById(
-        "pickup"
-    ).value.trim();
+        document.getElementById(
+            "pickup"
+        ).value.trim();
 
     const dropoff =
-    document.getElementById(
-        "dropoff"
-    ).value.trim();
+        document.getElementById(
+            "dropoff"
+        ).value.trim();
 
     const memo =
-    document.getElementById(
-        "memo"
-    ).value.trim();
+        document.getElementById(
+            "memo"
+        ).value.trim() || "無";
 
 
-    if(
+    /*
+    必填檢查
+    */
+
+    if (
         !bookDate ||
         !bookTime ||
         !pickup ||
         !dropoff
-    ){
+    ) {
 
         alert(
-            "請完整填寫預約日期、時間、上車地點與下車地點。"
+            "請完整填寫日期、時間、上車地點與下車地點。"
         );
 
         return;
-
     }
 
 
-    if(
-        !validateTimeLimit()
-    ){
+    if (!validateBookingTime()) {
         return;
     }
 
+
+    submitBtn.disabled =
+        true;
+
+    submitBtn.textContent =
+        "⏳ 預約送出中...";
+
+
+    /*
+    要寫進 n8n / Google Sheets 的資料
+    */
 
     const bookingData = {
 
         source:
-        "TOP Taxi Booking",
+            "TOP Taxi LIFF Booking",
+
+        lineDisplayName:
+            lineDisplayName,
+
+        lineUserId:
+            lineUserId,
 
         bookDate:
-        bookDate,
+            bookDate,
 
         bookTime:
-        bookTime,
+            bookTime,
 
         passengerCount:
-        passengerCount,
+            passengerCount,
 
         luggageCount:
-        luggageCount,
+            luggageCount,
 
         pickup:
-        pickup,
+            pickup,
 
         dropoff:
-        dropoff,
+            dropoff,
 
         memo:
-        memo || "無",
+            memo,
 
         submittedAt:
-        new Date().toISOString()
-
+            new Date().toISOString()
     };
 
 
-    const submitBtn =
-    document.getElementById(
-        "submitBtn"
-    );
+    /*
+    客人在 LINE 裡送出的訊息
+    */
+
+    const lineMessage =
+`🚕 TOP Taxi 預約叫車
+
+📅 預約日期：${bookDate}
+⏰ 預約時間：${bookTime}
+
+👥 乘車人數：${passengerCount}
+🧳 行李件數：${luggageCount}
+
+📍 上車地點：
+${pickup}
+
+🏁 下車地點：
+${dropoff}
+
+💡 特殊需求：
+${memo}
+
+請客服協助確認此筆預約，謝謝！`;
 
 
-    submitBtn.disabled =
-    true;
+    try {
 
-    submitBtn.textContent =
-    "⏳ 預約送出中...";
-
-
-    try{
+        /*
+        第一步：
+        送進 n8n
+        */
 
         const response =
-        await fetch(
-            WEBHOOK_URL,
-            {
+            await fetch(
+                WEBHOOK_URL,
+                {
+                    method: "POST",
 
-                method:
-                "POST",
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-                headers:{
-                    "Content-Type":
-                    "application/json"
-                },
-
-                body:
-                JSON.stringify(
-                    bookingData
-                )
-
-            }
-        );
-
-
-        if(
-            !response.ok
-        ){
-
-            throw new Error(
-                `HTTP ${response.status}`
+                    body:
+                        JSON.stringify(
+                            bookingData
+                        )
+                }
             );
 
+
+        if (!response.ok) {
+
+            throw new Error(
+                "n8n HTTP " +
+                response.status
+            );
         }
 
 
-        document.getElementById(
-            "successMessage"
-        ).style.display =
-        "block";
+        /*
+        第二步：
+        由客人的 LINE 送出預約訊息
+        */
+
+        if (liff.isInClient()) {
+
+            await liff.sendMessages([
+                {
+                    type: "text",
+                    text: lineMessage
+                }
+            ]);
+
+        } else {
+
+            /*
+            如果不是在 LINE App 裡開啟，
+            無法使用 sendMessages
+            */
+
+            throw new Error(
+                "NOT_IN_LINE_CLIENT"
+            );
+        }
 
 
-        document.getElementById(
-            "bookingForm"
-        ).reset();
+        /*
+        成功
+        */
+
+        showStatus(
+            "✅ 預約已成功送出，客服將盡快為您確認。",
+            "success"
+        );
 
 
-        dateInput.value =
-        getTodayString();
+        submitBtn.textContent =
+            "✅ 預約已送出";
 
 
-        document.getElementById(
-            "passengerCount"
-        ).value =
-        "1人";
+        /*
+        稍等一下後關閉 LIFF
+        */
+
+        setTimeout(() => {
+
+            if (liff.isInClient()) {
+
+                liff.closeWindow();
+            }
+
+        }, 1600);
 
 
-        document.getElementById(
-            "luggageCount"
-        ).value =
-        "無行李";
-
-
-    }catch(error){
+    } catch (error) {
 
         console.error(
-            "Booking error:",
+            "預約送出錯誤",
             error
         );
 
 
-        alert(
-            "預約送出失敗，請稍後再試或直接聯絡客服。"
-        );
+        if (
+            error.message ===
+            "NOT_IN_LINE_CLIENT"
+        ) {
 
-    }finally{
+            showStatus(
+                "預約資料已建立，但目前不是從 LINE 內開啟。請從 TOP Taxi 官方帳號的「預約叫車」按鈕進入。",
+                "error"
+            );
+
+        } else {
+
+            showStatus(
+                "預約送出失敗，請稍後再試或直接聯絡客服。",
+                "error"
+            );
+        }
+
 
         submitBtn.disabled =
-        false;
+            false;
 
         submitBtn.textContent =
-        "🚕 送出預約";
-
+            "🚕 確認送出預約";
     }
-
 }
+
+
+/* ============================================
+   啟動
+============================================ */
+
+initializeLiff();
 
 </script>
 
