@@ -369,6 +369,154 @@ label {
 
 }
 
+.address-autocomplete {
+    position: relative;
+    width: 100%;
+}
+
+.address-input {
+    width: 100%;
+    min-height: 50px;
+    padding: 0 44px 0 42px;
+    border: 1px solid var(--gray-border);
+    border-radius: 12px;
+    outline: none;
+    background: #fafafa;
+    color: #222222;
+    -webkit-text-fill-color: #222222;
+    caret-color: var(--red);
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 700;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.address-input::placeholder {
+    color: #8d8d93;
+    -webkit-text-fill-color: #8d8d93;
+    font-weight: 500;
+    opacity: 1;
+}
+
+.address-input:focus {
+    border-color: var(--red);
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(255, 31, 45, .08);
+}
+
+.address-search-icon {
+    position: absolute;
+    top: 25px;
+    left: 15px;
+    z-index: 2;
+    transform: translateY(-50%);
+    color: #75757b;
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.address-clear-btn {
+    position: absolute;
+    top: 25px;
+    right: 9px;
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #85858b;
+    font-size: 19px;
+    cursor: pointer;
+}
+
+.address-suggestions {
+    position: absolute;
+    top: calc(100% + 7px);
+    left: 0;
+    right: 0;
+    z-index: 5000;
+    display: none;
+    max-height: min(330px, 46vh);
+    overflow-y: auto;
+    border: 1px solid #e1e1e4;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, .18);
+    -webkit-overflow-scrolling: touch;
+}
+
+.address-suggestions.show {
+    display: block;
+}
+
+.address-suggestion {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid #ededf0;
+    background: #ffffff;
+    color: #222222;
+    text-align: left;
+    cursor: pointer;
+}
+
+.address-suggestion:active {
+    background: #f5f5f7;
+}
+
+.address-suggestion-icon {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #f0f0f2;
+    font-size: 16px;
+}
+
+.address-suggestion-main {
+    display: block;
+    overflow: hidden;
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.address-suggestion-secondary {
+    display: block;
+    margin-top: 3px;
+    overflow: hidden;
+    color: #77777d;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.address-google-attribution {
+    padding: 9px 14px;
+    color: #66666c;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.address-no-results {
+    padding: 15px;
+    color: #77777d;
+    font-size: 13px;
+    text-align: center;
+}
+
 
 /* Google Places 元件 */
 
@@ -2177,15 +2325,13 @@ async function initGoogle() {
 
     try {
 
-
         const {
-            PlaceAutocompleteElement
+            AutocompleteSuggestion,
+            AutocompleteSessionToken
         } =
- 
         await google.maps.importLibrary(
             "places"
         );
-
 
         const {
             Route
@@ -2197,107 +2343,10 @@ async function initGoogle() {
 
         RouteClass = Route;
 
-
-
-        /* =====================================
-           PICKUP
-        ====================================== */
-
-        const pickupAutocomplete =
-    new PlaceAutocompleteElement();
-
-pickupAutocomplete.includedRegionCodes = ["tw"];
-pickupAutocomplete.requestedLanguage = "zh-TW";
-pickupAutocomplete.requestedRegion = "TW";
-
-
-        pickupAutocomplete.placeholder =
-            "請輸入上車地址或地標";
-
-
-        pickupAutocomplete
-            .setAttribute(
-                "aria-label",
-                "上車地點"
-            );
-
-
-        document
-            .getElementById(
-                "pickupBox"
-            )
-            .appendChild(
-                pickupAutocomplete
-            );
-
-
-
-        /* =====================================
-           DROPOFF
-        ====================================== */
-
-        const dropoffAutocomplete =
-    new PlaceAutocompleteElement();
-
-dropoffAutocomplete.includedRegionCodes = ["tw"];
-        dropoffAutocomplete.requestedLanguage = "zh-TW";
-        dropoffAutocomplete.requestedRegion = "TW";
-
-
-        dropoffAutocomplete.placeholder =
-            "請輸入目的地地址或地標";
-
-
-        dropoffAutocomplete
-            .setAttribute(
-                "aria-label",
-                "下車地點"
-            );
-
-
-        document
-            .getElementById(
-                "dropoffBox"
-            )
-            .appendChild(
-                dropoffAutocomplete
-            );
-
-        /* =====================================
-           SEARCH LOCATION BIAS
-        ====================================== */
-
-        const applyLocationBias = (
-            center,
-            radius
-        ) => {
-
-            [
-                pickupAutocomplete,
-                dropoffAutocomplete
-            ].forEach(
-                (autocomplete) => {
-
-                    autocomplete.origin =
-                        center;
-
-                    autocomplete.locationBias = {
-                        center,
-                        radius
-                    };
-                }
-            );
-        };
-
-        const taichungCenter = {
+        let searchCenter = {
             lat: 24.1477,
             lng: 120.6736
         };
-
-        applyLocationBias(
-            taichungCenter,
-            50000
-        );
 
         if (
             "geolocation"
@@ -2310,7 +2359,7 @@ dropoffAutocomplete.includedRegionCodes = ["tw"];
 
                     (position) => {
 
-                        const currentCenter = {
+                        searchCenter = {
                             lat:
                                 position
                                     .coords
@@ -2321,11 +2370,6 @@ dropoffAutocomplete.includedRegionCodes = ["tw"];
                                     .coords
                                     .longitude
                         };
-
-                        applyLocationBias(
-                            currentCenter,
-                            50000
-                        );
                     },
 
                     () => {
@@ -2343,195 +2387,480 @@ dropoffAutocomplete.includedRegionCodes = ["tw"];
                 );
         }
 
-        const keepInputVisible = (
-            autocomplete,
-            label
-        ) => {
+        const createAddressAutocomplete = ({
+            containerId,
+            placeholder,
+            ariaLabel,
+            onReset,
+            onSelect
+        }) => {
 
-            const preview =
+            const container =
                 document.getElementById(
-                    "addressTypingPreview"
+                    containerId
                 );
 
-            const previewLabel =
-                document.getElementById(
-                    "addressTypingLabel"
+            const wrapper =
+                document.createElement(
+                    "div"
                 );
 
-            const previewText =
-                document.getElementById(
-                    "addressTypingText"
+            wrapper.className =
+                "address-autocomplete";
+
+            const input =
+                document.createElement(
+                    "input"
                 );
 
-            const updatePreview = (
-                event
-            ) => {
+            input.type = "search";
+            input.className =
+                "address-input";
+            input.placeholder =
+                placeholder;
+            input.setAttribute(
+                "aria-label",
+                ariaLabel
+            );
+            input.setAttribute(
+                "autocomplete",
+                "off"
+            );
+            input.setAttribute(
+                "enterkeyhint",
+                "search"
+            );
 
-                const input =
-                    event
-                        ?.composedPath()
-                        ?.find(
-                            (node) =>
-                                node instanceof
-                                HTMLInputElement
-                        );
+            const searchIcon =
+                document.createElement(
+                    "span"
+                );
 
-                const value =
-                    input?.value
-                    ||
-                    autocomplete.value
-                    ||
-                    "";
+            searchIcon.className =
+                "address-search-icon";
+            searchIcon.textContent =
+                "⌕";
+            searchIcon.setAttribute(
+                "aria-hidden",
+                "true"
+            );
 
-                previewLabel.textContent =
-                    label + "：";
+            const clearButton =
+                document.createElement(
+                    "button"
+                );
 
-                previewText.textContent =
-                    value || "請輸入地址";
+            clearButton.type =
+                "button";
+            clearButton.className =
+                "address-clear-btn";
+            clearButton.textContent =
+                "×";
+            clearButton.setAttribute(
+                "aria-label",
+                "清除地址"
+            );
 
-                preview.classList.add(
+            const suggestionsBox =
+                document.createElement(
+                    "div"
+                );
+
+            suggestionsBox.className =
+                "address-suggestions";
+
+            wrapper.append(
+                input,
+                searchIcon,
+                clearButton,
+                suggestionsBox
+            );
+
+            container.appendChild(
+                wrapper
+            );
+
+            let debounceTimer = null;
+            let requestNumber = 0;
+            let sessionToken =
+                new AutocompleteSessionToken();
+
+            const hideSuggestions = () => {
+
+                suggestionsBox.classList.remove(
                     "show"
                 );
             };
 
-            autocomplete.addEventListener(
-                "focusin",
-                (event) => {
+            const getText = (
+                textObject
+            ) => {
 
-                    updatePreview(event);
+                if (!textObject) {
+                    return "";
+                }
 
-                    setTimeout(() => {
+                return (
+                    textObject.text
+                    ||
+                    textObject.toString?.()
+                    ||
+                    ""
+                );
+            };
 
-                        autocomplete.scrollIntoView({
-                            behavior: "auto",
-                            block: "start"
+            const choosePrediction =
+                async (
+                    prediction
+                ) => {
+
+                    input.disabled = true;
+
+                    try {
+
+                        const place =
+                            prediction.toPlace();
+
+                        await place.fetchFields({
+                            fields: [
+                                "id",
+                                "displayName",
+                                "formattedAddress",
+                                "location"
+                            ]
                         });
 
-                    }, 180);
+                        input.value =
+                            getText(
+                                prediction.text
+                            )
+                            ||
+                            place.formattedAddress
+                            ||
+                            place.displayName
+                            ||
+                            "";
+
+                        sessionToken =
+                            new AutocompleteSessionToken();
+
+                        hideSuggestions();
+                        onSelect(place);
+
+                    } catch (error) {
+
+                        console.error(
+                            "地址資料讀取失敗：",
+                            error
+                        );
+
+                        showStatus(
+                            "地址資料讀取失敗，請重新選擇。",
+                            true
+                        );
+
+                    } finally {
+
+                        input.disabled = false;
+                    }
+                };
+
+            const renderSuggestions = (
+                suggestions
+            ) => {
+
+                suggestionsBox.innerHTML =
+                    "";
+
+                const predictions =
+                    suggestions
+                        .map(
+                            (suggestion) =>
+                                suggestion
+                                    .placePrediction
+                        )
+                        .filter(Boolean)
+                        .slice(0, 6);
+
+                if (!predictions.length) {
+
+                    const noResults =
+                        document.createElement(
+                            "div"
+                        );
+
+                    noResults.className =
+                        "address-no-results";
+                    noResults.textContent =
+                        "找不到符合的地點，請輸入更完整的名稱或地址";
+
+                    suggestionsBox.appendChild(
+                        noResults
+                    );
+
+                } else {
+
+                    predictions.forEach(
+                        (prediction) => {
+
+                            const button =
+                                document.createElement(
+                                    "button"
+                                );
+
+                            button.type =
+                                "button";
+                            button.className =
+                                "address-suggestion";
+
+                            const icon =
+                                document.createElement(
+                                    "span"
+                                );
+
+                            icon.className =
+                                "address-suggestion-icon";
+                            icon.textContent =
+                                "📍";
+
+                            const textWrap =
+                                document.createElement(
+                                    "span"
+                                );
+
+                            const main =
+                                document.createElement(
+                                    "span"
+                                );
+
+                            main.className =
+                                "address-suggestion-main";
+                            main.textContent =
+                                getText(
+                                    prediction.mainText
+                                )
+                                ||
+                                getText(
+                                    prediction.text
+                                );
+
+                            const secondary =
+                                document.createElement(
+                                    "span"
+                                );
+
+                            secondary.className =
+                                "address-suggestion-secondary";
+                            secondary.textContent =
+                                getText(
+                                    prediction.secondaryText
+                                );
+
+                            textWrap.append(
+                                main,
+                                secondary
+                            );
+
+                            button.append(
+                                icon,
+                                textWrap
+                            );
+
+                            button.addEventListener(
+                                "pointerdown",
+                                (event) => {
+
+                                    event.preventDefault();
+                                    choosePrediction(
+                                        prediction
+                                    );
+                                }
+                            );
+
+                            suggestionsBox.appendChild(
+                                button
+                            );
+                        }
+                    );
+                }
+
+                const attribution =
+                    document.createElement(
+                        "div"
+                    );
+
+                attribution.className =
+                    "address-google-attribution";
+                attribution.textContent =
+                    "Google Maps";
+
+                suggestionsBox.appendChild(
+                    attribution
+                );
+
+                suggestionsBox.classList.add(
+                    "show"
+                );
+            };
+
+            const requestSuggestions =
+                async () => {
+
+                    const query =
+                        input.value.trim();
+
+                    if (query.length < 2) {
+                        hideSuggestions();
+                        return;
+                    }
+
+                    const currentRequest =
+                        ++requestNumber;
+
+                    try {
+
+                        const response =
+                            await AutocompleteSuggestion
+                                .fetchAutocompleteSuggestions({
+                                    input: query,
+                                    includedRegionCodes: ["tw"],
+                                    language: "zh-TW",
+                                    region: "TW",
+                                    locationBias: {
+                                        center:
+                                            searchCenter,
+                                        radius:
+                                            50000
+                                    },
+                                    origin:
+                                        searchCenter,
+                                    sessionToken
+                                });
+
+                        if (
+                            currentRequest
+                            !== requestNumber
+                        ) {
+                            return;
+                        }
+
+                        renderSuggestions(
+                            response.suggestions
+                            || []
+                        );
+
+                    } catch (error) {
+
+                        console.error(
+                            "地址建議載入失敗：",
+                            error
+                        );
+                    }
+                };
+
+            input.addEventListener(
+                "input",
+                () => {
+
+                    onReset();
+                    hideResults();
+
+                    clearTimeout(
+                        debounceTimer
+                    );
+
+                    debounceTimer =
+                        setTimeout(
+                            requestSuggestions,
+                            220
+                        );
                 }
             );
 
-            autocomplete.addEventListener(
-                "input",
-                updatePreview
+            input.addEventListener(
+                "keydown",
+                (event) => {
+
+                    if (
+                        event.key
+                        === "Escape"
+                    ) {
+                        hideSuggestions();
+                    }
+                }
             );
 
-            autocomplete.addEventListener(
-                "focusout",
+            input.addEventListener(
+                "focus",
                 () => {
 
-                    setTimeout(() => {
+                    if (
+                        input.value
+                            .trim()
+                            .length
+                        >= 2
+                    ) {
+                        requestSuggestions();
+                    }
+                }
+            );
 
-                        preview.classList.remove(
-                            "show"
-                        );
+            clearButton.addEventListener(
+                "click",
+                () => {
 
-                    }, 220);
+                    input.value = "";
+                    onReset();
+                    hideResults();
+                    hideSuggestions();
+                    input.focus();
+                }
+            );
+
+            document.addEventListener(
+                "pointerdown",
+                (event) => {
+
+                    if (
+                        !wrapper.contains(
+                            event.target
+                        )
+                    ) {
+                        hideSuggestions();
+                    }
                 }
             );
         };
 
-        keepInputVisible(
-            pickupAutocomplete,
-            "上車地點"
-        );
+        createAddressAutocomplete({
+            containerId: "pickupBox",
+            placeholder:
+                "請輸入上車地址或地標",
+            ariaLabel:
+                "上車地點",
+            onReset: () => {
+                pickupPlace = null;
+            },
+            onSelect: (place) => {
+                pickupPlace = place;
+                hideResults();
+            }
+        });
 
-        keepInputVisible(
-            dropoffAutocomplete,
-            "下車地點"
-        );
-
-
-
-        /* =====================================
-           PICKUP SELECT
-        ====================================== */
-
-        pickupAutocomplete
-            .addEventListener(
-                "gmp-select",
-                async (event) => {
-
-
-                    const place =
-                        event
-                        .placePrediction
-                        .toPlace();
-
-
-                    await place.fetchFields({
-
-                        fields: [
-
-                            "id",
-                            "displayName",
-                            "formattedAddress",
-                            "location"
-
-                        ]
-
-                    });
-
-
-                    pickupPlace = place;
-
-                    document
-                        .getElementById(
-                            "addressTypingPreview"
-                        )
-                        .classList
-                        .remove("show");
-
-                    hideResults();
-
-                }
-            );
-
-
-
-        /* =====================================
-           DROPOFF SELECT
-        ====================================== */
-
-        dropoffAutocomplete
-            .addEventListener(
-                "gmp-select",
-                async (event) => {
-
-
-                    const place =
-                        event
-                        .placePrediction
-                        .toPlace();
-
-
-                    await place.fetchFields({
-
-                        fields: [
-
-                            "id",
-                            "displayName",
-                            "formattedAddress",
-                            "location"
-
-                        ]
-
-                    });
-
-
-                    dropoffPlace = place;
-
-                    document
-                        .getElementById(
-                            "addressTypingPreview"
-                        )
-                        .classList
-                        .remove("show");
-
-                    hideResults();
-
-                }
-            );
+        createAddressAutocomplete({
+            containerId: "dropoffBox",
+            placeholder:
+                "請輸入目的地地址或地標",
+            ariaLabel:
+                "下車地點",
+            onReset: () => {
+                dropoffPlace = null;
+            },
+            onSelect: (place) => {
+                dropoffPlace = place;
+                hideResults();
+            }
+        });
 
 
     }
