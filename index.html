@@ -389,6 +389,40 @@ body {
 
 }
 
+.service-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 18px;
+    padding: 6px;
+    border: 1px solid var(--gray-2);
+    border-radius: 15px;
+    background: #f5f5f7;
+}
+
+.service-option {
+    min-height: 48px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: #77777d;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: background .18s, color .18s, box-shadow .18s;
+}
+
+.service-option.active {
+    background: linear-gradient(135deg, #ff3142, #f40020);
+    color: #ffffff;
+    box-shadow: 0 7px 18px rgba(244, 0, 32, .22);
+}
+
+.passenger-options.is-hidden {
+    display: none;
+}
+
 
 /* =========================================
    FORM
@@ -484,6 +518,142 @@ input::placeholder {
 
     color: #b1b1b6;
 
+}
+
+.address-autocomplete {
+    position: relative;
+    width: 100%;
+}
+
+.address-input {
+    padding: 0 44px 0 42px;
+    color: #222222;
+    -webkit-text-fill-color: #222222;
+    caret-color: var(--red);
+    font-weight: 700;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.address-input::placeholder {
+    color: #8d8d93;
+    -webkit-text-fill-color: #8d8d93;
+    font-weight: 500;
+    opacity: 1;
+}
+
+.address-search-icon {
+    position: absolute;
+    top: 23px;
+    left: 15px;
+    z-index: 2;
+    transform: translateY(-50%);
+    color: #75757b;
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.address-clear-btn {
+    position: absolute;
+    top: 23px;
+    right: 8px;
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+    padding: 0;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #85858b;
+    font-size: 19px;
+    cursor: pointer;
+}
+
+.address-suggestions {
+    position: absolute;
+    top: calc(100% + 7px);
+    left: 0;
+    right: 0;
+    z-index: 5000;
+    display: none;
+    max-height: min(330px, 46vh);
+    overflow-y: auto;
+    border: 1px solid #e1e1e4;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, .18);
+    -webkit-overflow-scrolling: touch;
+}
+
+.address-suggestions.show {
+    display: block;
+}
+
+.address-suggestion {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid #ededf0;
+    background: #ffffff;
+    color: #222222;
+    text-align: left;
+    cursor: pointer;
+}
+
+.address-suggestion:active {
+    background: #f5f5f7;
+}
+
+.address-suggestion-icon {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #f0f0f2;
+    font-size: 16px;
+}
+
+.address-suggestion-main,
+.address-suggestion-secondary {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.address-suggestion-main {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.address-suggestion-secondary {
+    margin-top: 3px;
+    color: #77777d;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.address-google-attribution {
+    padding: 9px 14px;
+    color: #66666c;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.address-no-results {
+    padding: 15px;
+    color: #77777d;
+    font-size: 13px;
+    text-align: center;
 }
 
 
@@ -941,7 +1111,7 @@ input::placeholder {
 
     <div class="form-header">
 
-        <div class="form-title">
+        <div class="form-title" id="bookingTitle">
 
             🚕 預約叫車
 
@@ -961,6 +1131,32 @@ input::placeholder {
     <!-- FORM -->
 
     <form id="bookingForm">
+
+        <!-- SERVICE TYPE -->
+
+        <div class="service-switch" role="group" aria-label="選擇預約服務">
+
+            <button
+                type="button"
+                id="taxiServiceBtn"
+                class="service-option active"
+                aria-pressed="true"
+                onclick="setBookingService('taxi')"
+            >
+                🚕 一般搭車
+            </button>
+
+            <button
+                type="button"
+                id="driverServiceBtn"
+                class="service-option"
+                aria-pressed="false"
+                onclick="setBookingService('driver')"
+            >
+                🚘 代駕服務
+            </button>
+
+        </div>
 
 
         <!-- DATE / TIME -->
@@ -1011,7 +1207,7 @@ input::placeholder {
 
         <!-- PEOPLE / LUGGAGE -->
 
-        <div class="row">
+        <div class="row passenger-options" id="passengerOptions">
 
 
             <div class="input-group">
@@ -1115,13 +1311,7 @@ input::placeholder {
             </label>
 
 
-            <input
-                type="text"
-                id="pickup"
-                placeholder="請輸入完整地址或地標名稱"
-                autocomplete="street-address"
-                required
-            >
+            <div id="pickupBox"></div>
 
         </div>
 
@@ -1138,12 +1328,7 @@ input::placeholder {
             </label>
 
 
-            <input
-                type="text"
-                id="dropoff"
-                placeholder="請輸入完整地址或地標名稱"
-                required
-            >
+            <div id="dropoffBox"></div>
 
         </div>
 
@@ -1163,7 +1348,7 @@ input::placeholder {
             <input
                 type="text"
                 id="memo"
-                placeholder="例如：禁菸、代駕、寵物、輪椅..."
+                placeholder="例如：禁菸、寵物、輪椅或其他需求..."
             >
 
         </div>
@@ -1311,6 +1496,65 @@ function showMessage(
 
     box.className =
         "message-box " + type;
+
+}
+
+
+/* ======================================================
+   SERVICE TYPE
+====================================================== */
+
+let bookingService = "taxi";
+
+
+function getSubmitButtonText() {
+
+    return bookingService === "driver"
+        ? "預約代駕 →"
+        : "立即預約 →";
+
+}
+
+
+function setBookingService(service) {
+
+    bookingService = service === "driver"
+        ? "driver"
+        : "taxi";
+
+    const isDriver =
+        bookingService === "driver";
+
+    const taxiButton =
+        document.getElementById("taxiServiceBtn");
+
+    const driverButton =
+        document.getElementById("driverServiceBtn");
+
+    const passengerOptions =
+        document.getElementById("passengerOptions");
+
+    const bookingTitle =
+        document.getElementById("bookingTitle");
+
+    const submitButton =
+        document.getElementById("submitBtn");
+
+    taxiButton.classList.toggle("active", !isDriver);
+    taxiButton.setAttribute("aria-pressed", String(!isDriver));
+
+    driverButton.classList.toggle("active", isDriver);
+    driverButton.setAttribute("aria-pressed", String(isDriver));
+
+    passengerOptions.classList.toggle("is-hidden", isDriver);
+
+    bookingTitle.textContent = isDriver
+        ? "🚘 預約代駕"
+        : "🚕 預約叫車";
+
+    if (!submitButton.disabled) {
+        submitButton.textContent = getSubmitButtonText();
+    }
 
 }
 
@@ -1670,17 +1914,27 @@ async function sendBooking() {
 
 
 
+    const serviceType =
+        bookingService === "driver"
+            ? "代駕服務"
+            : "一般搭車";
+
+
     const passengerCount =
-        document.getElementById(
-            "passengerCount"
-        ).value;
+        bookingService === "driver"
+            ? "不適用"
+            : document.getElementById(
+                "passengerCount"
+            ).value;
 
 
 
     const luggageCount =
-        document.getElementById(
-            "luggageCount"
-        ).value;
+        bookingService === "driver"
+            ? "不適用"
+            : document.getElementById(
+                "luggageCount"
+            ).value;
 
 
 
@@ -1806,15 +2060,21 @@ async function sendBooking() {
     ----------------------------------------- */
 
 
+    const passengerDetails =
+        bookingService === "driver"
+            ? ""
+            : `\n👥 乘車人數：${passengerCount}\n🧳 行李件數：${luggageCount}\n`;
+
+
     const lineMessage =
 
-`🚕 TOP Taxi｜24H 預約系統
+`${bookingService === "driver" ? "🚘" : "🚕"} TOP Taxi｜24H 預約系統
+
+📋 服務類型：${serviceType}
 
 📅 預約日期：${bookDate}
 ⏰ 預約時間：${bookTime}
-
-👥 乘車人數：${passengerCount}
-🧳 行李件數：${luggageCount}
+${passengerDetails}
 
 📍 上車地點
 ${pickup}
@@ -1840,6 +2100,10 @@ ${memo}
 
         source:
             "TOP Taxi LIFF Booking",
+
+
+        serviceType:
+            serviceType,
 
 
         lineDisplayName:
@@ -2096,7 +2360,7 @@ ${memo}
 
 
         button.innerHTML =
-            "立即預約 →";
+            getSubmitButtonText();
 
 
 
@@ -2118,6 +2382,269 @@ ${memo}
 
 
 /* ======================================================
+   GOOGLE PLACES ADDRESS AUTOCOMPLETE
+====================================================== */
+
+async function initGoogle() {
+
+    try {
+
+        const {
+            AutocompleteSuggestion,
+            AutocompleteSessionToken
+        } = await google.maps.importLibrary("places");
+
+        let searchCenter = {
+            lat: 24.1477,
+            lng: 120.6736
+        };
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function (position) {
+                    searchCenter = {
+                        lat: position.coords.latitude,
+                        lng: position.coords.longitude
+                    };
+                },
+                function () {},
+                {
+                    enableHighAccuracy: false,
+                    timeout: 5000,
+                    maximumAge: 300000
+                }
+            );
+        }
+
+        function createAddressAutocomplete(config) {
+
+            const container = document.getElementById(config.containerId);
+            if (!container) return;
+
+            container.className = "address-autocomplete";
+
+            const input = document.createElement("input");
+            input.type = "search";
+            input.id = config.inputId;
+            input.className = "address-input";
+            input.placeholder = config.placeholder;
+            input.setAttribute("aria-label", config.ariaLabel);
+            input.setAttribute("autocomplete", "off");
+            input.setAttribute("enterkeyhint", "search");
+            input.required = true;
+
+            const searchIcon = document.createElement("span");
+            searchIcon.className = "address-search-icon";
+            searchIcon.setAttribute("aria-hidden", "true");
+            searchIcon.textContent = "⌕";
+
+            const clearButton = document.createElement("button");
+            clearButton.type = "button";
+            clearButton.className = "address-clear-btn";
+            clearButton.setAttribute("aria-label", "清除地址");
+            clearButton.textContent = "×";
+            clearButton.hidden = true;
+
+            const suggestions = document.createElement("div");
+            suggestions.className = "address-suggestions";
+            suggestions.setAttribute("role", "listbox");
+
+            container.append(searchIcon, input, clearButton, suggestions);
+
+            let sessionToken = new AutocompleteSessionToken();
+            let debounceTimer = null;
+            let requestNumber = 0;
+
+            function hideSuggestions() {
+                suggestions.classList.remove("show");
+                suggestions.innerHTML = "";
+            }
+
+            function getPredictionText(prediction) {
+                if (prediction.text && typeof prediction.text.toString === "function") {
+                    return prediction.text.toString();
+                }
+                return "";
+            }
+
+            async function choosePrediction(prediction) {
+                const fallbackText = getPredictionText(prediction);
+                input.value = fallbackText;
+                clearButton.hidden = !input.value;
+                hideSuggestions();
+
+                try {
+                    const place = prediction.toPlace();
+                    await place.fetchFields({
+                        fields: ["id", "displayName", "formattedAddress", "location"]
+                    });
+
+                    input.value = place.formattedAddress || fallbackText ||
+                        (place.displayName ? place.displayName.toString() : "");
+                    clearButton.hidden = !input.value;
+                } catch (placeError) {
+                    console.warn("PLACE DETAILS ERROR:", placeError);
+                }
+
+                sessionToken = new AutocompleteSessionToken();
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+            }
+
+            function renderSuggestions(items) {
+                suggestions.innerHTML = "";
+
+                if (!items.length) {
+                    const empty = document.createElement("div");
+                    empty.className = "address-no-results";
+                    empty.textContent = "找不到相符地點，您仍可直接使用目前輸入的文字";
+                    suggestions.appendChild(empty);
+                    suggestions.classList.add("show");
+                    return;
+                }
+
+                items.slice(0, 6).forEach(function (item) {
+                    const prediction = item.placePrediction;
+                    if (!prediction) return;
+
+                    const row = document.createElement("button");
+                    row.type = "button";
+                    row.className = "address-suggestion";
+                    row.setAttribute("role", "option");
+
+                    const icon = document.createElement("span");
+                    icon.className = "address-suggestion-icon";
+                    icon.textContent = "📍";
+
+                    const textBox = document.createElement("span");
+                    const main = document.createElement("strong");
+                    main.className = "address-suggestion-main";
+                    main.textContent = prediction.mainText ?
+                        prediction.mainText.toString() : getPredictionText(prediction);
+
+                    const secondary = document.createElement("span");
+                    secondary.className = "address-suggestion-secondary";
+                    secondary.textContent = prediction.secondaryText ?
+                        prediction.secondaryText.toString() : "";
+
+                    textBox.append(main, secondary);
+                    row.append(icon, textBox);
+
+                    row.addEventListener("pointerdown", function (event) {
+                        event.preventDefault();
+                        choosePrediction(prediction);
+                    });
+
+                    suggestions.appendChild(row);
+                });
+
+                const attribution = document.createElement("div");
+                attribution.className = "address-google-attribution";
+                attribution.textContent = "Google Maps";
+                suggestions.appendChild(attribution);
+                suggestions.classList.add("show");
+            }
+
+            async function fetchSuggestions(query) {
+                const currentRequest = ++requestNumber;
+
+                try {
+                    const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+                        input: query,
+                        includedRegionCodes: ["tw"],
+                        language: "zh-TW",
+                        region: "TW",
+                        locationBias: {
+                            center: searchCenter,
+                            radius: 50000
+                        },
+                        origin: searchCenter,
+                        sessionToken: sessionToken
+                    });
+
+                    if (currentRequest !== requestNumber) return;
+                    renderSuggestions(response.suggestions || []);
+                } catch (searchError) {
+                    if (currentRequest !== requestNumber) return;
+                    console.warn("ADDRESS SEARCH ERROR:", searchError);
+                    hideSuggestions();
+                }
+            }
+
+            input.addEventListener("input", function () {
+                const query = input.value.trim();
+                clearButton.hidden = !query;
+                window.clearTimeout(debounceTimer);
+
+                if (!query) {
+                    requestNumber++;
+                    hideSuggestions();
+                    return;
+                }
+
+                debounceTimer = window.setTimeout(function () {
+                    fetchSuggestions(query);
+                }, 220);
+            });
+
+            input.addEventListener("focus", function () {
+                if (input.value.trim()) {
+                    fetchSuggestions(input.value.trim());
+                }
+            });
+
+            input.addEventListener("keydown", function (event) {
+                if (event.key === "Escape") hideSuggestions();
+            });
+
+            clearButton.addEventListener("click", function () {
+                requestNumber++;
+                input.value = "";
+                clearButton.hidden = true;
+                hideSuggestions();
+                input.focus();
+            });
+
+            document.addEventListener("pointerdown", function (event) {
+                if (!container.contains(event.target)) hideSuggestions();
+            });
+        }
+
+        createAddressAutocomplete({
+            containerId: "pickupBox",
+            inputId: "pickup",
+            placeholder: "請輸入完整地址或地標名稱",
+            ariaLabel: "上車地點"
+        });
+
+        createAddressAutocomplete({
+            containerId: "dropoffBox",
+            inputId: "dropoff",
+            placeholder: "請輸入完整地址或地標名稱",
+            ariaLabel: "下車地點"
+        });
+
+    } catch (error) {
+        console.error("GOOGLE PLACES LOAD ERROR:", error);
+
+        [
+            ["pickupBox", "pickup", "上車地點"],
+            ["dropoffBox", "dropoff", "下車地點"]
+        ].forEach(function (item) {
+            const container = document.getElementById(item[0]);
+            if (!container || document.getElementById(item[1])) return;
+            const input = document.createElement("input");
+            input.type = "text";
+            input.id = item[1];
+            input.placeholder = "請輸入完整地址或地標名稱";
+            input.setAttribute("aria-label", item[2]);
+            input.required = true;
+            container.appendChild(input);
+        });
+    }
+}
+
+
+/* ======================================================
    START
 ====================================================== */
 
@@ -2131,12 +2658,44 @@ window.addEventListener(
 
         initializeLiff();
 
+        initGoogle();
+
 
     }
 
 );
 
 
+</script>
+
+<script>
+(function (g) {
+    var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
+    b = b[c] || (b[c] = {});
+    var d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams(), u = function () {
+        return h || (h = new Promise(async function (f, n) {
+            await (a = m.createElement("script"));
+            e.set("libraries", Array.from(r) + "");
+            for (k in g) e.set(k.replace(/[A-Z]/g, function (t) { return "_" + t[0].toLowerCase(); }), g[k]);
+            e.set("callback", c + ".maps." + q);
+            a.src = "https://maps." + c + "apis.com/maps/api/js?" + e;
+            d[q] = f;
+            a.onerror = function () { h = n(Error(p + " could not load.")); };
+            a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+            m.head.append(a);
+        }));
+    };
+    d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = function (f) {
+        for (var n = arguments.length, t = new Array(n > 1 ? n - 1 : 0), i = 1; i < n; i++) t[i - 1] = arguments[i];
+        r.add(f);
+        return u().then(function () { return d[l].apply(d, [f].concat(t)); });
+    };
+})({
+    key: "AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw",
+    v: "weekly",
+    language: "zh-TW",
+    region: "TW"
+});
 </script>
 
 
