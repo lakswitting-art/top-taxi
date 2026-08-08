@@ -1370,7 +1370,51 @@ dropoffAutocomplete.requestedRegion = "TW";
 }
 
 
+/* =========================================
+   TOP TAXI 車資計算
+========================================= */
 
+function calculateFare(distanceKm, minutes) {
+
+    const BASE_FARE = 80;          // 基本費
+    const TIME_RATE = 3;           // 每分鐘 3 元
+    const FIRST_KM_RATE = 15;      // 前 20 公里，每公里 15 元
+    const LONG_KM_RATE = 25;       // 超過 20 公里的部分，每公里 25 元
+    const LONG_DISTANCE_START = 20;
+
+    let distanceFare = 0;
+
+    // 計算里程費
+    if (distanceKm <= LONG_DISTANCE_START) {
+
+        distanceFare =
+            distanceKm * FIRST_KM_RATE;
+
+    } else {
+
+        distanceFare =
+            (LONG_DISTANCE_START * FIRST_KM_RATE)
+            +
+            ((distanceKm - LONG_DISTANCE_START) * LONG_KM_RATE);
+
+    }
+
+    // 計算時間費
+    const timeFare =
+        minutes * TIME_RATE;
+
+    // 總車資
+    const totalFare =
+        BASE_FARE +
+        distanceFare +
+        timeFare;
+
+    // 個位數無條件捨去
+    const finalFare =
+        Math.floor(totalFare / 10) * 10;
+
+    return finalFare;
+}
 /* =========================================
    CALCULATE ROUTES
 ========================================= */
@@ -1681,20 +1725,37 @@ async function calculateRoutes() {
            下一步會換成正式公式
         ====================================== */
 
-        document
-            .getElementById(
-                "normalFare"
-            )
-            .textContent =
-            "$---";
+/* =====================================
+   TOP TAXI 車資
+===================================== */
+
+const normalFare =
+    calculateFare(
+        normalDistance,
+        normalMinutes
+    );
+
+const fastFare =
+    calculateFare(
+        fastDistance,
+        fastMinutes
+    );
 
 
-        document
-            .getElementById(
-                "fastFare"
-            )
-            .textContent =
-            "$---";
+document
+    .getElementById(
+        "normalFare"
+    )
+    .textContent =
+    "$" + normalFare;
+
+
+document
+    .getElementById(
+        "fastFare"
+    )
+    .textContent =
+    "$" + fastFare;
 
 
 
