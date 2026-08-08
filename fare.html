@@ -360,7 +360,15 @@ gmp-place-autocomplete {
 
 }
 
+gmp-place-autocomplete::part(input) {
+    color: #555555 !important;
+    font-weight: 500;
+}
 
+gmp-place-autocomplete::part(input)::placeholder {
+    color: #999999 !important;
+    opacity: 1;
+}
 gmp-place-autocomplete:focus-within {
 
     border-color:
