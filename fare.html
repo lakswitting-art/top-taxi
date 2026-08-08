@@ -857,7 +857,377 @@ gmp-place-autocomplete:focus-within {
     }
 
 }
+/* =========================================
+   TOP Taxi｜行程確認視窗
+========================================= */
 
+.confirm-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+}
+
+.confirm-modal.show {
+    display: flex;
+}
+
+
+/* 背景遮罩 */
+
+.confirm-overlay {
+    position: absolute;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.58);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+
+/* 確認卡片 */
+
+.confirm-card {
+    position: relative;
+    z-index: 1;
+
+    width: 100%;
+    max-width: 460px;
+
+    background: #ffffff;
+
+    border-radius: 24px;
+
+    padding: 18px 22px 22px;
+
+    box-shadow:
+        0 25px 60px rgba(0, 0, 0, 0.28);
+
+    animation: confirmPop .22s ease-out;
+}
+
+
+/* 上方小橫條 */
+
+.confirm-handle {
+    width: 42px;
+    height: 5px;
+
+    margin: 0 auto 20px;
+
+    border-radius: 99px;
+
+    background: #dddddd;
+}
+
+
+/* 標題 */
+
+.confirm-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    margin-bottom: 22px;
+}
+
+.confirm-icon {
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    font-size: 24px;
+
+    background: #fff1f2;
+
+    border-radius: 14px;
+}
+
+.confirm-title {
+    font-size: 20px;
+    font-weight: 800;
+
+    color: #111111;
+}
+
+.confirm-subtitle {
+    margin-top: 3px;
+
+    font-size: 13px;
+
+    color: #999999;
+}
+
+
+/* 上下車地點 */
+
+.confirm-location {
+    padding: 18px;
+
+    background: #fafafa;
+
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+}
+
+.confirm-location-row {
+    display: grid;
+    grid-template-columns: 14px 1fr;
+    gap: 12px;
+
+    align-items: start;
+}
+
+.confirm-dot {
+    width: 10px;
+    height: 10px;
+
+    margin-top: 6px;
+
+    border-radius: 50%;
+}
+
+.pickup-dot {
+    background: #ff3045;
+}
+
+.dropoff-dot {
+    background: #111111;
+}
+
+.confirm-line {
+    width: 1px;
+    height: 22px;
+
+    margin: 4px 0 4px 4px;
+
+    background: #dddddd;
+}
+
+.confirm-label {
+    margin-bottom: 4px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    color: #999999;
+}
+
+.confirm-address {
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.5;
+
+    color: #222222;
+
+    word-break: break-word;
+}
+
+
+/* 路線資料 */
+
+.confirm-route-box {
+    margin-top: 14px;
+    padding: 17px 18px;
+
+    background: #ffffff;
+
+    border: 1px solid #eeeeee;
+    border-radius: 16px;
+}
+
+.confirm-route-name {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding-bottom: 14px;
+
+    border-bottom: 1px solid #eeeeee;
+
+    font-size: 14px;
+
+    color: #777777;
+}
+
+.confirm-route-name strong {
+    color: #111111;
+
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.confirm-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+
+    padding-top: 14px;
+}
+
+.confirm-stats div {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.confirm-stats span {
+    font-size: 12px;
+
+    color: #999999;
+}
+
+.confirm-stats strong {
+    font-size: 16px;
+    font-weight: 800;
+
+    color: #222222;
+}
+
+
+/* 車資 */
+
+.confirm-price {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-top: 14px;
+
+    padding: 18px;
+
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #fff4f5,
+            #fffafa
+        );
+}
+
+.confirm-price span {
+    font-size: 14px;
+    font-weight: 700;
+
+    color: #555555;
+}
+
+.confirm-price strong {
+    font-size: 30px;
+    font-weight: 900;
+
+    color: #f20d27;
+}
+
+
+/* 確認按鈕 */
+
+.confirm-submit {
+    width: 100%;
+
+    margin-top: 18px;
+    padding: 16px;
+
+    border: 0;
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #ff3045,
+            #f0001d
+        );
+
+    color: #ffffff;
+
+    font-size: 16px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 10px 24px rgba(242, 13, 39, 0.22);
+}
+
+.confirm-submit:active {
+    transform: scale(0.98);
+}
+
+
+/* 返回 */
+
+.confirm-cancel {
+    width: 100%;
+
+    margin-top: 8px;
+    padding: 12px;
+
+    border: 0;
+
+    background: transparent;
+
+    color: #888888;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+/* 出現動畫 */
+
+@keyframes confirmPop {
+
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+
+/* 手機版 */
+
+@media (max-width: 520px) {
+
+    .confirm-modal {
+        align-items: flex-end;
+
+        padding: 0;
+    }
+
+    .confirm-card {
+        max-width: none;
+
+        border-radius: 24px 24px 0 0;
+
+        padding:
+            14px
+            18px
+            calc(20px + env(safe-area-inset-bottom));
+    }
+
+    .confirm-price strong {
+        font-size: 28px;
+    }
+
+}
 </style>
 
 </head>
@@ -1157,7 +1527,113 @@ gmp-place-autocomplete:focus-within {
 
 </main>
 
+<!-- =========================================
+     行程確認視窗
+========================================= -->
 
+<div id="confirmModal" class="confirm-modal">
+
+    <div class="confirm-overlay" onclick="closeConfirmModal()"></div>
+
+    <div class="confirm-card">
+
+        <div class="confirm-handle"></div>
+
+        <div class="confirm-header">
+            <div class="confirm-icon">🚕</div>
+
+            <div>
+                <div class="confirm-title">
+                    確認您的行程
+                </div>
+
+                <div class="confirm-subtitle">
+                    請確認以下行程資訊
+                </div>
+            </div>
+        </div>
+
+
+        <div class="confirm-location">
+
+            <div class="confirm-location-row">
+                <div class="confirm-dot pickup-dot"></div>
+
+                <div>
+                    <div class="confirm-label">上車地點</div>
+                    <div id="confirmPickup" class="confirm-address">--</div>
+                </div>
+            </div>
+
+            <div class="confirm-line"></div>
+
+            <div class="confirm-location-row">
+                <div class="confirm-dot dropoff-dot"></div>
+
+                <div>
+                    <div class="confirm-label">下車地點</div>
+                    <div id="confirmDropoff" class="confirm-address">--</div>
+                </div>
+            </div>
+
+        </div>
+
+
+        <div class="confirm-route-box">
+
+            <div class="confirm-route-name">
+                <span>🛣️ 路線</span>
+                <strong id="confirmRoute">--</strong>
+            </div>
+
+            <div class="confirm-stats">
+
+                <div>
+                    <span>📏 距離</span>
+                    <strong id="confirmDistance">-- km</strong>
+                </div>
+
+                <div>
+                    <span>⏱️ 時間</span>
+                    <strong id="confirmDuration">-- 分鐘</strong>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="confirm-price">
+
+            <span>預估車資</span>
+
+            <strong id="confirmFare">
+                $---
+            </strong>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="confirm-submit"
+            onclick="confirmTrip()"
+        >
+            確認此行程 →
+        </button>
+
+
+        <button
+            type="button"
+            class="confirm-cancel"
+            onclick="closeConfirmModal()"
+        >
+            返回重新選擇
+        </button>
+
+    </div>
+
+</div>
 
 <script>
 
@@ -1835,19 +2311,96 @@ document
    SELECT ROUTE
 ========================================= */
 
-function selectRoute(
-    routeName
-) {
+function selectRoute(routeName) {
 
+    let distance = "";
+    let duration = "";
+    let fare = "";
+
+    if (routeName === "平面道路") {
+
+        distance = document
+            .getElementById("normalDistance")
+            .textContent
+            .replace("📏 ", "");
+
+        duration = document
+            .getElementById("normalDuration")
+            .textContent
+            .replace("⏱️ 約 ", "");
+
+        fare = document
+            .getElementById("normalFare")
+            .textContent;
+
+    } else {
+
+        distance = document
+            .getElementById("fastDistance")
+            .textContent
+            .replace("📏 ", "");
+
+        duration = document
+            .getElementById("fastDuration")
+            .textContent
+            .replace("⏱️ 約 ", "");
+
+        fare = document
+            .getElementById("fastFare")
+            .textContent;
+    }
+
+
+    document.getElementById("confirmPickup").textContent =
+        pickupPlace?.formattedAddress ||
+        pickupPlace?.displayName ||
+        "--";
+
+    document.getElementById("confirmDropoff").textContent =
+        dropoffPlace?.formattedAddress ||
+        dropoffPlace?.displayName ||
+        "--";
+
+    document.getElementById("confirmRoute").textContent =
+        routeName;
+
+    document.getElementById("confirmDistance").textContent =
+        distance;
+
+    document.getElementById("confirmDuration").textContent =
+        duration;
+
+    document.getElementById("confirmFare").textContent =
+        fare;
+
+
+    document
+        .getElementById("confirmModal")
+        .classList.add("show");
+
+    document.body.style.overflow = "hidden";
+}
+
+
+/* 關閉行程確認視窗 */
+
+function closeConfirmModal() {
+
+    document
+        .getElementById("confirmModal")
+        .classList.remove("show");
+
+    document.body.style.overflow = "";
+}
+
+
+/* 確認行程 */
+
+function confirmTrip() {
 
     alert(
-
-        "已選擇：" +
-        routeName +
-        "\n\n下一步會在這裡加入「傳送給 TOP Taxi 客服」。"
-
+        "行程確認成功！\n\n下一步將把這筆行程資料傳送給 TOP Taxi 客服。"
     );
-
 
 }
 
