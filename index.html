@@ -423,6 +423,68 @@ body {
     display: none;
 }
 
+.fare-estimate {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.15fr;
+    gap: 8px;
+    margin: 2px 0 16px;
+    padding: 12px;
+    border: 1px solid #f0dfe2;
+    border-radius: 15px;
+    background: #fff7f8;
+}
+
+.fare-estimate[hidden] {
+    display: none;
+}
+
+.fare-estimate-item {
+    min-width: 0;
+    text-align: center;
+}
+
+.fare-estimate-title {
+    grid-column: 1 / -1;
+    color: var(--red);
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.fare-estimate-label {
+    display: block;
+    margin-bottom: 4px;
+    color: #929298;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.fare-estimate-value {
+    display: block;
+    color: #252529;
+    font-size: 14px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.fare-estimate-value.price {
+    color: var(--red);
+    font-size: 19px;
+}
+
+.fare-estimate-status {
+    grid-column: 1 / -1;
+    padding-top: 8px;
+    border-top: 1px solid #f0e3e5;
+    color: #99999f;
+    font-size: 12px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.fare-estimate.loading .fare-estimate-status {
+    color: #b16c75;
+}
+
 
 /* =========================================
    FORM
@@ -1323,12 +1385,42 @@ input::placeholder {
 
             <label for="dropoff">
 
-                🏁 下車地點
+                🏁 下車地點（選填）
 
             </label>
 
 
             <div id="dropoffBox"></div>
+
+        </div>
+
+
+        <!-- FARE ESTIMATE -->
+
+        <div class="fare-estimate" id="fareEstimate" aria-live="polite" hidden>
+
+            <div class="fare-estimate-title">
+                ✨ 系統推薦・快速路線
+            </div>
+
+            <div class="fare-estimate-item">
+                <span class="fare-estimate-label">📏 距離</span>
+                <strong class="fare-estimate-value" id="estimateDistance">--</strong>
+            </div>
+
+            <div class="fare-estimate-item">
+                <span class="fare-estimate-label">⏱️ 時間</span>
+                <strong class="fare-estimate-value" id="estimateDuration">--</strong>
+            </div>
+
+            <div class="fare-estimate-item">
+                <span class="fare-estimate-label">💰 預估車資</span>
+                <strong class="fare-estimate-value price" id="estimateFare">--</strong>
+            </div>
+
+            <div class="fare-estimate-status" id="fareEstimateStatus">
+                請從地址建議中選擇上下車地點，系統會自動試算
+            </div>
 
         </div>
 
@@ -1506,6 +1598,130 @@ function showMessage(
 
 let bookingService = "taxi";
 
+let bookingPickupPlace = null;
+let bookingDropoffPlace = null;
+let BookingRouteClass = null;
+let currentFareEstimate = null;
+let fareRequestNumber = 0;
+
+
+function calculateTaxiFare(distanceKm, minutes) {
+
+    const baseFare = 80;
+    const timeFare = minutes * 3;
+    const distanceFare = distanceKm <= 20
+        ? distanceKm * 15
+        : (20 * 15) + ((distanceKm - 20) * 25);
+
+    return Math.floor((baseFare + distanceFare + timeFare) / 10) * 10;
+
+}
+
+
+function calculateDriverFare(distanceKm, minutes) {
+
+    const baseFare = 60;
+    const timeFare = minutes * 3;
+    const distanceFare = distanceKm <= 20
+        ? distanceKm * 15
+        : (20 * 15) + ((distanceKm - 20) * 25);
+
+    const tripFare = baseFare + distanceFare + timeFare;
+
+    return Math.floor(((tripFare * 2) + 320) / 10) * 10;
+
+}
+
+
+function resetFareEstimate(message) {
+
+    fareRequestNumber++;
+    currentFareEstimate = null;
+
+    document.getElementById("estimateDistance").textContent = "--";
+    document.getElementById("estimateDuration").textContent = "--";
+    document.getElementById("estimateFare").textContent = "--";
+    document.getElementById("fareEstimateStatus").textContent =
+        message || "請從地址建議中選擇上下車地點，系統會自動試算";
+    document.getElementById("fareEstimate").classList.remove("loading");
+    document.getElementById("fareEstimate").hidden = true;
+
+}
+
+
+async function updateFareEstimate() {
+
+    if (!bookingPickupPlace || !bookingDropoffPlace) {
+        resetFareEstimate();
+        return;
+    }
+
+    if (!BookingRouteClass) {
+        resetFareEstimate("路線服務載入中，請稍候幾秒");
+        return;
+    }
+
+    const requestNumber = ++fareRequestNumber;
+    const estimateBox = document.getElementById("fareEstimate");
+    const status = document.getElementById("fareEstimateStatus");
+
+    currentFareEstimate = null;
+    estimateBox.hidden = false;
+    estimateBox.classList.add("loading");
+    status.textContent = "正在取得 Google 即時路線與預估時間…";
+
+    try {
+        const response = await BookingRouteClass.computeRoutes({
+            origin: bookingPickupPlace,
+            destination: bookingDropoffPlace,
+            travelMode: "DRIVING",
+            routingPreference: "TRAFFIC_AWARE",
+            routeModifiers: {
+                avoidHighways: false,
+                avoidTolls: false,
+                avoidFerries: true
+            },
+            fields: ["distanceMeters", "durationMillis"]
+        });
+
+        if (requestNumber !== fareRequestNumber) return;
+
+        const route = response.routes && response.routes[0];
+        if (!route) throw new Error("找不到可用路線");
+
+        const distanceKm = route.distanceMeters / 1000;
+        const minutes = Math.ceil(route.durationMillis / 60000);
+        const fare = bookingService === "driver"
+            ? calculateDriverFare(distanceKm, minutes)
+            : calculateTaxiFare(distanceKm, minutes);
+
+        currentFareEstimate = {
+            distanceKm: distanceKm,
+            minutes: minutes,
+            fare: fare
+        };
+
+        document.getElementById("estimateDistance").textContent =
+            distanceKm.toFixed(1) + " km";
+        document.getElementById("estimateDuration").textContent =
+            minutes + " 分鐘";
+        document.getElementById("estimateFare").textContent =
+            "$" + fare;
+        status.textContent =
+            "如需指定平面道路，請填寫於特殊需求；實際金額以客服確認為準";
+
+    } catch (error) {
+        if (requestNumber !== fareRequestNumber) return;
+        console.error("FARE ESTIMATE ERROR:", error);
+        resetFareEstimate("目前無法取得路線，請重新選擇地址或稍後再試");
+    } finally {
+        if (requestNumber === fareRequestNumber) {
+            estimateBox.classList.remove("loading");
+        }
+    }
+
+}
+
 
 function getSubmitButtonText() {
 
@@ -1554,6 +1770,10 @@ function setBookingService(service) {
 
     if (!submitButton.disabled) {
         submitButton.textContent = getSubmitButtonText();
+    }
+
+    if (bookingPickupPlace && bookingDropoffPlace) {
+        updateFareEstimate();
     }
 
 }
@@ -1972,16 +2192,14 @@ async function sendBooking() {
 
         !bookTime ||
 
-        !pickup ||
-
-        !dropoff
+        !pickup
 
     ) {
 
 
         alert(
 
-            "請完整填寫預約日期、時間、上車地點與下車地點。"
+            "請完整填寫預約日期、時間與上車地點。"
 
         );
 
@@ -2066,6 +2284,18 @@ async function sendBooking() {
             : `\n👥 乘車人數：${passengerCount}\n🧳 行李件數：${luggageCount}\n`;
 
 
+    const fareDetails =
+        currentFareEstimate
+            ? `\n📏 距離：${currentFareEstimate.distanceKm.toFixed(1)} km\n⏱️ 預估時間：${currentFareEstimate.minutes} 分鐘\n💰 預估車資：$${currentFareEstimate.fare}\n`
+            : "";
+
+
+    const dropoffDetails =
+        dropoff
+            ? `\n🏁 下車地點\n${dropoff}\n`
+            : "";
+
+
     const lineMessage =
 
 `${bookingService === "driver" ? "🚘" : "🚕"} TOP Taxi｜24H 預約系統
@@ -2078,9 +2308,7 @@ ${passengerDetails}
 
 📍 上車地點
 ${pickup}
-
-🏁 下車地點
-${dropoff}
+${dropoffDetails}${fareDetails}
 
 💡 特殊需求
 ${memo}
@@ -2128,6 +2356,24 @@ ${memo}
 
         luggageCount:
             luggageCount,
+
+
+        estimatedDistanceKm:
+            currentFareEstimate
+                ? Number(currentFareEstimate.distanceKm.toFixed(1))
+                : null,
+
+
+        estimatedMinutes:
+            currentFareEstimate
+                ? currentFareEstimate.minutes
+                : null,
+
+
+        estimatedFare:
+            currentFareEstimate
+                ? currentFareEstimate.fare
+                : null,
 
 
         pickup:
@@ -2394,6 +2640,12 @@ async function initGoogle() {
             AutocompleteSessionToken
         } = await google.maps.importLibrary("places");
 
+        const {
+            Route
+        } = await google.maps.importLibrary("routes");
+
+        BookingRouteClass = Route;
+
         let searchCenter = {
             lat: 24.1477,
             lng: 120.6736
@@ -2431,7 +2683,7 @@ async function initGoogle() {
             input.setAttribute("aria-label", config.ariaLabel);
             input.setAttribute("autocomplete", "off");
             input.setAttribute("enterkeyhint", "search");
-            input.required = true;
+            input.required = config.required !== false;
 
             const searchIcon = document.createElement("span");
             searchIcon.className = "address-search-icon";
@@ -2482,6 +2734,10 @@ async function initGoogle() {
                     input.value = place.formattedAddress || fallbackText ||
                         (place.displayName ? place.displayName.toString() : "");
                     clearButton.hidden = !input.value;
+
+                    if (typeof config.onSelect === "function") {
+                        config.onSelect(place);
+                    }
                 } catch (placeError) {
                     console.warn("PLACE DETAILS ERROR:", placeError);
                 }
@@ -2575,6 +2831,10 @@ async function initGoogle() {
                 clearButton.hidden = !query;
                 window.clearTimeout(debounceTimer);
 
+                if (typeof config.onReset === "function") {
+                    config.onReset();
+                }
+
                 if (!query) {
                     requestNumber++;
                     hideSuggestions();
@@ -2601,6 +2861,9 @@ async function initGoogle() {
                 input.value = "";
                 clearButton.hidden = true;
                 hideSuggestions();
+                if (typeof config.onReset === "function") {
+                    config.onReset();
+                }
                 input.focus();
             });
 
@@ -2613,31 +2876,50 @@ async function initGoogle() {
             containerId: "pickupBox",
             inputId: "pickup",
             placeholder: "請輸入完整地址或地標名稱",
-            ariaLabel: "上車地點"
+            ariaLabel: "上車地點",
+            onSelect: function (place) {
+                bookingPickupPlace = place;
+                updateFareEstimate();
+            },
+            onReset: function () {
+                bookingPickupPlace = null;
+                resetFareEstimate();
+            }
         });
 
         createAddressAutocomplete({
             containerId: "dropoffBox",
             inputId: "dropoff",
-            placeholder: "請輸入完整地址或地標名稱",
-            ariaLabel: "下車地點"
+            placeholder: "選填；可輸入地址或地標名稱",
+            ariaLabel: "下車地點",
+            required: false,
+            onSelect: function (place) {
+                bookingDropoffPlace = place;
+                updateFareEstimate();
+            },
+            onReset: function () {
+                bookingDropoffPlace = null;
+                resetFareEstimate();
+            }
         });
 
     } catch (error) {
         console.error("GOOGLE PLACES LOAD ERROR:", error);
 
         [
-            ["pickupBox", "pickup", "上車地點"],
-            ["dropoffBox", "dropoff", "下車地點"]
+            ["pickupBox", "pickup", "上車地點", true],
+            ["dropoffBox", "dropoff", "下車地點", false]
         ].forEach(function (item) {
             const container = document.getElementById(item[0]);
             if (!container || document.getElementById(item[1])) return;
             const input = document.createElement("input");
             input.type = "text";
             input.id = item[1];
-            input.placeholder = "請輸入完整地址或地標名稱";
+            input.placeholder = item[3]
+                ? "請輸入完整地址或地標名稱"
+                : "選填；可輸入地址或地標名稱";
             input.setAttribute("aria-label", item[2]);
-            input.required = true;
+            input.required = item[3];
             container.appendChild(input);
         });
     }
