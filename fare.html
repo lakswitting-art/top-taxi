@@ -2212,8 +2212,8 @@ pickupAutocomplete.requestedRegion = "TW";
     new PlaceAutocompleteElement();
 
 dropoffAutocomplete.includedRegionCodes = ["tw"];
-dropoffAutocomplete.requestedLanguage = "zh-TW";
-dropoffAutocomplete.requestedRegion = "TW";
+        dropoffAutocomplete.requestedLanguage = "zh-TW";
+        dropoffAutocomplete.requestedRegion = "TW";
 
 
         dropoffAutocomplete.placeholder =
@@ -2234,6 +2234,86 @@ dropoffAutocomplete.requestedRegion = "TW";
             .appendChild(
                 dropoffAutocomplete
             );
+
+        /* =====================================
+           SEARCH LOCATION BIAS
+        ====================================== */
+
+        const applyLocationBias = (
+            center,
+            radius
+        ) => {
+
+            [
+                pickupAutocomplete,
+                dropoffAutocomplete
+            ].forEach(
+                (autocomplete) => {
+
+                    autocomplete.origin =
+                        center;
+
+                    autocomplete.locationBias = {
+                        center,
+                        radius
+                    };
+                }
+            );
+        };
+
+        const taichungCenter = {
+            lat: 24.1477,
+            lng: 120.6736
+        };
+
+        applyLocationBias(
+            taichungCenter,
+            50000
+        );
+
+        if (
+            "geolocation"
+            in navigator
+        ) {
+
+            navigator
+                .geolocation
+                .getCurrentPosition(
+
+                    (position) => {
+
+                        const currentCenter = {
+                            lat:
+                                position
+                                    .coords
+                                    .latitude,
+
+                            lng:
+                                position
+                                    .coords
+                                    .longitude
+                        };
+
+                        applyLocationBias(
+                            currentCenter,
+                            50000
+                        );
+                    },
+
+                    () => {
+
+                        console.info(
+                            "未取得目前位置，地址建議維持台中地區排序。"
+                        );
+                    },
+
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 6000,
+                        maximumAge: 300000
+                    }
+                );
+        }
 
         const keepInputVisible = (
             autocomplete,
