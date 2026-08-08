@@ -394,15 +394,23 @@ gmp-place-autocomplete {
         border .15s,
         box-shadow .15s;
 
+    scroll-margin-top: 24px;
+
 }
 
 gmp-place-autocomplete::part(input) {
-    color: #555555 !important;
-    font-weight: 500;
+    color: #222222 !important;
+    -webkit-text-fill-color: #222222 !important;
+    caret-color: #ff1f2d !important;
+    background: #ffffff !important;
+    font-size: 17px !important;
+    font-weight: 700 !important;
+    opacity: 1 !important;
 }
 
 gmp-place-autocomplete::part(input)::placeholder {
-    color: #999999 !important;
+    color: #8b8b91 !important;
+    -webkit-text-fill-color: #8b8b91 !important;
     opacity: 1;
 }
 gmp-place-autocomplete:focus-within {
@@ -2167,6 +2175,34 @@ dropoffAutocomplete.requestedRegion = "TW";
             .appendChild(
                 dropoffAutocomplete
             );
+
+        const keepInputVisible = (
+            autocomplete
+        ) => {
+
+            autocomplete.addEventListener(
+                "focusin",
+                () => {
+
+                    setTimeout(() => {
+
+                        autocomplete.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+
+                    }, 180);
+                }
+            );
+        };
+
+        keepInputVisible(
+            pickupAutocomplete
+        );
+
+        keepInputVisible(
+            dropoffAutocomplete
+        );
 
 
 
