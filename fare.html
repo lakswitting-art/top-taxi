@@ -352,7 +352,7 @@ gmp-place-autocomplete {
 
     background: #fafafa;
 
-    overflow: hidden;
+   
 
     transition:
         border .15s,
@@ -1178,6 +1178,7 @@ async function initGoogle() {
         const {
             PlaceAutocompleteElement
         } =
+ 
         await google.maps.importLibrary(
             "places"
         );
@@ -1200,7 +1201,11 @@ async function initGoogle() {
         ====================================== */
 
         const pickupAutocomplete =
-            new PlaceAutocompleteElement();
+    new PlaceAutocompleteElement();
+
+pickupAutocomplete.includedRegionCodes = ["tw"];
+pickupAutocomplete.requestedLanguage = "zh-TW";
+pickupAutocomplete.requestedRegion = "TW";
 
 
         pickupAutocomplete.placeholder =
@@ -1229,7 +1234,11 @@ async function initGoogle() {
         ====================================== */
 
         const dropoffAutocomplete =
-            new PlaceAutocompleteElement();
+    new PlaceAutocompleteElement();
+
+dropoffAutocomplete.includedRegionCodes = ["tw"];
+dropoffAutocomplete.requestedLanguage = "zh-TW";
+dropoffAutocomplete.requestedRegion = "TW";
 
 
         dropoffAutocomplete.placeholder =
@@ -2022,7 +2031,7 @@ window.addEventListener(
     ========================================= */
 
     key:
-        "AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw",
+        ".",
 
 
     v:
