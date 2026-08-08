@@ -1763,6 +1763,26 @@ gmp-place-autocomplete:focus-within {
     .confirm-stats strong { font-size: 13px; }
     .confirm-price strong { font-size: 29px; }
 }
+/* =========================================
+   手動公里／時間試算
+========================================= */
+.manual-divider{display:flex;align-items:center;gap:12px;margin:28px 0 20px;color:#9a9aa0;font-size:12px;font-weight:700}
+.manual-divider::before,.manual-divider::after{content:"";flex:1;height:1px;background:var(--gray-border)}
+.manual-calculator{padding:20px;border:1px solid var(--gray-border);border-radius:18px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.05)}
+.manual-title{font-size:18px;font-weight:900;color:#1c1c1f}
+.manual-subtitle{margin-top:5px;color:var(--gray-text);font-size:12px;line-height:1.6}
+.manual-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
+.manual-field label{display:block;margin-bottom:7px;color:#55555b;font-size:12px;font-weight:800}
+.manual-input-wrap{display:flex;align-items:center;gap:8px;padding:0 13px;border:1px solid var(--gray-border);border-radius:13px;background:#f8f8f9}
+.manual-input-wrap:focus-within{border-color:var(--red);box-shadow:0 0 0 3px rgba(255,31,45,.09)}
+.manual-input-wrap input{min-width:0;width:100%;height:48px;border:0;outline:0;background:transparent;color:#202024;font:inherit;font-size:16px;font-weight:800}
+.manual-input-wrap span{flex-shrink:0;color:#8b8b91;font-size:12px;font-weight:700}
+.manual-result{display:none;margin-top:16px;padding:17px;border-radius:15px;background:#fff1f2;text-align:center}
+.manual-result.show{display:block}
+.manual-result-label{color:#77777d;font-size:12px;font-weight:700}
+.manual-result strong{display:block;margin-top:3px;color:var(--red-dark);font-size:34px;font-weight:900}
+.manual-result-note{margin-top:5px;color:#8a666a;font-size:11px}
+@media(max-width:390px){.manual-calculator{padding:17px}.manual-inputs{grid-template-columns:1fr}}
 </style>
 
 </head>
@@ -2042,6 +2062,41 @@ gmp-place-autocomplete:focus-within {
 
     </div>
 
+    <div class="manual-divider">或直接輸入行程資料</div>
+
+    <section class="manual-calculator" aria-labelledby="manualTitle">
+        <div id="manualTitle" class="manual-title">🧮 公里／時間快速試算</div>
+        <div class="manual-subtitle">已知道行駛距離與時間時，可直接計算預估費用</div>
+
+        <div class="manual-inputs">
+            <div class="manual-field">
+                <label for="manualDistance">行駛公里數</label>
+                <div class="manual-input-wrap">
+                    <input id="manualDistance" type="number" min="0" step="0.1" inputmode="decimal" placeholder="例如 12.5">
+                    <span>公里</span>
+                </div>
+            </div>
+
+            <div class="manual-field">
+                <label for="manualMinutes">行駛時間</label>
+                <div class="manual-input-wrap">
+                    <input id="manualMinutes" type="number" min="0" step="1" inputmode="numeric" placeholder="例如 25">
+                    <span>分鐘</span>
+                </div>
+            </div>
+        </div>
+
+        <button id="manualCalculateBtn" type="button" class="submit-btn" onclick="calculateManualFare()">
+            計算預估車資 →
+        </button>
+
+        <div id="manualResult" class="manual-result" aria-live="polite">
+            <div id="manualResultLabel" class="manual-result-label">一般搭車｜預估車資</div>
+            <strong id="manualFare">$---</strong>
+            <div class="manual-result-note">實際金額依實際行駛狀況為準</div>
+        </div>
+    </section>
+
 
 </div>
 
@@ -2233,6 +2288,11 @@ function setServiceMode(mode) {
         .remove("show");
 
     hideStatus();
+
+    const manualResult = document.getElementById("manualResult");
+    if (manualResult && manualResult.classList.contains("show")) {
+        calculateManualFare();
+    }
 }
 
 
@@ -2894,6 +2954,46 @@ function calculateDriverFare(distanceKm, minutes) {
 
     return Math.floor(totalFare / 10) * 10;
 }
+
+/* =========================================
+   手動公里／時間試算
+========================================= */
+
+function calculateManualFare() {
+    const distanceInput = document.getElementById("manualDistance");
+    const minutesInput = document.getElementById("manualMinutes");
+    const resultBox = document.getElementById("manualResult");
+    const resultLabel = document.getElementById("manualResultLabel");
+    const fareOutput = document.getElementById("manualFare");
+
+    const distanceKm = Number(distanceInput.value);
+    const minutes = Number(minutesInput.value);
+
+    if (
+        distanceInput.value.trim() === "" ||
+        minutesInput.value.trim() === "" ||
+        !Number.isFinite(distanceKm) ||
+        !Number.isFinite(minutes) ||
+        distanceKm < 0 ||
+        minutes < 0
+    ) {
+        alert("請輸入正確的公里數與分鐘數。");
+        return;
+    }
+
+    const isDriver = serviceMode === "driver";
+    const fare = isDriver
+        ? calculateDriverFare(distanceKm, minutes)
+        : calculateFare(distanceKm, minutes);
+
+    resultLabel.textContent = isDriver
+        ? "代駕服務｜預估費用"
+        : "一般搭車｜預估車資";
+
+    fareOutput.textContent = "$" + fare.toLocaleString("zh-TW");
+    resultBox.classList.add("show");
+}
+
 /* =========================================
    CALCULATE ROUTES
 ========================================= */
