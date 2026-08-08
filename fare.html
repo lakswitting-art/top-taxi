@@ -300,6 +300,42 @@ body {
 
 }
 
+/* =========================================
+   SERVICE MODE
+========================================= */
+
+.service-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 5px;
+    border: 1px solid #e8e8eb;
+    border-radius: 14px;
+    background: #f4f4f6;
+}
+
+.service-switch-btn {
+    min-height: 44px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #77777d;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        color .18s,
+        background .18s,
+        box-shadow .18s;
+}
+
+.service-switch-btn.active {
+    color: #fff;
+    background: linear-gradient(135deg, #ff3341, #e10019);
+    box-shadow: 0 7px 18px rgba(210, 0, 22, .2);
+}
+
 
 /* =========================================
    FORM
@@ -1418,7 +1454,7 @@ gmp-place-autocomplete:focus-within {
 }
 
 .confirm-price span::after {
-    content: "長途40公里以上另有優惠，請洽客服";
+    content: attr(data-note);
     font-size: 12px;
     font-weight: 500;
     color: #8e8e94;
@@ -1552,14 +1588,36 @@ gmp-place-autocomplete:focus-within {
 
     <div class="form-header">
 
-        <div class="form-title">
+        <div id="serviceTitle" class="form-title">
             💰 車資試算
         </div>
 
-        <div class="form-label-small">
+        <div id="serviceCode" class="form-label-small">
             TOP TAXI FARE
         </div>
 
+    </div>
+
+    <div class="service-switch" role="group" aria-label="選擇服務類型">
+        <button
+            type="button"
+            class="service-switch-btn active"
+            data-service="taxi"
+            aria-pressed="true"
+            onclick="setServiceMode('taxi')"
+        >
+            🚕 一般搭車
+        </button>
+
+        <button
+            type="button"
+            class="service-switch-btn"
+            data-service="driver"
+            aria-pressed="false"
+            onclick="setServiceMode('driver')"
+        >
+            🚘 代駕服務
+        </button>
     </div>
 
 
@@ -1874,7 +1932,10 @@ gmp-place-autocomplete:focus-within {
 
         <div class="confirm-price">
 
-            <span>預估車資</span>
+            <span
+                id="confirmPriceLabel"
+                data-note="長途40公里以上另有優惠，請洽客服"
+            >預估車資</span>
 
             <strong id="confirmFare">
                 $---
@@ -1916,6 +1977,64 @@ let pickupPlace = null;
 let dropoffPlace = null;
 
 let RouteClass = null;
+
+let serviceMode = "taxi";
+
+
+/* =========================================
+   SERVICE MODE
+========================================= */
+
+function setServiceMode(mode) {
+
+    serviceMode =
+        mode === "driver"
+            ? "driver"
+            : "taxi";
+
+    document
+        .querySelectorAll(".service-switch-btn")
+        .forEach((button) => {
+
+            const isActive =
+                button.dataset.service === serviceMode;
+
+            button.classList.toggle(
+                "active",
+                isActive
+            );
+
+            button.setAttribute(
+                "aria-pressed",
+                String(isActive)
+            );
+        });
+
+    const isDriver =
+        serviceMode === "driver";
+
+    document.getElementById("serviceTitle").textContent =
+        isDriver
+            ? "🚘 代駕試算"
+            : "💰 車資試算";
+
+    document.getElementById("serviceCode").textContent =
+        isDriver
+            ? "TOP DESIGNATED DRIVER"
+            : "TOP TAXI FARE";
+
+    document.getElementById("calculateBtn").textContent =
+        isDriver
+            ? "開始試算代駕費用 →"
+            : "開始試算 →";
+
+    document
+        .getElementById("results")
+        .classList
+        .remove("show");
+
+    hideStatus();
+}
 
 
 
@@ -2159,6 +2278,51 @@ function calculateFare(distanceKm, minutes) {
         Math.floor(totalFare / 10) * 10;
 
     return finalFare;
+}
+
+
+/* =========================================
+   TOP TAXI 代駕計費
+========================================= */
+
+function calculateDriverFare(distanceKm, minutes) {
+
+    const BASE_FARE = 60;
+    const TIME_RATE = 3;
+    const FIRST_KM_RATE = 15;
+    const LONG_KM_RATE = 25;
+    const LONG_DISTANCE_START = 20;
+    const DRIVER_SERVICE_FEE = 320;
+
+    let distanceFare = 0;
+
+    if (distanceKm <= LONG_DISTANCE_START) {
+
+        distanceFare =
+            distanceKm * FIRST_KM_RATE;
+
+    } else {
+
+        distanceFare =
+            (LONG_DISTANCE_START * FIRST_KM_RATE)
+            +
+            ((distanceKm - LONG_DISTANCE_START) * LONG_KM_RATE);
+    }
+
+    const timeFare =
+        minutes * TIME_RATE;
+
+    const tripFare =
+        BASE_FARE +
+        distanceFare +
+        timeFare;
+
+    const totalFare =
+        (tripFare * 2)
+        +
+        DRIVER_SERVICE_FEE;
+
+    return Math.floor(totalFare / 10) * 10;
 }
 /* =========================================
    CALCULATE ROUTES
@@ -2474,14 +2638,19 @@ async function calculateRoutes() {
    TOP TAXI 車資
 ===================================== */
 
+const fareCalculator =
+    serviceMode === "driver"
+        ? calculateDriverFare
+        : calculateFare;
+
 const normalFare =
-    calculateFare(
+    fareCalculator(
         normalDistance,
         normalMinutes
     );
 
 const fastFare =
-    calculateFare(
+    fareCalculator(
         fastDistance,
         fastMinutes
     );
@@ -2630,8 +2799,13 @@ function selectRoute(routeName) {
         dropoffPlace?.displayName ||
         "--";
 
+    const serviceName =
+        serviceMode === "driver"
+            ? "代駕服務"
+            : "一般搭車";
+
     document.getElementById("confirmRoute").textContent =
-        routeName;
+        serviceName + "｜" + routeName;
 
     document.getElementById("confirmDistance").textContent =
         distance;
@@ -2641,6 +2815,14 @@ function selectRoute(routeName) {
 
     document.getElementById("confirmFare").textContent =
         fare;
+
+    document
+        .getElementById("confirmPriceLabel")
+        .dataset
+        .note =
+        serviceMode === "driver"
+            ? "含代駕服務費"
+            : "長途40公里以上另有優惠，請洽客服";
 
 
     document
