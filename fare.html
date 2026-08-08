@@ -1229,6 +1229,270 @@ gmp-place-autocomplete:focus-within {
     }
 
 }
+
+/* =========================================
+   行程確認視窗｜參考圖正式版
+========================================= */
+
+.confirm-modal { padding: 24px; }
+
+.confirm-overlay {
+    background: rgba(5, 5, 7, .62);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.confirm-card {
+    width: min(100%, 460px);
+    max-height: calc(100dvh - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px 24px 22px;
+    border: 1px solid rgba(255, 255, 255, .9);
+    border-radius: 28px;
+    background: rgba(255, 255, 255, .99);
+    box-shadow: 0 28px 80px rgba(0, 0, 0, .3);
+    scrollbar-width: none;
+}
+
+.confirm-card::-webkit-scrollbar { display: none; }
+
+.confirm-handle {
+    width: 46px;
+    height: 5px;
+    margin: 0 auto 24px;
+    background: #d9d9dc;
+}
+
+.confirm-header {
+    gap: 18px;
+    margin-bottom: 24px;
+    padding: 0 4px;
+}
+
+.confirm-icon {
+    width: 122px;
+    height: 50px;
+}
+
+.confirm-icon img {
+    object-fit: contain;
+    object-position: center;
+}
+
+.confirm-title {
+    font-size: 24px;
+    line-height: 1.18;
+    letter-spacing: -.4px;
+}
+
+.confirm-subtitle {
+    margin-top: 6px;
+    font-size: 15px;
+    color: #8f8f95;
+}
+
+.confirm-location {
+    padding: 20px 18px;
+    border: 1px solid #ececef;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 8px 24px rgba(25, 25, 35, .07);
+}
+
+.confirm-location-row {
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 10px;
+}
+
+.confirm-dot {
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.pickup-dot { background: #2eaf4a; }
+.pickup-dot::before { content: "↑"; }
+.dropoff-dot { background: #ff1f2d; }
+.dropoff-dot::before { content: "●"; font-size: 12px; }
+
+.confirm-line {
+    height: 34px;
+    margin: 4px 0 4px 15px;
+    border-left: 1px dashed #bdbdc3;
+    background: transparent;
+}
+
+.confirm-label {
+    margin-bottom: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #85858b;
+}
+
+.confirm-address {
+    font-size: 17px;
+    line-height: 1.45;
+}
+
+.confirm-route-box {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 16px 18px;
+    border: 1px solid #ececef;
+    border-radius: 18px;
+    box-shadow: 0 7px 20px rgba(25, 25, 35, .06);
+}
+
+.confirm-route-icon {
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #eaf3ff;
+    font-size: 21px;
+}
+
+.confirm-route-name {
+    min-width: 0;
+    display: block;
+    padding: 0;
+    border: 0;
+}
+
+.confirm-route-name span { display: none; }
+.confirm-route-name strong { font-size: 16px; }
+
+.confirm-stats {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0;
+}
+
+.confirm-stats div {
+    min-width: max-content;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+
+.confirm-stats span {
+    width: 20px;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: 15px;
+    color: #888990;
+}
+
+.confirm-stats strong {
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.confirm-price {
+    margin-top: 16px;
+    padding: 17px 18px;
+    border: 1px solid #f1f1f3;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 7px 20px rgba(25, 25, 35, .06);
+}
+
+.confirm-price span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 16px;
+    color: #26262a;
+}
+
+.confirm-price span::after {
+    content: "含過路費與服務費";
+    font-size: 12px;
+    font-weight: 500;
+    color: #8e8e94;
+}
+
+.confirm-price strong { font-size: 32px; }
+
+.confirm-submit {
+    margin-top: 18px;
+    padding: 17px;
+    border-radius: 15px;
+    font-size: 17px;
+    box-shadow: 0 12px 28px rgba(242, 13, 39, .24);
+}
+
+.confirm-cancel {
+    margin-top: 8px;
+    color: #ef2435;
+    font-size: 15px;
+}
+
+@media (max-width: 520px) {
+    .confirm-modal { padding: 0; }
+
+    .confirm-card {
+        width: 100%;
+        max-height: calc(100dvh - max(16px, env(safe-area-inset-top)));
+        padding: 14px 20px calc(18px + env(safe-area-inset-bottom));
+        border-radius: 28px 28px 0 0;
+    }
+
+    .confirm-handle { margin-bottom: 22px; }
+
+    .confirm-header {
+        gap: 14px;
+        margin-bottom: 20px;
+        padding: 0;
+    }
+
+    .confirm-icon {
+        width: 108px;
+        height: 46px;
+    }
+
+    .confirm-title { font-size: 21px; }
+    .confirm-subtitle { font-size: 13px; }
+
+    .confirm-location { padding: 18px 16px; }
+    .confirm-address { font-size: 15px; }
+
+    .confirm-route-box {
+        grid-template-columns: 38px auto minmax(0, 1fr);
+        gap: 8px;
+        padding: 14px;
+    }
+
+    .confirm-stats {
+        grid-column: auto;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 0;
+        border: 0;
+    }
+
+    .confirm-route-icon {
+        width: 38px;
+        height: 38px;
+        font-size: 19px;
+    }
+
+    .confirm-route-name strong { font-size: 14px; }
+    .confirm-stats strong { font-size: 13px; }
+    .confirm-price strong { font-size: 29px; }
+}
 </style>
 
 </head>
@@ -1542,7 +1806,7 @@ gmp-place-autocomplete:focus-within {
 
         <div class="confirm-header">
            <div class="confirm-icon">
-    <img src="./top-wordmark.png?v=5" alt="TOP Logo">
+    <img src="./top-wordmark.png?v=6" alt="TOP Logo">
 </div>
 
             <div>
@@ -1583,6 +1847,8 @@ gmp-place-autocomplete:focus-within {
 
 
         <div class="confirm-route-box">
+
+            <div class="confirm-route-icon" aria-hidden="true">🚕</div>
 
             <div class="confirm-route-name">
                 <span>🛣️ 路線</span>
