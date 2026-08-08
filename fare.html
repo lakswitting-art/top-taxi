@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+<meta charset="UTF-8">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
+
+<title>TOP Taxi｜24H 車資試算</title>
+
+<style>
+
+/* =========================================
+   TOP Taxi Fare Design System
+========================================= */
+
+:root {
+    --red: #ff1f2d;
+    --red-dark: #d40018;
+    --black: #08080a;
+    --black-2: #101014;
+
+    --white: #ffffff;
+
+    --gray-bg: #f2f3f5;
+    --gray-border: #e5e5e8;
+    --gray-text: #77777d;
+    --gray-light: #a4a4aa;
+}
+
+
+/* =========================================
+   RESET
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--black);
+}
+
+body {
+
+    margin: 0;
+    min-height: 100vh;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Noto Sans TC",
+        "PingFang TC",
+        Arial,
+        sans-serif;
+
+    color: #222;
+
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255, 31, 45, 0.22),
+            transparent 33%
+        ),
+        linear-gradient(
+            180deg,
+            #070709 0%,
+            #101014 40%,
+            #f2f3f5 40%,
+            #f2f3f5 100%
+        );
+}
+
+
+/* =========================================
+   HERO
+========================================= */
+
+.hero {
+
+    text-align: center;
+
+    padding:
+        max(16px, env(safe-area-inset-top))
+        18px
+        24px;
+
+    color: white;
+}
+
+
+/* =========================================
+   LOGO
+========================================= */
+
+.logo-wrap {
+
+    position: relative;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 10px;
+
+    animation:
+        logoFloat 3.2s
+        ease-in-out infinite;
+}
+
+.logo-glow {
+
+    position: absolute;
+
+    width: 132px;
+    height: 132px;
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 20, 35, .16);
+
+    filter:
+        blur(24px);
+}
+
+.logo {
+
+    position: relative;
+
+    width: 120px;
+    height: 120px;
+
+    object-fit: cover;
+
+    border-radius: 24px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.12);
+
+    background: #050506;
+
+    box-shadow:
+        0 0 0 1px
+        rgba(255, 30, 45, .35),
+
+        0 12px 35px
+        rgba(255, 0, 25, .22);
+}
+
+
+/* =========================================
+   BRAND
+========================================= */
+
+.brand {
+
+    margin: 0;
+
+    font-size: 28px;
+
+    line-height: 1.2;
+
+    font-weight: 900;
+
+    letter-spacing: .5px;
+
+    animation:
+        fadeDown .55s ease both;
+}
+
+.brand-red {
+    color: var(--red);
+}
+
+.system-name {
+
+    margin-top: 4px;
+
+    color: #f3f3f4;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    letter-spacing: 2px;
+
+    animation:
+        fadeDown .55s ease both;
+}
+
+.hero-description {
+
+    margin-top: 9px;
+
+    color: #a8a8ae;
+
+    font-size: 12px;
+
+    line-height: 1.8;
+
+    animation:
+        fadeDown .55s ease both;
+}
+
+
+/* =========================================
+   PAGE
+========================================= */
+
+.page {
+
+    width: 100%;
+
+    max-width: 560px;
+
+    margin: -6px auto 0;
+
+    padding:
+        0 14px
+        max(
+            34px,
+            env(safe-area-inset-bottom)
+        );
+}
+
+
+/* =========================================
+   MAIN CARD
+========================================= */
+
+.fare-card {
+
+    background:
+        rgba(255,255,255,.98);
+
+    border-radius: 22px;
+
+    padding:
+        22px 18px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.7);
+
+    box-shadow:
+        0 18px 50px
+        rgba(0,0,0,.18);
+
+    animation:
+        cardUp .5s
+        cubic-bezier(.2,.8,.2,1)
+        both;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.form-header {
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items: center;
+
+    margin-bottom: 20px;
+}
+
+.form-title {
+
+    color: #1d1d20;
+
+    font-size: 16px;
+
+    font-weight: 900;
+}
+
+.form-label-small {
+
+    color: #aaa;
+
+    font-size: 11px;
+
+    letter-spacing: 1px;
+}
+
+
+/* =========================================
+   INPUT
+========================================= */
+
+.input-group {
+    margin-bottom: 16px;
+}
+
+label {
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    color: #26262a;
+
+    font-size: 15px;
+
+    font-weight: 800;
+}
+
+.address-wrap {
+    position: relative;
+}
+
+.address-dot {
+
+    position: absolute;
+
+    left: 14px;
+    top: 50%;
+
+    transform:
+        translateY(-50%);
+
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+
+    background:
+        var(--red);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(255,31,45,.08);
+
+    pointer-events: none;
+}
+
+.address-dot.destination {
+    background: #17171a;
+
+    box-shadow:
+        0 0 0 4px
+        rgba(0,0,0,.06);
+}
+
+input {
+
+    width: 100%;
+
+    min-height: 50px;
+
+    padding:
+        0 14px 0 37px;
+
+    border:
+        1px solid
+        var(--gray-border);
+
+    border-radius: 12px;
+
+    background: #fafafa;
+
+    color: #222;
+
+    font-size: 16px;
+
+    outline: none;
+
+    transition:
+        border .15s,
+        background .15s,
+        box-shadow .15s;
+}
+
+input:focus {
+
+    border-color:
+        var(--red);
+
+    background:
+        white;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(255,31,45,.08),
+        0 6px 18px
+        rgba(255,31,45,.06);
+}
+
+input::placeholder {
+    color: #b1b1b6;
+}
+
+
+/* =========================================
+   ROUTE LINE
+========================================= */
+
+.route-visual {
+
+    width: 2px;
+
+    height: 14px;
+
+    margin:
+        -8px 0 -8px 18px;
+
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            #ddd 0px,
+            #ddd 3px,
+            transparent 3px,
+            transparent 6px
+        );
+}
+
+
+/* =========================================
+   SUBMIT BUTTON
+========================================= */
+
+.submit-btn {
+
+    width: 100%;
+
+    min-height: 54px;
+
+    margin-top: 8px;
+
+    border: none;
+
+    border-radius: 15px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ff3341,
+            #e10019
+        );
+
+    color: white;
+
+    font-size: 17px;
+
+    font-weight: 900;
+
+    letter-spacing: .3px;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 11px 27px
+        rgba(210, 0, 22, .24);
+
+    transition:
+        transform .12s,
+        filter .16s,
+        box-shadow .16s;
+}
+
+.submit-btn:active {
+    transform:
+        scale(.985);
+}
+
+.submit-btn:hover {
+
+    filter:
+        brightness(1.04);
+
+    box-shadow:
+        0 13px 30px
+        rgba(210, 0, 22, .30);
+}
+
+
+/* =========================================
+   RESULTS
+========================================= */
+
+.results {
+
+    display: none;
+
+    margin-top: 23px;
+
+    padding-top: 21px;
+
+    border-top:
+        1px solid #ededf0;
+}
+
+.results.show {
+    display: block;
+
+    animation:
+        cardUp .35s
+        ease both;
+}
+
+.results-title {
+
+    margin-bottom: 14px;
+
+    color: #222;
+
+    font-size: 15px;
+
+    font-weight: 900;
+}
+
+.results-subtitle {
+
+    display: block;
+
+    margin-top: 4px;
+
+    color: #999;
+
+    font-size: 11px;
+
+    font-weight: 500;
+}
+
+
+/* =========================================
+   ROUTE OPTION
+========================================= */
+
+.route-option {
+
+    position: relative;
+
+    margin-bottom: 14px;
+
+    padding: 17px;
+
+    border:
+        1px solid #e5e5e8;
+
+    border-radius: 17px;
+
+    background:
+        #ffffff;
+
+    box-shadow:
+        0 5px 18px
+        rgba(0,0,0,.045);
+}
+
+.route-option.fast {
+
+    border:
+        1px solid
+        rgba(255,31,45,.30);
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffffff,
+            #fffafb
+        );
+}
+
+.route-top {
+
+    display: flex;
+
+    justify-content:
+        space-between;
+
+    align-items:
+        flex-start;
+
+    gap: 12px;
+}
+
+.route-name {
+
+    font-size: 16px;
+
+    font-weight: 900;
+
+    color: #1e1e22;
+}
+
+.route-tag {
+
+    display: inline-block;
+
+    padding:
+        4px 8px;
+
+    border-radius: 999px;
+
+    background:
+        #f1f1f3;
+
+    color:
+        #727277;
+
+    font-size: 10px;
+
+    font-weight: 800;
+}
+
+.route-option.fast
+.route-tag {
+
+    background:
+        #fff0f1;
+
+    color:
+        var(--red-dark);
+}
+
+.route-info {
+
+    display: flex;
+
+    gap: 12px;
+
+    margin-top: 10px;
+
+    color:
+        #77777d;
+
+    font-size: 12px;
+}
+
+.fare-price {
+
+    margin-top: 15px;
+
+    color:
+        #161619;
+
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+.fare-price strong {
+
+    margin-left: 5px;
+
+    color:
+        var(--red);
+
+    font-size: 29px;
+
+    font-weight: 900;
+}
+
+.save-time {
+
+    margin-top: 4px;
+
+    color:
+        #078142;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================
+   SELECT ROUTE
+========================================= */
+
+.route-btn {
+
+    width: 100%;
+
+    min-height: 45px;
+
+    margin-top: 14px;
+
+    border:
+        1px solid #ddd;
+
+    border-radius: 12px;
+
+    background:
+        #f7f7f8;
+
+    color:
+        #242428;
+
+    font-size: 14px;
+
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+.route-option.fast
+.route-btn {
+
+    border: none;
+
+    background:
+        #111114;
+
+    color:
+        #fff;
+}
+
+
+/* =========================================
+   DEMO NOTICE
+========================================= */
+
+.demo-message {
+
+    display: none;
+
+    margin-top: 17px;
+
+    padding: 13px;
+
+    border-radius: 12px;
+
+    background:
+        #fff8e6;
+
+    border:
+        1px solid #f4dfaa;
+
+    color:
+        #8b6712;
+
+    text-align: center;
+
+    font-size: 12px;
+
+    line-height: 1.7;
+}
+
+.demo-message.show {
+    display: block;
+}
+
+
+/* =========================================
+   NOTICE
+========================================= */
+
+.notice {
+
+    margin-top: 19px;
+
+    padding-top: 16px;
+
+    border-top:
+        1px solid #eee;
+
+    text-align: center;
+
+    color:
+        #8e8e94;
+
+    font-size: 12px;
+
+    line-height: 1.8;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.footer {
+
+    text-align: center;
+
+    margin-top: 19px;
+
+    color: #999;
+
+    font-size: 10px;
+
+    line-height: 1.7;
+}
+
+
+/* =========================================
+   ANIMATION
+========================================= */
+
+@keyframes fadeDown {
+
+    from {
+        opacity: 0;
+        transform:
+            translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform:
+            translateY(0);
+    }
+}
+
+@keyframes cardUp {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(14px)
+            scale(.99);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+@keyframes logoFloat {
+
+    0%,100% {
+        transform:
+            translateY(0);
+    }
+
+    50% {
+        transform:
+            translateY(-3px);
+    }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 520px) {
+
+    .hero {
+
+        padding:
+            max(12px, env(safe-area-inset-top))
+            14px
+            18px;
+    }
+
+    .logo {
+
+        width: 100px;
+        height: 100px;
+
+        border-radius: 20px;
+    }
+
+    .logo-glow {
+
+        width: 112px;
+        height: 112px;
+    }
+
+    .brand {
+        font-size: 25px;
+    }
+
+    .system-name {
+        font-size: 15px;
+    }
+
+    .fare-card {
+
+        padding: 19px 15px;
+
+        border-radius: 20px;
+    }
+
+    input {
+        font-size: 15px;
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<!-- =========================================
+     HERO
+========================================= -->
+
+<header class="hero">
+
+    <div class="logo-wrap">
+
+        <div class="logo-glow"></div>
+
+        <img
+            src="logo.png"
+            alt="TOP Taxi Logo"
+            class="logo"
+        >
+
+    </div>
+
+
+    <h1 class="brand">
+
+        <span class="brand-red">
+            TOP
+        </span>
+
+        Taxi
+
+    </h1>
+
+
+    <div class="system-name">
+        24H 車資試算
+    </div>
+
+
+    <div class="hero-description">
+        快速比較行車路線｜掌握預估距離・時間與車資
+    </div>
+
+</header>
+
+
+<!-- =========================================
+     MAIN
+========================================= -->
+
+<main class="page">
+
+
+<div class="fare-card">
+
+
+    <!-- HEADER -->
+
+    <div class="form-header">
+
+        <div class="form-title">
+            💰 車資試算
+        </div>
+
+        <div class="form-label-small">
+            TOP TAXI FARE
+        </div>
+
+    </div>
+
+
+    <!-- PICKUP -->
+
+    <div class="input-group">
+
+        <label for="pickup">
+            📍 上車地點
+        </label>
+
+        <div class="address-wrap">
+
+            <span class="address-dot"></span>
+
+            <input
+                type="text"
+                id="pickup"
+                placeholder="請輸入完整地址或地標名稱"
+                autocomplete="street-address"
+            >
+
+        </div>
+
+    </div>
+
+
+    <div class="route-visual"></div>
+
+
+    <!-- DROPOFF -->
+
+    <div class="input-group">
+
+        <label for="dropoff">
+            🏁 下車地點
+        </label>
+
+        <div class="address-wrap">
+
+            <span
+                class="address-dot destination"
+            ></span>
+
+            <input
+                type="text"
+                id="dropoff"
+                placeholder="請輸入目的地地址或地標名稱"
+            >
+
+        </div>
+
+    </div>
+
+
+    <!-- CALCULATE -->
+
+    <button
+        type="button"
+        class="submit-btn"
+        onclick="calculateFare()"
+    >
+        開始試算 →
+    </button>
+
+
+    <!-- DEMO MESSAGE -->
+
+    <div
+        id="demoMessage"
+        class="demo-message"
+    >
+        此頁目前已完成版面。<br>
+        下一步串接 Google Maps 後，
+        這裡會自動顯示真實路線、距離、
+        時間及預估車資。
+    </div>
+
+
+    <!-- =====================================
+         RESULTS
+    ====================================== -->
+
+    <section
+        id="results"
+        class="results"
+    >
+
+        <div class="results-title">
+
+            🚕 路線試算結果
+
+            <span class="results-subtitle">
+                請選擇您偏好的行車方式
+            </span>
+
+        </div>
+
+
+        <!-- NORMAL ROUTE -->
+
+        <div class="route-option">
+
+            <div class="route-top">
+
+                <div class="route-name">
+                    🚕 平面道路
+                </div>
+
+                <span class="route-tag">
+                    一般路線
+                </span>
+
+            </div>
+
+
+            <div class="route-info">
+
+                <span>
+                    📏 -- km
+                </span>
+
+                <span>
+                    ⏱️ 約 -- 分鐘
+                </span>
+
+            </div>
+
+
+            <div class="fare-price">
+                預估車資
+                <strong>$---</strong>
+            </div>
+
+
+            <button
+                type="button"
+                class="route-btn"
+                onclick="selectRoute('平面道路')"
+            >
+                選擇此路線
+            </button>
+
+        </div>
+
+
+        <!-- FAST ROUTE -->
+
+        <div class="route-option fast">
+
+            <div class="route-top">
+
+                <div class="route-name">
+                    🛣️ 快速路線
+                </div>
+
+                <span class="route-tag">
+                    較快
+                </span>
+
+            </div>
+
+
+            <div class="route-info">
+
+                <span>
+                    📏 -- km
+                </span>
+
+                <span>
+                    ⏱️ 約 -- 分鐘
+                </span>
+
+            </div>
+
+
+            <div class="fare-price">
+                預估車資
+                <strong>$---</strong>
+            </div>
+
+
+            <div class="save-time">
+                串接地圖後將自動顯示可節省時間
+            </div>
+
+
+            <button
+                type="button"
+                class="route-btn"
+                onclick="selectRoute('快速路線')"
+            >
+                選擇此路線
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- NOTICE -->
+
+    <div class="notice">
+
+        ※ 車資為系統預估金額，
+        實際金額依實際行駛狀況為準。<br>
+
+        ※ 高速／快速道路不另外收取國道費用。<br>
+
+        ※ 路線仍可能依即時交通狀況調整。
+
+    </div>
+
+
+</div>
+
+
+<div class="footer">
+
+    TOP Taxi<br>
+
+    Professional Transportation<br>
+
+    24H Service
+
+</div>
+
+
+</main>
+
+
+<script>
+
+
+/* =========================================
+   TEST LAYOUT
+========================================= */
+
+function calculateFare() {
+
+    const pickup =
+        document
+        .getElementById("pickup")
+        .value
+        .trim();
+
+    const dropoff =
+        document
+        .getElementById("dropoff")
+        .value
+        .trim();
+
+
+    if (!pickup || !dropoff) {
+
+        alert(
+            "請先輸入上車地點與下車地點。"
+        );
+
+        return;
+    }
+
+
+    const results =
+        document.getElementById(
+            "results"
+        );
+
+
+    const demoMessage =
+        document.getElementById(
+            "demoMessage"
+        );
+
+
+    results.classList.add(
+        "show"
+    );
+
+
+    demoMessage.classList.add(
+        "show"
+    );
+
+
+    setTimeout(() => {
+
+        results.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+
+    }, 100);
+
+}
+
+
+/* =========================================
+   ROUTE SELECT
+========================================= */
+
+function selectRoute(routeName) {
+
+    alert(
+        "目前選擇：" +
+        routeName +
+        "\n\n下一步完成地圖與車資計算後，這裡會接到「傳送給 TOP Taxi 客服」。"
+    );
+
+}
+
+
+</script>
+
+
+</body>
+</html>
