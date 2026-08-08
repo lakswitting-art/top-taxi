@@ -1965,6 +1965,8 @@ gmp-place-autocomplete:focus-within {
 
 </div>
 
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
 <script>
 
 
@@ -1979,6 +1981,40 @@ let dropoffPlace = null;
 let RouteClass = null;
 
 let serviceMode = "taxi";
+
+const LIFF_ID =
+    "2011008197-NjirAoUX";
+
+let liffReady = false;
+let isSubmittingTrip = false;
+
+
+/* =========================================
+   LINE LIFF
+========================================= */
+
+async function initLiff() {
+
+    try {
+
+        await liff.init({
+            liffId: LIFF_ID
+        });
+
+        liffReady = true;
+
+    } catch (error) {
+
+        liffReady = false;
+
+        console.error(
+            "LIFF 初始化失敗：",
+            error
+        );
+    }
+}
+
+initLiff();
 
 
 /* =========================================
@@ -2847,12 +2883,134 @@ function closeConfirmModal() {
 
 /* 確認行程 */
 
-function confirmTrip() {
+async function confirmTrip() {
 
-    alert(
-        "行程確認成功！\n\n下一步將把這筆行程資料傳送給 TOP Taxi 客服。"
-    );
+    if (isSubmittingTrip) {
+        return;
+    }
 
+    if (
+        !liffReady ||
+        typeof liff === "undefined"
+    ) {
+
+        alert(
+            "LINE 連線尚未完成，請稍候幾秒後再試一次。"
+        );
+
+        return;
+    }
+
+    if (!liff.isInClient()) {
+
+        alert(
+            "請從 TOP Taxi LINE 官方帳號內開啟此頁，才能將行程傳送給客服。"
+        );
+
+        return;
+    }
+
+    const serviceName =
+        serviceMode === "driver"
+            ? "代駕服務"
+            : "一般搭車";
+
+    const routeText =
+        document
+            .getElementById("confirmRoute")
+            .textContent
+            .replace(
+                serviceName + "｜",
+                ""
+            );
+
+    const pickup =
+        document
+            .getElementById("confirmPickup")
+            .textContent;
+
+    const dropoff =
+        document
+            .getElementById("confirmDropoff")
+            .textContent;
+
+    const distance =
+        document
+            .getElementById("confirmDistance")
+            .textContent;
+
+    const duration =
+        document
+            .getElementById("confirmDuration")
+            .textContent;
+
+    const fare =
+        document
+            .getElementById("confirmFare")
+            .textContent;
+
+    const message = [
+        "【TOP Taxi 叫車需求】",
+        "",
+        "服務類型：" + serviceName,
+        "上車地點：" + pickup,
+        "下車地點：" + dropoff,
+        "行車路線：" + routeText,
+        "距離：" + distance,
+        "預估時間：" + duration,
+        "預估車資：" + fare,
+        "",
+        "請客服協助確認，謝謝。"
+    ].join("\n");
+
+    const submitButton =
+        document.querySelector(
+            ".confirm-submit"
+        );
+
+    const originalText =
+        submitButton.textContent;
+
+    isSubmittingTrip = true;
+    submitButton.disabled = true;
+    submitButton.textContent =
+        "正在傳送給客服…";
+
+    try {
+
+        await liff.sendMessages([
+            {
+                type: "text",
+                text: message
+            }
+        ]);
+
+        alert(
+            serviceName +
+            "需求已成功傳送給 TOP Taxi 客服。"
+        );
+
+        closeConfirmModal();
+        liff.closeWindow();
+
+    } catch (error) {
+
+        console.error(
+            "LINE 訊息傳送失敗：",
+            error
+        );
+
+        alert(
+            "傳送失敗。請確認 LIFF 已開啟 chat_message.write 權限，並從 TOP Taxi 官方帳號內重新開啟後再試。"
+        );
+
+    } finally {
+
+        isSubmittingTrip = false;
+        submitButton.disabled = false;
+        submitButton.textContent =
+            originalText;
+    }
 }
 
 
