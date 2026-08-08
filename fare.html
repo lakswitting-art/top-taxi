@@ -543,6 +543,56 @@ gmp-place-autocomplete:focus-within {
 
 }
 
+/* =========================================
+   MOBILE ADDRESS TYPING PREVIEW
+========================================= */
+
+.address-typing-preview {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2147483647;
+
+    display: none;
+    align-items: center;
+    gap: 10px;
+
+    min-height: 58px;
+    padding:
+        10px
+        max(16px, env(safe-area-inset-right))
+        10px
+        max(16px, env(safe-area-inset-left));
+
+    border-bottom: 1px solid #e2e2e5;
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 7px 22px rgba(0, 0, 0, .13);
+    pointer-events: none;
+}
+
+.address-typing-preview.show {
+    display: flex;
+}
+
+.address-typing-preview span {
+    flex-shrink: 0;
+    color: #8a8a90;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.address-typing-preview strong {
+    min-width: 0;
+    overflow: hidden;
+    color: #151518;
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.25;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 
 /* =========================================
    RESULTS
@@ -1973,6 +2023,15 @@ gmp-place-autocomplete:focus-within {
 
 </div>
 
+<div
+    id="addressTypingPreview"
+    class="address-typing-preview"
+    aria-live="polite"
+>
+    <span id="addressTypingLabel">正在輸入</span>
+    <strong id="addressTypingText">請輸入地址</strong>
+</div>
+
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <script>
@@ -2177,12 +2236,61 @@ dropoffAutocomplete.requestedRegion = "TW";
             );
 
         const keepInputVisible = (
-            autocomplete
+            autocomplete,
+            label
         ) => {
+
+            const preview =
+                document.getElementById(
+                    "addressTypingPreview"
+                );
+
+            const previewLabel =
+                document.getElementById(
+                    "addressTypingLabel"
+                );
+
+            const previewText =
+                document.getElementById(
+                    "addressTypingText"
+                );
+
+            const updatePreview = (
+                event
+            ) => {
+
+                const input =
+                    event
+                        ?.composedPath()
+                        ?.find(
+                            (node) =>
+                                node instanceof
+                                HTMLInputElement
+                        );
+
+                const value =
+                    input?.value
+                    ||
+                    autocomplete.value
+                    ||
+                    "";
+
+                previewLabel.textContent =
+                    label + "：";
+
+                previewText.textContent =
+                    value || "請輸入地址";
+
+                preview.classList.add(
+                    "show"
+                );
+            };
 
             autocomplete.addEventListener(
                 "focusin",
-                () => {
+                (event) => {
+
+                    updatePreview(event);
 
                     setTimeout(() => {
 
@@ -2194,14 +2302,35 @@ dropoffAutocomplete.requestedRegion = "TW";
                     }, 180);
                 }
             );
+
+            autocomplete.addEventListener(
+                "input",
+                updatePreview
+            );
+
+            autocomplete.addEventListener(
+                "focusout",
+                () => {
+
+                    setTimeout(() => {
+
+                        preview.classList.remove(
+                            "show"
+                        );
+
+                    }, 220);
+                }
+            );
         };
 
         keepInputVisible(
-            pickupAutocomplete
+            pickupAutocomplete,
+            "上車地點"
         );
 
         keepInputVisible(
-            dropoffAutocomplete
+            dropoffAutocomplete,
+            "下車地點"
         );
 
 
@@ -2238,6 +2367,12 @@ dropoffAutocomplete.requestedRegion = "TW";
 
                     pickupPlace = place;
 
+                    document
+                        .getElementById(
+                            "addressTypingPreview"
+                        )
+                        .classList
+                        .remove("show");
 
                     hideResults();
 
@@ -2278,6 +2413,12 @@ dropoffAutocomplete.requestedRegion = "TW";
 
                     dropoffPlace = place;
 
+                    document
+                        .getElementById(
+                            "addressTypingPreview"
+                        )
+                        .classList
+                        .remove("show");
 
                     hideResults();
 
