@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
 >
 
-<title>TOP Taxi｜24H 預約系統</title>
+<title>TOP Taxi｜24H 預約系統（常用地址測試版）</title>
 
 <!-- LINE LIFF SDK -->
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -1081,6 +1081,103 @@ input::placeholder {
     }
 }
 
+
+
+/* =========================================
+   SHARED SAVED ADDRESSES - TEST VERSION
+========================================= */
+.saved-address-panel {
+    margin-bottom: 15px;
+    padding: 13px;
+    border: 1px solid var(--gray-2);
+    border-radius: 15px;
+    background: #fafafa;
+}
+.saved-address-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.saved-address-title {
+    font-size: 14px;
+    font-weight: 900;
+    color: #26262a;
+}
+.saved-address-edit {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+.saved-address-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.saved-address-chip {
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--gray-2);
+    border-radius: 11px;
+    background: #ffffff;
+    color: #333338;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.saved-address-chip:active,
+.saved-address-chip.active {
+    border-color: var(--red);
+    background: #fff1f2;
+    color: var(--red);
+}
+.saved-address-empty {
+    color: #99999f;
+    font-size: 12px;
+}
+.saved-address-editor {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-2);
+}
+.saved-address-editor[hidden] { display: none; }
+.saved-address-row {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 8px;
+}
+.saved-address-row input {
+    min-height: 42px;
+    font-size: 13px;
+}
+.saved-address-note {
+    grid-column: 2;
+}
+.saved-address-save {
+    width: 100%;
+    min-height: 44px;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--red), var(--red-dark));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+.pickup-note-helper {
+    margin-top: 8px;
+}
+@media (max-width: 390px) {
+    .saved-address-row { grid-template-columns: 82px 1fr; }
+}
+
 </style>
 
 </head>
@@ -1362,6 +1459,19 @@ input::placeholder {
 
 
 
+        <!-- SHARED SAVED ADDRESSES - TEST VERSION -->
+        <div class="saved-address-panel">
+            <div class="saved-address-head">
+                <div class="saved-address-title">常用上車地點</div>
+                <button type="button" id="toggleSavedAddressEditor" class="saved-address-edit">＋ 設定常用地址</button>
+            </div>
+            <div id="bookingSavedAddressChips" class="saved-address-chips"></div>
+            <div id="bookingSavedAddressEditor" class="saved-address-editor" hidden>
+                <div id="bookingSavedAddressRows"></div>
+                <button type="button" id="saveSharedAddresses" class="saved-address-save">儲存常用地址</button>
+            </div>
+        </div>
+
         <!-- PICKUP -->
 
         <div class="input-group">
@@ -1374,6 +1484,9 @@ input::placeholder {
 
 
             <div id="pickupBox"></div>
+            <div class="pickup-note-helper">
+                <input type="text" id="pickupNote" placeholder="上車位置補充（選填，例如：社區大門口）">
+            </div>
 
         </div>
 
@@ -1603,6 +1716,133 @@ let bookingDropoffPlace = null;
 let BookingRouteClass = null;
 let currentFareEstimate = null;
 let fareRequestNumber = 0;
+
+/* ======================================================
+   SHARED SAVED ADDRESSES - SAME STORAGE AS RIDE.HTML
+====================================================== */
+const SHARED_ADDRESS_KEY = "topTaxiAddresses";
+const SHARED_ADDRESS_DEFAULTS = [
+    {name:"住家", address:"", placeId:"", pickupNote:""},
+    {name:"公司", address:"", placeId:"", pickupNote:""},
+    {name:"常用地點 1", address:"", placeId:"", pickupNote:""},
+    {name:"常用地點 2", address:"", placeId:"", pickupNote:""}
+];
+let sharedAddresses = loadSharedAddresses();
+
+function loadSharedAddresses() {
+    try {
+        const saved = JSON.parse(localStorage.getItem(SHARED_ADDRESS_KEY) || "null");
+        if (Array.isArray(saved)) {
+            return SHARED_ADDRESS_DEFAULTS.map(function(def, i) {
+                return Object.assign({}, def, saved[i] || {});
+            });
+        }
+    } catch (e) {}
+    return SHARED_ADDRESS_DEFAULTS.map(function(item){ return Object.assign({}, item); });
+}
+
+function renderSharedAddressEditor() {
+    const box = document.getElementById("bookingSavedAddressRows");
+    if (!box) return;
+    box.innerHTML = "";
+    sharedAddresses.forEach(function(item, index) {
+        const row = document.createElement("div");
+        row.className = "saved-address-row";
+        row.innerHTML =
+            '<input type="text" id="sharedName'+index+'" aria-label="常用地點名稱" value="'+escapeHtml(item.name || "")+'">' +
+            '<input type="text" id="sharedAddress'+index+'" aria-label="常用地址" placeholder="請輸入地址或地標" value="'+escapeHtml(item.address || "")+'">' +
+            '<input type="text" id="sharedNote'+index+'" class="saved-address-note" aria-label="上車位置補充" placeholder="上車位置補充（選填）" value="'+escapeHtml(item.pickupNote || "")+'">';
+        box.appendChild(row);
+    });
+}
+
+function renderSharedAddressChips() {
+    sharedAddresses = loadSharedAddresses();
+    const box = document.getElementById("bookingSavedAddressChips");
+    if (!box) return;
+    box.innerHTML = "";
+    let count = 0;
+    sharedAddresses.forEach(function(item, index) {
+        if (!item.address) return;
+        count++;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "saved-address-chip";
+        button.textContent = item.name || ("常用地點 " + (index + 1));
+        button.addEventListener("click", function(){ useSharedAddress(index, button); });
+        box.appendChild(button);
+    });
+    if (!count) {
+        const empty = document.createElement("span");
+        empty.className = "saved-address-empty";
+        empty.textContent = "尚未設定常用地址；可先在即時叫車設定，這裡會自動同步。";
+        box.appendChild(empty);
+    }
+    renderSharedAddressEditor();
+}
+
+async function resolveSharedAddress(item) {
+    const placesLib = await google.maps.importLibrary("places");
+    if (item.placeId && placesLib.Place) {
+        const place = new placesLib.Place({id:item.placeId});
+        await place.fetchFields({fields:["id","displayName","formattedAddress","location"]});
+        return place;
+    }
+    const AutocompleteSuggestion = placesLib.AutocompleteSuggestion;
+    const AutocompleteSessionToken = placesLib.AutocompleteSessionToken;
+    const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+        input:item.address,
+        includedRegionCodes:["tw"],
+        language:"zh-TW",
+        region:"TW",
+        locationBias:{center:{lat:24.1477,lng:120.6736},radius:70000},
+        sessionToken:new AutocompleteSessionToken()
+    });
+    const prediction = response.suggestions && response.suggestions[0] && response.suggestions[0].placePrediction;
+    if (!prediction) throw new Error("找不到常用地址");
+    const place = prediction.toPlace();
+    await place.fetchFields({fields:["id","displayName","formattedAddress","location"]});
+    return place;
+}
+
+async function useSharedAddress(index, button) {
+    const item = sharedAddresses[index];
+    const pickupInput = document.getElementById("pickup");
+    const pickupNoteInput = document.getElementById("pickupNote");
+    if (!item || !item.address || !pickupInput) return;
+    document.querySelectorAll(".saved-address-chip").forEach(function(b){ b.classList.remove("active"); });
+    if (button) button.classList.add("active");
+    pickupInput.value = item.address;
+    if (pickupNoteInput) pickupNoteInput.value = item.pickupNote || "";
+    try {
+        bookingPickupPlace = await resolveSharedAddress(item);
+        pickupInput.value = bookingPickupPlace.formattedAddress || item.address;
+        updateFareEstimate();
+    } catch (error) {
+        bookingPickupPlace = null;
+        resetFareEstimate("常用地址需要重新確認，請從地址建議中選擇一次");
+    }
+}
+
+function saveSharedAddressesFromBooking() {
+    const next = sharedAddresses.map(function(oldItem, index) {
+        const name = (document.getElementById("sharedName"+index)?.value || "").trim() || ("常用地點 " + (index + 1));
+        const address = (document.getElementById("sharedAddress"+index)?.value || "").trim();
+        const pickupNote = (document.getElementById("sharedNote"+index)?.value || "").trim();
+        return {
+            name:name,
+            address:address,
+            placeId: address === oldItem.address ? (oldItem.placeId || "") : "",
+            pickupNote:pickupNote
+        };
+    });
+    localStorage.setItem(SHARED_ADDRESS_KEY, JSON.stringify(next));
+    sharedAddresses = next;
+    renderSharedAddressChips();
+    document.getElementById("bookingSavedAddressEditor").hidden = true;
+    document.getElementById("toggleSavedAddressEditor").textContent = "＋ 設定常用地址";
+}
+
 
 
 function calculateTaxiFare(distanceKm, minutes) {
@@ -2165,6 +2405,10 @@ async function sendBooking() {
 
 
 
+    const pickupNote =
+        (document.getElementById("pickupNote")?.value || "").trim();
+
+
     const dropoff =
         document.getElementById(
             "dropoff"
@@ -2290,9 +2534,21 @@ async function sendBooking() {
             : "";
 
 
+    const pickupNoteDetails =
+        pickupNote
+            ? `
+📌 上車位置補充
+${pickupNote}
+`
+            : "";
+
+
     const dropoffDetails =
         dropoff
-            ? `\n🏁 下車地點\n${dropoff}\n`
+            ? `
+🏁 下車地點
+${dropoff}
+`
             : "";
 
 
@@ -2308,7 +2564,7 @@ ${passengerDetails}
 
 📍 上車地點
 ${pickup}
-${dropoffDetails}${fareDetails}
+${pickupNoteDetails}${dropoffDetails}${fareDetails}
 
 💡 特殊需求
 ${memo}
@@ -2378,6 +2634,9 @@ ${memo}
 
         pickup:
             pickup,
+
+        pickupNote:
+            pickupNote,
 
 
         dropoff:
@@ -2903,6 +3162,8 @@ async function initGoogle() {
             }
         });
 
+        renderSharedAddressChips();
+
     } catch (error) {
         console.error("GOOGLE PLACES LOAD ERROR:", error);
 
@@ -2937,6 +3198,16 @@ window.addEventListener(
 
     function () {
 
+        const toggleSaved = document.getElementById("toggleSavedAddressEditor");
+        const savedEditor = document.getElementById("bookingSavedAddressEditor");
+        const saveSaved = document.getElementById("saveSharedAddresses");
+        if (toggleSaved && savedEditor) {
+            toggleSaved.addEventListener("click", function(){
+                savedEditor.hidden = !savedEditor.hidden;
+                toggleSaved.textContent = savedEditor.hidden ? "＋ 設定常用地址" : "收合常用地址";
+            });
+        }
+        if (saveSaved) saveSaved.addEventListener("click", saveSharedAddressesFromBooking);
 
         initializeLiff();
 
