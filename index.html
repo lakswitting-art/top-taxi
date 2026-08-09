@@ -9,7 +9,7 @@
     content="width=device-width, initial-scale=1.0, viewport-fit=cover"
 >
 
-<title>TOP Taxi｜24H 預約系統（常用地址測試版）</title>
+<title>TOP Taxi｜24H 預約系統</title>
 
 <!-- LINE LIFF SDK -->
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -1248,6 +1248,7 @@ input::placeholder {
     <div
         id="connectionStatus"
         class="connection-status"
+        style="display:none"
     >
 
         <span class="status-dot"></span>
@@ -1262,6 +1263,7 @@ input::placeholder {
     <div
         id="lineUser"
         class="line-user"
+        style="display:none"
     ></div>
 
 
@@ -2219,7 +2221,7 @@ async function initializeLiff() {
 
 
                 box.style.display =
-                    "block";
+                    "none";
 
 
             }
