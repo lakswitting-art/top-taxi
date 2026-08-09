@@ -78,9 +78,7 @@
   </div>
 
   <script>
-   const CONFIG={
-  googleKey:"AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw",
-  liffId:"2011008197-NjirAoUX"};
+    const CONFIG={googleKey:"AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw",liffId:"2011008197-NjirAoUX"};
     const $=s=>document.querySelector(s); let RouteClass=null,pickupPlace=null,dropoffPlace=null,petMode="",routeData=null,calcSeq=0;
     const defaults=[{name:"住家",address:"",placeId:"",pickupNote:""},{name:"公司",address:"",placeId:"",pickupNote:""},{name:"常用地點 1",address:"",placeId:"",pickupNote:""},{name:"常用地點 2",address:"",placeId:"",pickupNote:""}];
     let savedAddresses=JSON.parse(localStorage.getItem("topTaxiAddresses")||"null")||defaults;
@@ -148,7 +146,44 @@
 
     function noteText(){const parts=[];document.querySelectorAll("[data-note].active").forEach(b=>parts.push(b.dataset.note));if(petMode==="no-carrier")parts.push("寵物無籠（+$50）");if(petMode==="carrier")parts.push("寵物有籠");if($("#note").value.trim())parts.push($("#note").value.trim());return parts.join("、")||"無"}
     function openConfirmation(){if(!pickupPlace||!$("#pickup").value.trim()){setStatus("pageStatus","請先從地址建議中選擇上車地點。","error");$("#pickup").focus();return}const payment=document.querySelector('input[name="payment"]:checked').value,pickupNote=$("#pickupNote").value.trim(),needsVehicleCheck=$("#luggage").value==="5 件以上",longTrip=routeData&&routeData.km>40;$("#cPickup").textContent=$("#pickup").value;$("#pickupNoteRow").hidden=!pickupNote;$("#cPickupNote").textContent=pickupNote;$("#cDropoff").textContent=$("#dropoff").value.trim()||"未提供";$("#cPassengers").textContent=$("#passengers").selectedOptions[0].textContent;$("#cLuggage").textContent=$("#luggage").value+(needsVehicleCheck?"｜客服確認適合車型":"");$("#cNote").textContent=noteText();$("#cPayment").textContent=payment;$("#cFare").textContent=routeData?($("#passengers").value==="9"?"請洽客服":"$"+(routeData.baseFare+extras().amount)):"未試算";$("#longPromoRow").hidden=!longTrip;$("#confirmOverlay").hidden=false;document.body.style.overflow="hidden"}
-    function buildMessage(){const items=["【TOP Taxi 即時叫車】","上車地點："+$("#pickup").value,"上車位置補充："+($("#pickupNote").value.trim()||"無"),"下車地點："+($("#dropoff").value.trim()||"未提供"),"乘車需求："+$("#passengers").selectedOptions[0].textContent,"行李件數："+$("#luggage").value];if($("#luggage").value==="5 件以上")items.push("車型確認：請客服確認適合車型");items.push("備註："+noteText(),"付款方式："+document.querySelector('input[name="payment"]:checked').value,"預估金額："+(routeData?($("#passengers").value==="9"?"請洽客服":"$"+(routeData.baseFare+extras().amount)):"未試算"));if(routeData&&routeData.km>40)items.push("長途優惠：行程超過 40 公里，請客服確認優惠價");items.push("※ 預估金額僅供參考，實際車資依行駛狀況為準");return items.join("\n")}
+    function buildMessage(){
+      const pickup=$("#pickup").value.trim();
+      const pickupNote=$("#pickupNote").value.trim();
+      const dropoff=$("#dropoff").value.trim();
+      const passenger=$("#passengers").selectedOptions[0].textContent;
+      const luggage=$("#luggage").value;
+      const memo=noteText();
+      const payment=document.querySelector('input[name="payment"]:checked').value;
+      const items=[
+        "🚕 TOP Taxi｜24H 即時叫車",
+        "",
+        "📋 服務類型：一般搭車",
+        "",
+        "👥 乘車人數："+passenger,
+        "🧳 行李件數："+luggage
+      ];
+
+      if(luggage==="5 件以上")items.push("🚐 車型確認：請客服確認適合車型");
+
+      items.push("","📍 上車地點",pickup);
+      if(pickupNote)items.push("","📌 上車位置補充",pickupNote);
+
+      if(dropoff){
+        items.push("","🏁 下車地點",dropoff);
+        if(routeData){
+          items.push(
+            "",
+            "📏 距離："+routeData.km.toFixed(1)+" km",
+            "⏱️ 預估時間："+routeData.min+" 分鐘",
+            "💰 預估車資："+($("#passengers").value==="9"?"請洽客服":"$"+(routeData.baseFare+extras().amount))
+          );
+          if(routeData.km>40)items.push("🎁 長途優惠：此行程超過 40 公里，請客服確認優惠價");
+        }
+      }
+
+      items.push("","💳 付款方式："+payment,"","💡 特殊需求",memo,"","━━━━━━━━━━━━━","叫車需求已送出！客服確認後會立刻幫您安排！");
+      return items.join("\n");
+    }
     async function sendRide(){const message=buildMessage();try{if(window.liff&&CONFIG.liffId){await liff.init({liffId:CONFIG.liffId});if(!liff.isLoggedIn()){liff.login();return}await liff.sendMessages([{type:"text",text:message}]);$("#pageStatus").textContent="✓ 叫車需求已送出給客服"}else{await navigator.clipboard.writeText(message);$("#pageStatus").textContent="✓ 叫車內容已複製，請回到 LINE 對話貼上傳送給客服"}$("#pageStatus").className="status ok";$("#confirmOverlay").hidden=true;document.body.style.overflow=""}catch(e){$("#pageStatus").textContent="送出失敗，請返回 LINE 對話聯絡客服";$("#pageStatus").className="status error"}}
     async function init(){renderSaved();setupAutocomplete("pickup","pickupSuggestions",p=>{pickupPlace=p;setStatus("pickupStatus","地址已確認","ok");recalculate()},()=>{pickupPlace=null;hideEstimate()});setupAutocomplete("dropoff","dropoffSuggestions",p=>{dropoffPlace=p;recalculate()},()=>{dropoffPlace=null;hideEstimate()});[["homeAddress","homeAddressSuggestions"],["workAddress","workAddressSuggestions"],["fav1Address","fav1AddressSuggestions"],["fav2Address","fav2AddressSuggestions"]].forEach((ids,index)=>setupAutocomplete(ids[0],ids[1],place=>{draftPlaceIds[index]=place.id||""},()=>{draftPlaceIds[index]=""}));const {Route}=await google.maps.importLibrary("routes");RouteClass=Route}
 
