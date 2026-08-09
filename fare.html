@@ -3579,10 +3579,12 @@ async function confirmTrip() {
             : "叫車需求已送出！客服確認後會立刻幫您安排！";
 
     const message = [
-        serviceIcon + " TOP Taxi｜" + serviceTitle,
-        "",
-        "📍 上車地點",
-        pickup,
+    serviceIcon + " TOP Taxi｜" + serviceTitle,
+    "",
+    "📋 服務類型：" + serviceName,
+    "",
+    "📍 上車地點",
+    pickup,
         "",
         "🏁 下車地點",
         dropoff,
