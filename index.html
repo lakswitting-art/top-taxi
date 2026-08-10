@@ -1940,6 +1940,124 @@ body{
     font-weight:850 !important;
 }
 
+
+
+/* =========================================
+   #6 BOOKING CONFIRMATION
+========================================= */
+.booking-confirm-overlay { z-index: 12600; }
+.booking-confirm-card {
+    width: min(100%, 560px);
+    max-height: min(90dvh, calc(100dvh - max(8px, env(safe-area-inset-top))));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    padding: 10px 18px max(18px, env(safe-area-inset-bottom));
+    box-shadow: 0 -18px 55px rgba(0,0,0,.26);
+}
+.booking-confirm-head {
+    position: sticky;
+    top: -10px;
+    z-index: 4;
+    margin: 0 -2px 12px;
+    padding: 8px 2px 10px;
+    background: rgba(255,255,255,.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    text-align: center;
+}
+.booking-confirm-title { font-size: 20px; font-weight: 950; line-height: 1.25; }
+.booking-confirm-subtitle {
+    margin-top: 5px;
+    color: #8e8e94;
+    font-size: 11.5px;
+    line-height: 1.5;
+}
+.booking-confirm-summary {
+    overflow: hidden;
+    border: 1px solid #e8e8ec;
+    border-radius: 16px;
+    background: #fff;
+}
+.booking-confirm-row {
+    display: grid;
+    grid-template-columns: 86px minmax(0,1fr);
+    gap: 11px;
+    padding: 11px 12px;
+    border-bottom: 1px solid #eeeef1;
+    font-size: 12.5px;
+    line-height: 1.5;
+}
+.booking-confirm-row:last-child { border-bottom: 0; }
+.booking-confirm-row[hidden] { display: none !important; }
+.booking-confirm-row > span { color: #929298; font-weight: 750; }
+.booking-confirm-row > strong {
+    min-width: 0;
+    color: #303035;
+    font-weight: 850;
+    overflow-wrap: anywhere;
+}
+.booking-confirm-row.highlight {
+    border-left: 4px solid var(--red);
+    padding-left: 8px;
+    background: #fff4f5;
+}
+.booking-confirm-row.highlight > strong { color: #9f1422; }
+.booking-confirm-fare {
+    color: var(--red) !important;
+    font-size: 16px;
+    font-weight: 950 !important;
+}
+.booking-confirm-note {
+    margin-top: 10px;
+    color: #98989e;
+    font-size: 10.8px;
+    line-height: 1.55;
+}
+.booking-confirm-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 4;
+    display: grid;
+    grid-template-columns: 1fr 1.45fr;
+    gap: 10px;
+    margin: 16px -2px 0;
+    padding: 12px 2px max(18px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(255,255,255,.80) 0%, #fff 24%, #fff 100%);
+}
+.booking-confirm-back,
+.booking-confirm-send {
+    min-height: 50px;
+    border: 0;
+    border-radius: 13px;
+    font-family: inherit;
+    font-weight: 900;
+    cursor: pointer;
+}
+.booking-confirm-back { background: #f0f0f2; color: #66666c; }
+.booking-confirm-send {
+    background: linear-gradient(135deg,#ff3341,#e10019);
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(210,0,22,.20);
+}
+.booking-confirm-send:disabled {
+    opacity: .58;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+@media (max-width: 370px) {
+    .booking-confirm-row {
+        grid-template-columns: 78px minmax(0,1fr);
+        gap: 8px;
+        padding: 10px;
+        font-size: 12px;
+    }
+    .booking-confirm-actions { grid-template-columns: .9fr 1.5fr; }
+}
+
 </style>
 
 </head>
@@ -2296,7 +2414,7 @@ body{
             type="button"
             id="submitBtn"
             class="submit-btn"
-            onclick="sendBooking()"
+            onclick="openBookingConfirmation()"
         >
 
             立即預約 →
@@ -2398,9 +2516,63 @@ body{
 
 
 
+    <div id="bookingConfirmOverlay" class="booking-sheet-overlay booking-confirm-overlay" hidden>
+        <section class="booking-confirm-card" role="dialog" aria-modal="true" aria-labelledby="bookingConfirmTitle">
+            <div class="booking-sheet-handle"></div>
+
+            <div class="booking-confirm-head">
+                <div id="bookingConfirmTitle" class="booking-confirm-title">確認預約資訊</div>
+                <div class="booking-confirm-subtitle">請確認內容，按下「確認送出預約單」後才會正式傳送</div>
+            </div>
+
+            <div class="booking-confirm-summary">
+                <div class="booking-confirm-row"><span>服務類型</span><strong id="bookingConfirmServiceValue"></strong></div>
+                <div class="booking-confirm-row"><span>預約時間</span><strong id="bookingConfirmDateTimeValue"></strong></div>
+                <div class="booking-confirm-row"><span>上車地點</span><strong id="bookingConfirmPickupValue"></strong></div>
+
+                <div id="bookingConfirmPickupNoteRow" class="booking-confirm-row highlight" hidden>
+                    <span>上車補充</span><strong id="bookingConfirmPickupNoteValue"></strong>
+                </div>
+
+                <div id="bookingConfirmWaypoint1Row" class="booking-confirm-row" hidden>
+                    <span>停靠點 1</span><strong id="bookingConfirmWaypoint1Value"></strong>
+                </div>
+                <div id="bookingConfirmWaypoint2Row" class="booking-confirm-row" hidden>
+                    <span>停靠點 2</span><strong id="bookingConfirmWaypoint2Value"></strong>
+                </div>
+
+                <div class="booking-confirm-row"><span>下車地點</span><strong id="bookingConfirmDropoffValue"></strong></div>
+                <div class="booking-confirm-row"><span>行車路線</span><strong id="bookingConfirmRouteValue"></strong></div>
+                <div class="booking-confirm-row"><span>距離</span><strong id="bookingConfirmDistanceValue"></strong></div>
+                <div class="booking-confirm-row"><span>預估時間</span><strong id="bookingConfirmDurationValue"></strong></div>
+                <div class="booking-confirm-row"><span>乘車需求</span><strong id="bookingConfirmRideNeedsValue"></strong></div>
+                <div class="booking-confirm-row"><span>其他需求</span><strong id="bookingConfirmOtherNeedsValue"></strong></div>
+                <div class="booking-confirm-row"><span>付款方式</span><strong id="bookingConfirmPaymentValue"></strong></div>
+                <div class="booking-confirm-row">
+                    <span>預估車資</span><strong id="bookingConfirmFareValue" class="booking-confirm-fare"></strong>
+                </div>
+
+                <div id="bookingConfirmLongTripRow" class="booking-confirm-row highlight" hidden>
+                    <span>長途優惠</span><strong>此行程超過 40 公里，請客服確認優惠價</strong>
+                </div>
+            </div>
+
+            <div class="booking-confirm-note">
+                預估路線、時間與金額僅供參考，實際內容仍以行駛狀況與客服最終確認為準。
+            </div>
+
+            <div class="booking-confirm-actions">
+                <button id="backToEditBooking" class="booking-confirm-back" type="button">返回修改</button>
+                <button id="confirmBookingSend" class="booking-confirm-send" type="button">確認送出預約單</button>
+            </div>
+        </section>
+    </div>
+
+
+
     <div class="notice">
 
-        ※ 送出後預約內容會直接傳送至 TOP Taxi 客服。<br>
+        ※ 確認送出後，預約內容才會傳送至 TOP Taxi 客服。<br>
 
         ※ 系統會同步建立預約紀錄。<br>
 
@@ -4153,12 +4325,166 @@ function validateBookingTime() {
 
 
 
+
+let bookingSendInProgress = false;
+
+function validateBookingForConfirmation() {
+    const bookDate = dateInput.value;
+    const bookTime = timeInput.value;
+    const pickup = (document.getElementById("pickup")?.value || "").trim();
+    const dropoff = (document.getElementById("dropoff")?.value || "").trim();
+
+    if (!bookDate || !bookTime || !pickup) {
+        alert("請完整填寫預約日期、時間與上車地點。");
+        return false;
+    }
+
+    if (!validateBookingTime()) return false;
+
+    if (!bookingPickupPlace) {
+        alert("上車地點請從 Google 地址建議中選擇。");
+        document.getElementById("pickup")?.focus();
+        return false;
+    }
+
+    if (dropoff && !bookingDropoffPlace) {
+        alert("下車地點如有填寫，請從 Google 地址建議中選擇。");
+        document.getElementById("dropoff")?.focus();
+        return false;
+    }
+
+    if (!validateBookingWaypoints(true)) return false;
+
+    return true;
+}
+
+function bookingConfirmationSetText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+}
+
+function openBookingConfirmation() {
+    if (bookingSendInProgress) return;
+    if (!validateBookingForConfirmation()) return;
+
+    const serviceType = bookingService === "driver" ? "🚘 代駕服務" : "🚕 一般搭車";
+    const pickup = (document.getElementById("pickup")?.value || "").trim();
+    const pickupNote = (document.getElementById("pickupNote")?.value || "").trim();
+    const dropoff = (document.getElementById("dropoff")?.value || "").trim();
+    const payment =
+        document.querySelector('input[name="bookingPayment"]:checked')?.value ||
+        "現金｜行程結束後付款";
+
+    const passengerSelect = document.getElementById("passengerCount");
+    const luggageSelect = document.getElementById("luggageCount");
+    const passengerText = passengerSelect?.selectedOptions?.[0]?.textContent?.trim() || "1 人";
+    const luggageText = luggageSelect?.selectedOptions?.[0]?.textContent?.trim() || "無行李";
+
+    const vehicleCheck =
+        bookingService !== "driver" &&
+        (passengerSelect?.value === "9人座" || luggageSelect?.value === "5件以上");
+
+    const fareQuote = getBookingFareQuote();
+    const fareText = fareQuote
+        ? fareQuote.display +
+            (fareQuote.extras?.items?.length
+                ? "（" + fareQuote.extras.items.join("、") + "）"
+                : "")
+        : "未試算";
+
+    bookingConfirmationSetText("bookingConfirmServiceValue", serviceType);
+    bookingConfirmationSetText(
+        "bookingConfirmDateTimeValue",
+        dateInput.value + "　" + timeInput.value
+    );
+    bookingConfirmationSetText("bookingConfirmPickupValue", pickup);
+
+    const pickupNoteRow = document.getElementById("bookingConfirmPickupNoteRow");
+    if (pickupNoteRow) pickupNoteRow.hidden = !pickupNote;
+    bookingConfirmationSetText("bookingConfirmPickupNoteValue", pickupNote);
+
+    for (let index = 0; index < MAX_BOOKING_WAYPOINTS; index++) {
+        const input = document.getElementById("waypoint" + (index + 1));
+        const value =
+            bookingWaypointActive[index] && input
+                ? input.value.trim()
+                : "";
+
+        const row = document.getElementById("bookingConfirmWaypoint" + (index + 1) + "Row");
+        if (row) row.hidden = !value;
+
+        bookingConfirmationSetText(
+            "bookingConfirmWaypoint" + (index + 1) + "Value",
+            value
+        );
+    }
+
+    bookingConfirmationSetText("bookingConfirmDropoffValue", dropoff || "未提供");
+
+    bookingConfirmationSetText(
+        "bookingConfirmRouteValue",
+        currentFareEstimate?.routeName ||
+            (dropoff ? "未完成試算" : "未提供下車地點")
+    );
+    bookingConfirmationSetText(
+        "bookingConfirmDistanceValue",
+        currentFareEstimate
+            ? currentFareEstimate.distanceKm.toFixed(1) + " km"
+            : "未試算"
+    );
+    bookingConfirmationSetText(
+        "bookingConfirmDurationValue",
+        currentFareEstimate
+            ? "約 " + currentFareEstimate.minutes + " 分鐘"
+            : "未試算"
+    );
+
+    bookingConfirmationSetText(
+        "bookingConfirmRideNeedsValue",
+        bookingService === "driver"
+            ? "代駕服務・不適用"
+            : passengerText + "・" + luggageText + (vehicleCheck ? "｜客服確認車型" : "")
+    );
+
+    bookingConfirmationSetText(
+        "bookingConfirmOtherNeedsValue",
+        getBookingMemoValue() || "無"
+    );
+
+    bookingConfirmationSetText("bookingConfirmPaymentValue", payment);
+    bookingConfirmationSetText("bookingConfirmFareValue", fareText);
+
+    const longTripRow = document.getElementById("bookingConfirmLongTripRow");
+    if (longTripRow) {
+        longTripRow.hidden = !(
+            currentFareEstimate &&
+            currentFareEstimate.distanceKm > 40
+        );
+    }
+
+    const confirmButton = document.getElementById("confirmBookingSend");
+    if (confirmButton) {
+        confirmButton.disabled = false;
+        confirmButton.textContent = "確認送出預約單";
+    }
+
+    openBookingSheet("bookingConfirmOverlay");
+}
+
+function closeBookingConfirmation() {
+    if (bookingSendInProgress) return;
+    closeBookingSheet("bookingConfirmOverlay");
+}
+
+
 /* ======================================================
    SEND BOOKING
 ====================================================== */
 
 
 async function sendBooking() {
+
+    if (bookingSendInProgress) return;
 
     try {
         if (navigator.vibrate) navigator.vibrate(20);
@@ -4167,6 +4493,11 @@ async function sendBooking() {
     const button =
         document.getElementById(
             "submitBtn"
+        );
+
+    const confirmButton =
+        document.getElementById(
+            "confirmBookingSend"
         );
 
 
@@ -4303,8 +4634,16 @@ async function sendBooking() {
     if (BROWSER_TEST_MODE) {
         button.disabled = false;
         button.innerHTML = getSubmitButtonText();
+
+        if (confirmButton) {
+            confirmButton.disabled = false;
+            confirmButton.textContent = "確認送出預約單";
+        }
+
+        closeBookingSheet("bookingConfirmOverlay");
+
         showMessage(
-            "🧪 瀏覽器測試模式：表單驗證通過。<br>LINE 訊息與 n8n 不會送出。",
+            "🧪 瀏覽器測試模式：確認視窗與表單驗證通過。<br>LINE 訊息與 n8n 不會送出。",
             "success"
         );
         return;
@@ -4315,6 +4654,8 @@ async function sendBooking() {
         !liffInitialized
     ) {
 
+
+        closeBookingSheet("bookingConfirmOverlay");
 
         showMessage(
 
@@ -4336,6 +4677,8 @@ async function sendBooking() {
     ) {
 
 
+        closeBookingSheet("bookingConfirmOverlay");
+
         showMessage(
 
             "請從 TOP Taxi LINE 官方帳號的「預約叫車」進入本頁後再送出。",
@@ -4351,16 +4694,23 @@ async function sendBooking() {
 
 
 
+    bookingSendInProgress = true;
+
     button.disabled =
         true;
-
-
 
     button.innerHTML =
 
         '<span class="spinner"></span>' +
 
         "正在送出預約";
+
+    if (confirmButton) {
+        confirmButton.disabled = true;
+        confirmButton.innerHTML =
+            '<span class="spinner"></span>' +
+            "正在送出";
+    }
 
 
 
@@ -4690,6 +5040,13 @@ ${memo}
         button.innerHTML =
             "✅ 預約已送出";
 
+        if (confirmButton) {
+            confirmButton.disabled = true;
+            confirmButton.textContent = "✅ 已送出";
+        }
+
+        closeBookingSheet("bookingConfirmOverlay");
+
 
 
         showMessage(
@@ -4768,6 +5125,8 @@ ${memo}
 
 
 
+        bookingSendInProgress = false;
+
         button.disabled =
             false;
 
@@ -4775,6 +5134,13 @@ ${memo}
 
         button.innerHTML =
             getSubmitButtonText();
+
+        if (confirmButton) {
+            confirmButton.disabled = false;
+            confirmButton.textContent = "確認送出預約單";
+        }
+
+        closeBookingSheet("bookingConfirmOverlay");
 
 
 
@@ -5547,6 +5913,12 @@ window.addEventListener(
                 updateBookingOtherNeedsSummary();
                 closeBookingSheet("bookingOtherNeedsSheet");
             }
+        });
+
+        document.getElementById("confirmBookingSend")?.addEventListener("click", sendBooking);
+        document.getElementById("backToEditBooking")?.addEventListener("click", closeBookingConfirmation);
+        document.getElementById("bookingConfirmOverlay")?.addEventListener("click", function(event){
+            if (event.target === this) closeBookingConfirmation();
         });
 
         updateBookingPickupNoteUi(false);
