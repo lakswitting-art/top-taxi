@@ -445,6 +445,7 @@ body {
     line-height: 1.5;
 }
 .fare-estimate-note { color: #74747c; }
+.fare-estimate-long-distance[hidden] { display: none !important; }
 .fare-estimate-long-distance {
     padding: 10px 12px;
     border-radius: 12px;
@@ -2000,7 +2001,7 @@ input::placeholder {
                 <div id="waypoint2Box"></div>
             </div>
 
-            <button type="button" id="addBookingWaypoint" class="booking-add-waypoint" onclick="addBookingWaypoint()">＋ 新增停靠點</button>
+            <button type="button" id="addBookingWaypointBtn" class="booking-add-waypoint">＋ 新增停靠點</button>
             <div class="booking-waypoint-help">最多 2 個停靠點；Google 會依照您輸入的 A → B → C → D 順序計算</div>
         </div>
 
@@ -2033,7 +2034,7 @@ input::placeholder {
             </div>
 
             <div id="fareEstimateSurcharge" class="booking-fare-surcharge" hidden></div>
-            <div id="fareEstimateLongDistance" class="fare-estimate-long-distance">超過 40 公里另有長途優惠，請洽客服</div>
+            <div id="fareEstimateLongDistance" class="fare-estimate-long-distance" hidden>超過 40 公里另有長途優惠，請洽客服</div>
             <div class="fare-estimate-status" id="fareEstimateStatus">推薦快速｜依 Google 即時交通</div>
             <div class="fare-estimate-note">預估金額僅供參考，實際車資依行駛狀況為準</div>
         </div>
@@ -2957,7 +2958,6 @@ function updateBookingPaymentPreferenceUi() {
     const hint = document.getElementById("bookingPaymentPreferenceHint");
     const clear = document.getElementById("clearBookingPaymentPreference");
 
-    if (checkbox) checkbox.checked = false;
     const selectedLabel = selected === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
 
     if (savedBookingPaymentPreference) {
@@ -2979,14 +2979,22 @@ function commitBookingPaymentPreferenceIfRequested() {
     const checkbox = document.getElementById("rememberBookingPaymentPreference");
     if (!checkbox?.checked) return;
     saveCustomerPreferences({ paymentMode: getSelectedBookingPayment() });
-    checkbox.checked = false;
+    checkbox.checked = true;
     updateBookingPaymentPreferenceUi();
+
+    const hint = document.getElementById("bookingPaymentPreferenceHint");
+    if (hint) {
+        const savedLabel = savedBookingPaymentPreference === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
+        hint.textContent = "已更新固定付款方式：" + savedLabel;
+    }
 }
 function clearSavedBookingPaymentPreference() {
     if (!savedBookingPaymentPreference) return;
     const savedLabel = savedBookingPaymentPreference === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
     if (!window.confirm("確定要清除已記住的「" + savedLabel + "」固定付款方式嗎？")) return;
     saveCustomerPreferences({ paymentMode: "" });
+    const checkbox = document.getElementById("rememberBookingPaymentPreference");
+    if (checkbox) checkbox.checked = false;
     updateBookingPaymentPreferenceUi();
 }
 
@@ -3186,7 +3194,7 @@ function updateBookingWaypointUi() {
         if (group) group.hidden = !bookingWaypointActive[index];
     }
 
-    const button = document.getElementById("addBookingWaypoint");
+    const button = document.getElementById("addBookingWaypointBtn");
     if (button) {
         button.hidden = bookingWaypointActive.filter(Boolean).length >= MAX_BOOKING_WAYPOINTS;
     }
@@ -3196,13 +3204,21 @@ function addBookingWaypoint() {
     const index = bookingWaypointActive.findIndex(function(active) { return !active; });
     if (index < 0) return;
 
+    const group = document.getElementById("bookingWaypoint" + (index + 1) + "Group");
+    if (!group) {
+        console.error("BOOKING WAYPOINT GROUP NOT FOUND:", index + 1);
+        return;
+    }
+
     bookingWaypointActive[index] = true;
     updateBookingWaypointUi();
     resetFareEstimate();
 
-    const group = document.getElementById("bookingWaypoint" + (index + 1) + "Group");
     window.requestAnimationFrame(function() {
-        group?.scrollIntoView({ behavior: "smooth", block: "center" });
+        group.scrollIntoView({ behavior: "smooth", block: "center" });
+        window.setTimeout(function() {
+            document.getElementById("waypoint" + (index + 1))?.focus();
+        }, 180);
     });
 }
 
@@ -3357,9 +3373,12 @@ function renderBookingFareEstimate() {
         }
     }
 
-    document.getElementById("fareEstimateLongDistance")?.classList.toggle(
-        "active", currentFareEstimate.distanceKm > 40
-    );
+    const longDistance = document.getElementById("fareEstimateLongDistance");
+    if (longDistance) {
+        const shouldShowLongDistance = currentFareEstimate.distanceKm > 40;
+        longDistance.hidden = !shouldShowLongDistance;
+        longDistance.classList.toggle("active", shouldShowLongDistance);
+    }
 
     document.getElementById("fareEstimateStatus").textContent =
         currentFareEstimate.routeMode === "SURFACE"
@@ -3410,7 +3429,11 @@ function resetFareEstimate(message) {
         message || "請從地址建議中選擇上下車地點，系統會自動試算";
     const surcharge = document.getElementById("fareEstimateSurcharge");
     if (surcharge) { surcharge.hidden = true; surcharge.textContent = ""; }
-    document.getElementById("fareEstimateLongDistance")?.classList.remove("active");
+    const longDistance = document.getElementById("fareEstimateLongDistance");
+    if (longDistance) {
+        longDistance.hidden = true;
+        longDistance.classList.remove("active");
+    }
     document.getElementById("fareEstimate").classList.remove("loading");
     document.getElementById("fareEstimate").hidden = true;
 
@@ -5161,6 +5184,12 @@ window.addEventListener(
         }
 
         document.getElementById("useBookingLocation")?.addEventListener("click", useBookingCurrentLocation);
+
+        document.getElementById("addBookingWaypointBtn")?.addEventListener("click", function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            addBookingWaypoint();
+        });
 
         applyBookingPaymentPreferenceOnLoad();
 
