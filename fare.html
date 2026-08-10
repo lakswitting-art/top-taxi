@@ -4266,7 +4266,11 @@ function selectRoute(routeName) {
         .note =
         serviceMode === "driver"
             ? "含代駕服務費"
-            : "長途40公里以上另有優惠，請洽客服";
+            : (
+                Number(routeData.distanceKm) > 40
+                    ? "長途40公里以上另有優惠，請洽客服"
+                    : ""
+            );
 
 
     document
