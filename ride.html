@@ -317,6 +317,58 @@
       font-size:11px;
       line-height:1.55;
     }
+
+    .preference-card{
+      display:grid;
+      gap:7px;
+      margin-top:2px;
+      padding:11px 12px;
+      border:1px solid #ececef;
+      border-radius:12px;
+      background:#fafafa;
+    }
+    .preference-check{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      color:#55555b;
+      font-size:12px;
+      font-weight:850;
+      cursor:pointer;
+    }
+    .preference-check input{
+      width:16px;
+      height:16px;
+      margin:0;
+      accent-color:var(--red);
+      flex:0 0 auto;
+    }
+    .preference-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      min-width:0;
+      color:#99999f;
+      font-size:10.8px;
+      line-height:1.4;
+    }
+    #smokingPreferenceHint{
+      min-width:0;
+    }
+    .preference-clear{
+      flex:0 0 auto;
+      padding:2px 0;
+      border:0;
+      background:transparent;
+      color:#9a9aa0;
+      font-family:inherit;
+      font-size:10.8px;
+      font-weight:800;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .preference-clear:active{opacity:.6}
     .sheet-actions{
       display:grid;
       grid-template-columns:1fr 1.4fr;
@@ -530,7 +582,7 @@
           <span id="otherNeedsSummary" class="compact-choice-value">禁菸／寵物／其他備註・選填</span>
           <span class="compact-choice-arrow">›</span>
         </button>
-        <div class="compact-choice-help">禁菸、寵物、收據等需求，可點此選擇</div>
+        <div id="otherNeedsHelp" class="compact-choice-help">禁菸、寵物、收據等需求，可點此選擇</div>
       </div>
     </section>
 
@@ -598,13 +650,33 @@
       </div>
 
       <div class="sheet-section">
-        <div class="sheet-label">常用需求・可多選</div>
+        <div class="sheet-label">車內菸況・單選</div>
+        <div class="option-grid" id="smokingOptions">
+          <button class="option-pill active" data-smoking="不限" type="button">不限</button>
+          <button class="option-pill" data-smoking="禁菸" type="button">禁菸</button>
+          <button class="option-pill" data-smoking="可電子煙" type="button">可電子煙</button>
+          <button class="option-pill" data-smoking="可加熱菸" type="button">可加熱菸</button>
+        </div>
+
+        <div class="preference-card">
+          <label class="preference-check">
+            <input id="rememberSmokingPreference" type="checkbox">
+            <span id="rememberSmokingLabel">記住這個菸況，下次自動帶入</span>
+          </label>
+          <div class="preference-meta">
+            <span id="smokingPreferenceHint">尚未設定固定偏好</span>
+            <button id="clearSmokingPreference" class="preference-clear" type="button" hidden>清除固定偏好</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sheet-section">
+        <div class="sheet-label">其他需求・可多選</div>
         <div class="option-grid" id="noteChips">
-          <button class="option-pill" data-note="禁菸" type="button">禁菸</button>
-          <button class="option-pill" data-note="可電子煙" type="button">可電子煙</button>
-          <button class="option-pill" data-note="可加熱菸" type="button">可加熱菸</button>
           <button class="option-pill" data-pet="no-carrier" type="button">寵物無籠 +$50</button>
           <button class="option-pill" data-pet="carrier" type="button">寵物有籠</button>
+          <button class="option-pill" data-note="輪椅" type="button">輪椅</button>
+          <button class="option-pill" data-note="需要收據" type="button">需要收據</button>
         </div>
       </div>
 
@@ -631,7 +703,7 @@
   <script>
     const CONFIG={googleKey:"AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw",liffId:"2011008197-NjirAoUX"};
     const $=s=>document.querySelector(s);
-    let RouteClass=null,pickupPlace=null,dropoffPlace=null,petMode="",routeData=null,calcSeq=0;
+    let RouteClass=null,pickupPlace=null,dropoffPlace=null,petMode="",smokingMode="不限",savedSmokingPreference="",routeData=null,calcSeq=0;
     const MAX_RIDE_WAYPOINTS=2;
     let rideWaypointPlaces=[null,null];
     let rideWaypointAddressData=[null,null];
@@ -640,6 +712,43 @@
     let selectedRideRouteMode="FAST";
 
     const SHARED_ADDRESS_KEY="topTaxiAddresses";
+    const CUSTOMER_PREFERENCE_KEY="topTaxiCustomerPreferences";
+    function loadCustomerPreferences(){
+      try{
+        const raw=JSON.parse(localStorage.getItem(CUSTOMER_PREFERENCE_KEY)||"null");
+        if(raw&&typeof raw==="object"){
+          const allowed=["禁菸","可電子煙","可加熱菸"];
+          return{
+            version:1,
+            smokingMode:allowed.includes(raw.smokingMode)?raw.smokingMode:""
+          };
+        }
+      }catch(e){}
+      return{version:1,smokingMode:""};
+    }
+
+    function saveCustomerPreferences(next){
+      const value={
+        version:1,
+        smokingMode:["禁菸","可電子煙","可加熱菸"].includes(next?.smokingMode)
+          ?next.smokingMode
+          :""
+      };
+
+      if(!value.smokingMode){
+        localStorage.removeItem(CUSTOMER_PREFERENCE_KEY);
+      }else{
+        localStorage.setItem(CUSTOMER_PREFERENCE_KEY,JSON.stringify(value));
+      }
+
+      savedSmokingPreference=value.smokingMode;
+      return value;
+    }
+
+    const initialCustomerPreferences=loadCustomerPreferences();
+    savedSmokingPreference=initialCustomerPreferences.smokingMode||"";
+    smokingMode=savedSmokingPreference||"不限";
+
     function emptyAddress(name=""){return{name,displayName:"",address:"",city:"",district:"",areaLabel:"",placeId:"",lat:null,lng:null,pickupNote:""}}
     const defaults=[emptyAddress("住家"),emptyAddress("公司"),emptyAddress("常用地點 1"),emptyAddress("常用4")];
 
@@ -1002,8 +1111,62 @@
       }
     }
 
+    function updateSmokingPreferenceUi(){
+      document.querySelectorAll("[data-smoking]").forEach(button=>{
+        button.classList.toggle("active",button.dataset.smoking===smokingMode);
+      });
+
+      const checkbox=$("#rememberSmokingPreference");
+      const label=$("#rememberSmokingLabel");
+      const hint=$("#smokingPreferenceHint");
+      const clear=$("#clearSmokingPreference");
+
+      if(checkbox)checkbox.checked=false;
+
+      if(savedSmokingPreference){
+        if(label)label.textContent="更新我的固定偏好";
+        if(hint){
+          hint.textContent=
+            smokingMode===savedSmokingPreference
+              ?"已記住："+savedSmokingPreference+"｜本次已自動套用"
+              :"目前已記住："+savedSmokingPreference+"｜本次可臨時更改";
+        }
+        if(clear)clear.hidden=false;
+      }else{
+        if(label)label.textContent="記住這個菸況，下次自動帶入";
+        if(hint)hint.textContent="尚未設定固定偏好";
+        if(clear)clear.hidden=true;
+      }
+    }
+
+    function commitSmokingPreferenceIfRequested(){
+      const checkbox=$("#rememberSmokingPreference");
+      if(!checkbox?.checked)return;
+
+      if(smokingMode==="不限"){
+        saveCustomerPreferences({smokingMode:""});
+      }else{
+        saveCustomerPreferences({smokingMode});
+      }
+
+      checkbox.checked=false;
+      updateSmokingPreferenceUi();
+    }
+
+    function clearSavedSmokingPreference(){
+      if(!savedSmokingPreference)return;
+      if(!window.confirm("確定要清除已記住的「"+savedSmokingPreference+"」乘車偏好嗎？"))return;
+
+      saveCustomerPreferences({smokingMode:""});
+      updateSmokingPreferenceUi();
+      updateOtherNeedsSummary();
+    }
+
     function updateOtherNeedsSummary(){
       const selected=[];
+
+      if(smokingMode&&smokingMode!=="不限")selected.push(smokingMode);
+
       document.querySelectorAll("[data-note].active").forEach(button=>selected.push(button.dataset.note));
 
       if(petMode==="no-carrier")selected.push("寵物無籠");
@@ -1016,6 +1179,17 @@
         selected.length
           ? selected.slice(0,2).join("・")+(selected.length>2?"＋"+(selected.length-2):"")
           : "禁菸／寵物／其他備註・選填";
+
+      const help=$("#otherNeedsHelp");
+      if(help){
+        if(savedSmokingPreference&&smokingMode===savedSmokingPreference){
+          help.textContent="已自動套用固定偏好："+savedSmokingPreference+"；可點此調整";
+        }else if(savedSmokingPreference){
+          help.textContent="本次："+smokingMode+"｜固定偏好仍為："+savedSmokingPreference;
+        }else{
+          help.textContent="禁菸、寵物、收據等需求，可點此選擇";
+        }
+      }
     }
 
     function openSheet(id){
@@ -1029,7 +1203,7 @@
     }
     async function useLocation(){if(!navigator.geolocation)return setStatus("pickupStatus","此裝置無法取得目前位置。","error");$("#useLocation").textContent="正在取得位置…";navigator.geolocation.getCurrentPosition(async pos=>{try{const {Geocoder}=await google.maps.importLibrary("geocoding");const result=await new Geocoder().geocode({location:{lat:pos.coords.latitude,lng:pos.coords.longitude}});const address=result.results?.[0]?.formatted_address;if(!address)throw new Error();pickupPlace=await resolveAddress(address);$("#pickup").value=pickupPlace.formattedAddress||address;setStatus("pickupStatus","已帶入目前位置","ok");$("#useLocation").textContent="已取得目前位置";await recalculate()}catch(e){setStatus("pickupStatus","目前位置轉換地址失敗，請手動輸入。","error");$("#useLocation").textContent="使用目前位置"}},()=>{setStatus("pickupStatus","未取得定位權限，請手動輸入地址。","error");$("#useLocation").textContent="使用目前位置"},{enableHighAccuracy:true,timeout:10000,maximumAge:60000})}
 
-    function noteText(){const parts=[];document.querySelectorAll("[data-note].active").forEach(b=>parts.push(b.dataset.note));if(petMode==="no-carrier")parts.push("寵物無籠（+$50）");if(petMode==="carrier")parts.push("寵物有籠");if($("#note").value.trim())parts.push($("#note").value.trim());return parts.join("、")||"無"}
+    function noteText(){const parts=[];if(smokingMode&&smokingMode!=="不限")parts.push(smokingMode);document.querySelectorAll("[data-note].active").forEach(b=>parts.push(b.dataset.note));if(petMode==="no-carrier")parts.push("寵物無籠（+$50）");if(petMode==="carrier")parts.push("寵物有籠");if($("#note").value.trim())parts.push($("#note").value.trim());return parts.join("、")||"無"}
     function openConfirmation(){
       if(!pickupPlace||!$("#pickup").value.trim()){setStatus("pageStatus","請先從地址建議中選擇上車地點。","error");$("#pickup").focus();return}
       if(!validateRideWaypoints(true))return;
@@ -1214,24 +1388,31 @@
     };
 
     $("#openOtherNeeds").onclick=()=>{
+      updateSmokingPreferenceUi();
       updateOtherNeedsSummary();
       openSheet("otherNeedsSheet");
     };
     $("#closeOtherNeeds").onclick=()=>{
+      $("#rememberSmokingPreference").checked=false;
+      updateSmokingPreferenceUi();
       updateOtherNeedsSummary();
       renderEstimate();
       closeSheet("otherNeedsSheet");
     };
     $("#confirmOtherNeeds").onclick=()=>{
+      commitSmokingPreferenceIfRequested();
       updateOtherNeedsSummary();
       renderEstimate();
       closeSheet("otherNeedsSheet");
     };
     $("#clearOtherNeeds").onclick=()=>{
+      smokingMode="不限";
       document.querySelectorAll("[data-note].active").forEach(b=>b.classList.remove("active"));
       document.querySelectorAll("[data-pet]").forEach(b=>b.classList.remove("active"));
       petMode="";
       $("#note").value="";
+      $("#rememberSmokingPreference").checked=false;
+      updateSmokingPreferenceUi();
       updateOtherNeedsSummary();
       renderEstimate();
     };
@@ -1244,6 +1425,18 @@
       updateRideNeedsSummary();
       updateLuggageNotice();
     };
+
+    $("#smokingOptions").onclick=e=>{
+      const b=e.target.closest("[data-smoking]");
+      if(!b)return;
+
+      smokingMode=b.dataset.smoking||"不限";
+      $("#rememberSmokingPreference").checked=false;
+      updateSmokingPreferenceUi();
+      updateOtherNeedsSummary();
+    };
+
+    $("#clearSmokingPreference").onclick=clearSavedSmokingPreference;
 
     $("#noteChips").onclick=e=>{
       const b=e.target.closest("button");
@@ -1269,6 +1462,8 @@
     });
     $("#otherNeedsSheet").addEventListener("click",e=>{
       if(e.target===$("#otherNeedsSheet")){
+        $("#rememberSmokingPreference").checked=false;
+        updateSmokingPreferenceUi();
         updateOtherNeedsSummary();
         renderEstimate();
         closeSheet("otherNeedsSheet");
@@ -1281,6 +1476,7 @@
 
     updatePickupNoteUi(false);
     updateRideNeedsSummary();
+    updateSmokingPreferenceUi();
     updateOtherNeedsSummary();
     updateLuggageNotice();
     window.initGoogle=init;
