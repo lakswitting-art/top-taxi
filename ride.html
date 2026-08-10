@@ -68,6 +68,9 @@
     .route-option.active{background:#fff;color:var(--ink);box-shadow:0 4px 14px rgba(0,0,0,.08)}
     .route-option.fast.active{background:var(--ink);color:#fff}
     .route-help{color:#94949a;font-size:11px;line-height:1.5}
+    .estimate-route-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+    .estimate-route-switch{margin:0}
+    .estimate-route-switch .route-option{min-height:38px;padding:0 8px;font-size:12px}
 
   </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -115,15 +118,6 @@
 
       <div class="field"><label class="label" for="dropoff">下車地點 <span class="sub">選填</span></label><div class="autocomplete"><input id="dropoff" class="input" autocomplete="off" placeholder="不填也可以直接叫車"><div id="dropoffSuggestions" class="suggestions" hidden></div></div><div class="sub">未填下車地點時，不顯示路線與預估車資</div></div>
 
-      <div class="field">
-        <div class="label">行車路線</div>
-        <div class="route-switch" role="group" aria-label="行車路線">
-          <button id="rideSurfaceBtn" class="route-option" type="button" onclick="selectRideRouteMode('SURFACE')">🚕 平面道路</button>
-          <button id="rideFastBtn" class="route-option fast active" type="button" onclick="selectRideRouteMode('FAST')">🛣️ 推薦快速</button>
-        </div>
-        <div class="route-help">平面道路會優先避開高速／收費道路；推薦快速會依 Google 即時交通選擇完整行程路線。</div>
-      </div>
-
       <div class="field"><label class="label" for="passengers">乘車人數</label><select id="passengers" class="select"><option value="1" selected>1 人</option><option value="2">2 人</option><option value="3">3 人</option><option value="4">4 人</option><option value="5">5 人上車（+$50）</option><option value="7">7 人座（+$200）</option><option value="9">9 人座（請洽客服）</option></select></div>
       <div class="field"><label class="label" for="luggage">行李件數</label><select id="luggage" class="select"><option value="無行李" selected>無行李</option><option value="1–2 件">1–2 件</option><option value="3–4 件">3–4 件</option><option value="5 件以上">5 件以上</option></select><div id="luggageNotice" class="luggage-notice" hidden>5 件以上行李將由客服確認適合車型</div></div>
       <div class="field">
@@ -140,7 +134,13 @@
     </section>
 
     <section id="estimate" class="card estimate" hidden>
-      <div class="estimate-top"><strong id="routeEstimateTitle">推薦快速路線</strong><span id="duration" class="badge">計算中</span></div>
+      <div class="estimate-route-row">
+        <div class="route-switch estimate-route-switch" role="group" aria-label="行車路線">
+          <button id="rideSurfaceBtn" class="route-option" type="button" onclick="selectRideRouteMode('SURFACE')">🚕 平面道路</button>
+          <button id="rideFastBtn" class="route-option fast active" type="button" onclick="selectRideRouteMode('FAST')">🛣️ 推薦快速</button>
+        </div>
+        <span id="duration" class="badge">計算中</span>
+      </div>
       <div class="money-row"><span id="distance" class="sub"></span><strong id="fare" class="money">--</strong></div>
       <div id="surcharge" class="surcharge" hidden></div><div id="longDistancePromo" class="long-distance">超過 40 公里另有長途優惠，請洽客服</div><div class="sub">預估金額僅供參考，實際車資依行駛狀況為準</div>
     </section>
@@ -432,7 +432,7 @@
         setStatus("pageStatus","路線計算失敗，請重新選擇地址。","error");
       }
     }
-    function renderEstimate(){if(!routeData)return;const ex=extras(),quote=$("#passengers").value==="9",longTrip=routeData.km>40;$("#routeEstimateTitle").textContent=routeData.routeName;$("#duration").textContent="約 "+routeData.min+" 分鐘";$("#distance").textContent="距離約 "+routeData.km.toFixed(1)+" 公里";$("#fare").textContent=quote?"請洽客服":"$"+(routeData.baseFare+ex.amount);$("#surcharge").hidden=!quote&&!ex.items.length;$("#surcharge").textContent=quote?"9 人座需求將由客服另外報價":"加價項目："+ex.items.join("、");$("#longDistancePromo").classList.toggle("active",longTrip);$("#longDistancePromo").textContent=longTrip?"此行程超過 40 公里，可享長途優惠，請洽客服確認優惠價":"超過 40 公里另有長途優惠，請洽客服";updateSubmit()}
+    function renderEstimate(){if(!routeData)return;const ex=extras(),quote=$("#passengers").value==="9",longTrip=routeData.km>40;$("#duration").textContent="約 "+routeData.min+" 分鐘";$("#distance").textContent="距離約 "+routeData.km.toFixed(1)+" 公里";$("#fare").textContent=quote?"請洽客服":"$"+(routeData.baseFare+ex.amount);$("#surcharge").hidden=!quote&&!ex.items.length;$("#surcharge").textContent=quote?"9 人座需求將由客服另外報價":"加價項目："+ex.items.join("、");$("#longDistancePromo").classList.toggle("active",longTrip);$("#longDistancePromo").textContent=longTrip?"此行程超過 40 公里，可享長途優惠，請洽客服確認優惠價":"超過 40 公里另有長途優惠，請洽客服";updateSubmit()}
     function updateLuggageNotice(){const needsVehicleCheck=$("#luggage").value==="5 件以上";$("#luggageNotice").hidden=!needsVehicleCheck}
     async function useLocation(){if(!navigator.geolocation)return setStatus("pickupStatus","此裝置無法取得目前位置。","error");$("#useLocation").textContent="正在取得位置…";navigator.geolocation.getCurrentPosition(async pos=>{try{const {Geocoder}=await google.maps.importLibrary("geocoding");const result=await new Geocoder().geocode({location:{lat:pos.coords.latitude,lng:pos.coords.longitude}});const address=result.results?.[0]?.formatted_address;if(!address)throw new Error();pickupPlace=await resolveAddress(address);$("#pickup").value=pickupPlace.formattedAddress||address;setStatus("pickupStatus","已帶入目前位置","ok");$("#useLocation").textContent="已取得目前位置";await recalculate()}catch(e){setStatus("pickupStatus","目前位置轉換地址失敗，請手動輸入。","error");$("#useLocation").textContent="使用目前位置"}},()=>{setStatus("pickupStatus","未取得定位權限，請手動輸入地址。","error");$("#useLocation").textContent="使用目前位置"},{enableHighAccuracy:true,timeout:10000,maximumAge:60000})}
 
