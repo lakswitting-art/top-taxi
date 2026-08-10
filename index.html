@@ -2200,23 +2200,28 @@ body{
     box-shadow: 0 7px 20px rgba(25,25,35,.06);
 }
 .booking-confirm-price span {
+    flex: 1 1 auto;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     gap: 2px;
     color: #26262a;
     font-size: 16px;
     font-weight: 700;
+    white-space: nowrap;
 }
 .booking-confirm-price span::after {
     content: attr(data-note);
-    max-width: 220px;
+    max-width: 240px;
     color: #8e8e94;
     font-size: 12px;
     font-weight: 500;
     line-height: 1.35;
+    white-space: normal;
 }
 .booking-confirm-price span[data-note=""]::after { display: none; }
 .booking-confirm-price strong {
+    flex: 0 0 auto;
     color: #f20d27;
     font-size: 32px;
     font-weight: 900;
@@ -4717,10 +4722,7 @@ function openBookingConfirmation() {
 
     const fareQuote = getBookingFareQuote();
     const fareText = fareQuote
-        ? fareQuote.display +
-            (fareQuote.extras?.items?.length
-                ? "（" + fareQuote.extras.items.join("、") + "）"
-                : "")
+        ? fareQuote.display
         : "未試算";
 
     bookingConfirmationSetText("bookingConfirmServiceValue", serviceType);
