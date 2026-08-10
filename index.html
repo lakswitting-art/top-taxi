@@ -112,7 +112,14 @@ body {
 
 .hero-copy {
     min-width: 0;
-    text-align: left;
+    flex: 1;
+    text-align: center;
+}
+
+.hero::after {
+    content: "";
+    flex: 0 0 70px;
+    width: 70px;
 }
 
 
@@ -975,6 +982,11 @@ input::placeholder {
         filter: blur(16px);
     }
 
+    .hero::after {
+        flex-basis: 58px;
+        width: 58px;
+    }
+
     .brand {
         font-size: 23px;
     }
@@ -1040,6 +1052,7 @@ input::placeholder {
     }
     .hero { gap: 13px; padding-left: 18px; padding-right: 18px; }
     .logo { width: 54px; height: 54px; border-radius: 13px; }
+    .hero::after { flex-basis: 54px; width: 54px; }
     .hero-description { max-width: calc(100vw - 112px); font-size: 9.5px; }
 }
 
