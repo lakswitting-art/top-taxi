@@ -99,6 +99,9 @@
       background:#f8f8fa;
       border-style:dashed;
     }
+    .saved-place-line .chips:empty{
+      display:none;
+    }
     .saved-settings-btn{
       flex:0 0 auto;
       min-height:38px;
@@ -148,6 +151,53 @@
       color:#9a9aa0;
       font-size:20px;
       line-height:1;
+    }
+    .compact-choice-help{
+      margin-top:6px;
+      padding-left:2px;
+      color:#9b9ba1;
+      font-size:11px;
+      line-height:1.45;
+    }
+    .saved-place-field{
+      margin-top:4px;
+      margin-bottom:12px;
+    }
+
+    /* Current location = secondary shortcut, visible but not dominant */
+    #pickupStatus:empty{
+      display:none;
+    }
+    .location-inline-btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
+      min-height:35px;
+      margin-top:5px;
+      padding:0 11px;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:#f7f7f9;
+      color:#6f6f75;
+      font-family:inherit;
+      font-size:12.5px;
+      font-weight:850;
+      cursor:pointer;
+      text-align:left;
+    }
+    .location-inline-btn:active{
+      opacity:.72;
+      transform:scale(.99);
+    }
+    .location-inline-btn:disabled{
+      opacity:.62;
+      cursor:wait;
+    }
+    .location-inline-icon{
+      font-size:15px;
+      line-height:1;
+      color:#77777d;
     }
     .compact-hidden-control{display:none!important}
 
@@ -346,13 +396,6 @@
     <section class="card">
       <div class="form-header"><div class="form-title">🚕 即時叫車</div><div class="form-label-small">TOP TAXI RIDE</div></div>
       <p class="sub">選擇地址後，系統會依 Google 即時路線重新預估車資</p>
-      <div class="field">
-        <div class="label">常用上車地點</div>
-        <div class="saved-place-line">
-          <div id="savedChips" class="chips"></div>
-          <button id="toggleSettings" class="saved-settings-btn" type="button" aria-label="設定常用地址">設定 ⚙️</button>
-        </div>
-      </div>
       <div id="settings" class="settings" hidden>
         <div class="row"><div><label class="label" for="homeName">地點 1 名稱</label><input id="homeName" class="input" value="住家"></div><div><label class="label" for="homeAddress">地址</label><div class="autocomplete"><input id="homeAddress" class="input" autocomplete="off" placeholder="輸入住家地址或地標"><div id="homeAddressSuggestions" class="suggestions" hidden></div></div></div></div>
         <div><label class="label" for="homePickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="homePickupNote" class="input" placeholder="例如：社區大門口、超商前"></div>
@@ -364,7 +407,18 @@
         <div><label class="label" for="fav2PickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="fav2PickupNote" class="input" placeholder="例如：管理室前、便利商店門口"></div>
         <button id="saveAddresses" class="primary" type="button">儲存常用地址</button>
       </div>
-      <div class="field"><label class="label" for="pickup">上車地點 <span class="field-tag required-tag">必填</span></label><button id="useLocation" class="location-btn" type="button">使用目前位置</button><div class="autocomplete"><input id="pickup" class="input" autocomplete="off" placeholder="請輸入上車地址或地標"><div id="pickupSuggestions" class="suggestions" hidden></div></div><div id="pickupStatus" class="status"></div></div>
+      <div class="field"><label class="label" for="pickup">上車地點 <span class="field-tag required-tag">必填</span></label><div class="autocomplete"><input id="pickup" class="input" autocomplete="off" placeholder="請輸入上車地址或地標"><div id="pickupSuggestions" class="suggestions" hidden></div></div><div id="pickupStatus" class="status"></div>
+        <button id="useLocation" class="location-inline-btn" type="button">
+          <span class="location-inline-icon">⌖</span>
+          <span id="useLocationText">使用目前位置</span>
+        </button>
+      </div>
+      <div class="field saved-place-field">
+        <div class="saved-place-line">
+          <div id="savedChips" class="chips"></div>
+          <button id="toggleSettings" class="saved-settings-btn" type="button" aria-label="設定常用地址">設定 ⚙️</button>
+        </div>
+      </div>
       <div class="pickup-note-compact">
         <button id="togglePickupNote" class="pickup-note-toggle" type="button" aria-expanded="false">
           <span class="pickup-note-toggle-main">
@@ -404,6 +458,7 @@
           <span id="rideNeedsSummary" class="compact-choice-value">1 人・無行李</span>
           <span class="compact-choice-arrow">›</span>
         </button>
+        <div class="compact-choice-help">多人、行李或特殊車型需求，可點此調整</div>
 
         <select id="passengers" class="select compact-hidden-control" aria-hidden="true" tabindex="-1">
           <option value="1" selected>1 人</option>
@@ -431,6 +486,7 @@
           <span id="otherNeedsSummary" class="compact-choice-value">禁菸／寵物／其他備註・選填</span>
           <span class="compact-choice-arrow">›</span>
         </button>
+        <div class="compact-choice-help">禁菸、寵物、收據等需求，可點此選擇</div>
       </div>
     </section>
 
@@ -631,26 +687,15 @@
       box.innerHTML="";
 
       savedAddresses.forEach((x,i)=>{
+        if(!x.address)return;
+
         const b=document.createElement("button");
         b.type="button";
         b.className="chip";
 
         const fallbackNames=["住家","公司","常用3","常用4"];
         b.textContent=(x.name||fallbackNames[i]||("常用"+(i+1))).trim();
-
-        if(x.address){
-          b.onclick=()=>useSaved(i);
-        }else{
-          if(i===3 && (!x.name || x.name==="常用地點 2")){
-            b.textContent="常用4";
-          }
-          b.classList.add("placeholder");
-          b.onclick=()=>{
-            $("#settings").hidden=false;
-            const ids=["homeAddress","workAddress","fav1Address","fav2Address"];
-            setTimeout(()=>$("#"+ids[i])?.focus(),60);
-          };
-        }
+        b.onclick=()=>useSaved(i);
 
         box.appendChild(b);
       });
@@ -1026,7 +1071,22 @@
       }
     };
 
-    $("#useLocation").onclick=useLocation;
+    $("#useLocation").onclick=async()=>{
+      const text=$("#useLocationText");
+      const original=text.textContent;
+      text.textContent="定位中…";
+      $("#useLocation").disabled=true;
+      try{
+        await useLocation();
+        text.textContent="已取得目前位置";
+        setTimeout(()=>{ text.textContent="使用目前位置"; },1800);
+      }catch(error){
+        text.textContent="使用目前位置";
+        throw error;
+      }finally{
+        $("#useLocation").disabled=false;
+      }
+    };
 
     $("#togglePickupNote").onclick=()=>{
       const expanded=$("#togglePickupNote").getAttribute("aria-expanded")==="true";
