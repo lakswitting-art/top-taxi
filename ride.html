@@ -105,15 +105,53 @@
     .saved-settings-btn{
       flex:0 0 auto;
       min-height:38px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:6px;
       padding:0 11px;
       border:1px solid var(--line);
       border-radius:12px;
       background:#fff;
-      color:#4d4d53;
+      color:#5d5d63;
       font-size:12px;
       font-weight:850;
       cursor:pointer;
       white-space:nowrap;
+    }
+    .settings-gear-icon{
+      width:15px;
+      height:15px;
+      fill:none;
+      stroke:currentColor;
+      stroke-width:1.55;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      flex:0 0 auto;
+    }
+    .saved-setting-label-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .saved-setting-label-row .label{
+      margin-bottom:0;
+    }
+    .saved-clear-btn{
+      flex:0 0 auto;
+      border:0;
+      background:transparent;
+      color:#a0a0a6;
+      padding:3px 2px;
+      font-family:inherit;
+      font-size:11px;
+      font-weight:800;
+      line-height:1.2;
+      cursor:pointer;
+    }
+    .saved-clear-btn:active{
+      opacity:.6;
     }
 
     .compact-choice{
@@ -397,13 +435,13 @@
       <div class="form-header"><div class="form-title">🚕 即時叫車</div><div class="form-label-small">TOP TAXI RIDE</div></div>
       <p class="sub">選擇地址後，系統會依 Google 即時路線重新預估車資</p>
       <div id="settings" class="settings" hidden>
-        <div class="row"><div><label class="label" for="homeName">地點 1 名稱</label><input id="homeName" class="input" value="住家"></div><div><label class="label" for="homeAddress">地址</label><div class="autocomplete"><input id="homeAddress" class="input" autocomplete="off" placeholder="輸入住家地址或地標"><div id="homeAddressSuggestions" class="suggestions" hidden></div></div></div></div>
+        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="homeName">地點 1 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="0">清除</button></div><input id="homeName" class="input" value="住家"></div><div><label class="label" for="homeAddress">地址</label><div class="autocomplete"><input id="homeAddress" class="input" autocomplete="off" placeholder="輸入住家地址或地標"><div id="homeAddressSuggestions" class="suggestions" hidden></div></div></div></div>
         <div><label class="label" for="homePickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="homePickupNote" class="input" placeholder="例如：社區大門口、超商前"></div>
-        <div class="row"><div><label class="label" for="workName">地點 2 名稱</label><input id="workName" class="input" value="公司"></div><div><label class="label" for="workAddress">地址</label><div class="autocomplete"><input id="workAddress" class="input" autocomplete="off" placeholder="輸入公司地址或地標"><div id="workAddressSuggestions" class="suggestions" hidden></div></div></div></div>
+        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="workName">地點 2 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="1">清除</button></div><input id="workName" class="input" value="公司"></div><div><label class="label" for="workAddress">地址</label><div class="autocomplete"><input id="workAddress" class="input" autocomplete="off" placeholder="輸入公司地址或地標"><div id="workAddressSuggestions" class="suggestions" hidden></div></div></div></div>
         <div><label class="label" for="workPickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="workPickupNote" class="input" placeholder="例如：公司正門、警衛室旁"></div>
-        <div class="row"><div><label class="label" for="fav1Name">地點 3 名稱</label><input id="fav1Name" class="input" value="常用地點 1"></div><div><label class="label" for="fav1Address">地址</label><div class="autocomplete"><input id="fav1Address" class="input" autocomplete="off" placeholder="輸入常用地址或地標"><div id="fav1AddressSuggestions" class="suggestions" hidden></div></div></div></div>
+        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="fav1Name">地點 3 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="2">清除</button></div><input id="fav1Name" class="input" value="常用地點 1"></div><div><label class="label" for="fav1Address">地址</label><div class="autocomplete"><input id="fav1Address" class="input" autocomplete="off" placeholder="輸入常用地址或地標"><div id="fav1AddressSuggestions" class="suggestions" hidden></div></div></div></div>
         <div><label class="label" for="fav1PickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="fav1PickupNote" class="input" placeholder="例如：大門右側、路口紅綠燈下"></div>
-        <div class="row"><div><label class="label" for="fav2Name">地點 4 名稱</label><input id="fav2Name" class="input" value="常用4"></div><div><label class="label" for="fav2Address">地址</label><div class="autocomplete"><input id="fav2Address" class="input" autocomplete="off" placeholder="輸入常用地址或地標"><div id="fav2AddressSuggestions" class="suggestions" hidden></div></div></div></div>
+        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="fav2Name">地點 4 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="3">清除</button></div><input id="fav2Name" class="input" value="常用4"></div><div><label class="label" for="fav2Address">地址</label><div class="autocomplete"><input id="fav2Address" class="input" autocomplete="off" placeholder="輸入常用地址或地標"><div id="fav2AddressSuggestions" class="suggestions" hidden></div></div></div></div>
         <div><label class="label" for="fav2PickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="fav2PickupNote" class="input" placeholder="例如：管理室前、便利商店門口"></div>
         <button id="saveAddresses" class="primary" type="button">儲存常用地址</button>
       </div>
@@ -416,7 +454,13 @@
       <div class="field saved-place-field">
         <div class="saved-place-line">
           <div id="savedChips" class="chips"></div>
-          <button id="toggleSettings" class="saved-settings-btn" type="button" aria-label="設定常用地址">設定 ⚙️</button>
+          <button id="toggleSettings" class="saved-settings-btn" type="button" aria-label="設定常用地址">
+            <span>設定</span>
+            <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z"></path>
+              <path d="M19.1 13.7a7.7 7.7 0 0 0 .05-1.7 7.7 7.7 0 0 0-.05-1.7l2-1.55-2-3.45-2.45.98a7.75 7.75 0 0 0-2.95-1.7L13.35 2h-4.7L8.3 4.58a7.75 7.75 0 0 0-2.95 1.7L2.9 5.3l-2 3.45 2 1.55A7.7 7.7 0 0 0 2.85 12c0 .58.02 1.15.05 1.7l-2 1.55 2 3.45 2.45-.98a7.75 7.75 0 0 0 2.95 1.7L8.65 22h4.7l.35-2.58a7.75 7.75 0 0 0 2.95-1.7l2.45.98 2-3.45-2-1.55Z"></path>
+            </svg>
+          </button>
         </div>
       </div>
       <div class="pickup-note-compact">
@@ -708,6 +752,35 @@
 
       draftAddressData=savedAddresses.map(item=>normalizeAddress(item));
     }
+    function clearSavedAddress(index){
+      const ids=["home","work","fav1","fav2"];
+      const id=ids[index];
+      if(!id)return;
+
+      const currentName=$("#"+id+"Name").value.trim();
+      const currentAddress=$("#"+id+"Address").value.trim();
+      const hasContent=currentName||currentAddress||$("#"+id+"PickupNote").value.trim();
+
+      if(!hasContent)return;
+
+      const label=currentName||("地點 "+(index+1));
+      if(!window.confirm("確定要清除「"+label+"」這組常用地址嗎？"))return;
+
+      const empty=emptyAddress("");
+      savedAddresses[index]=empty;
+      draftAddressData[index]=emptyAddress("");
+
+      localStorage.setItem(SHARED_ADDRESS_KEY,JSON.stringify(savedAddresses));
+
+      const suggestions=$("#"+id+"AddressSuggestions");
+      if(suggestions){
+        suggestions.innerHTML="";
+        suggestions.hidden=true;
+      }
+
+      renderSaved();
+    }
+
     async function placeFromSaved(item){if(item.placeId){const {Place}=await google.maps.importLibrary("places");const place=new Place({id:item.placeId});await place.fetchFields({fields:["id","displayName","formattedAddress","location","addressComponents"]});return place}return resolveAddress(item.address)}
     async function useSaved(i){const item=savedAddresses[i];$("#pickup").value=addressDisplayText(item);$("#pickupNote").value=item.pickupNote||"";updatePickupNoteUi(false);pickupPlace=null;hideEstimate();setStatus("pickupStatus","正在確認「"+item.name+"」地址…");try{pickupPlace=await placeFromSaved(item);const upgraded=placeToAddressData(pickupPlace,{name:item.name,address:item.address,placeId:item.placeId,pickupNote:item.pickupNote});savedAddresses[i]=normalizeAddress(upgraded,item);localStorage.setItem(SHARED_ADDRESS_KEY,JSON.stringify(savedAddresses));$("#pickup").value=addressDisplayText(savedAddresses[i])||pickupPlace.formattedAddress||item.address;setStatus("pickupStatus","已帶入「"+item.name+"」地址與上車位置補充","ok");await recalculate()}catch(e){setStatus("pickupStatus","找不到這個常用地址，請重新設定。","error")}}
     function setStatus(id,text,type=""){$("#"+id).textContent=text;$("#"+id).className="status "+type}
@@ -1039,6 +1112,12 @@
     }
 
     $("#toggleSettings").onclick=()=>{$("#settings").hidden=!$("#settings").hidden};
+
+    document.querySelectorAll("[data-clear-saved]").forEach(button=>{
+      button.addEventListener("click",()=>{
+        clearSavedAddress(Number(button.dataset.clearSaved));
+      });
+    });
 
     $("#saveAddresses").onclick=async()=>{
       const button=$("#saveAddresses"),ids=["home","work","fav1","fav2"];
