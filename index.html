@@ -1153,6 +1153,86 @@ input::placeholder {
     .saved-address-row { grid-template-columns: 82px 1fr; }
 }
 
+
+/* ===== STEP 3：MULTI-STOP + ROUTE MODE ===== */
+.booking-waypoints {
+    display: grid;
+    gap: 10px;
+    margin: -2px 0 15px;
+}
+.booking-waypoint {
+    display: grid;
+    gap: 8px;
+    padding-left: 14px;
+    border-left: 2px dashed #dedee2;
+}
+.booking-waypoint[hidden] { display: none !important; }
+.booking-waypoint-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.booking-waypoint-head label { margin: 0; }
+.booking-waypoint-remove {
+    border: 1px solid var(--gray-2);
+    border-radius: 10px;
+    background: #fff;
+    color: #818187;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 800;
+}
+.booking-add-waypoint {
+    width: 100%;
+    min-height: 44px;
+    border: 1px dashed #d4d4d8;
+    border-radius: 13px;
+    background: #fff;
+    color: #56565c;
+    font-weight: 850;
+}
+.booking-add-waypoint[hidden] { display: none !important; }
+.booking-waypoint-help {
+    color: #99999f;
+    font-size: 11px;
+    line-height: 1.5;
+    text-align: center;
+}
+.booking-route-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 7px;
+    padding: 5px;
+    border: 1px solid var(--gray-2);
+    border-radius: 14px;
+    background: #f5f5f7;
+}
+.booking-route-option {
+    min-height: 43px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #77777d;
+    font-size: 13px;
+    font-weight: 900;
+}
+.booking-route-option.active {
+    background: #fff;
+    color: #222226;
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+.booking-route-option.fast.active {
+    background: #17171b;
+    color: #fff;
+}
+.booking-route-help {
+    color: #96969c;
+    font-size: 11px;
+    line-height: 1.5;
+}
+
 </style>
 
 </head>
@@ -1455,6 +1535,30 @@ input::placeholder {
 
 
 
+        <!-- WAYPOINTS -->
+
+        <div class="booking-waypoints">
+            <div id="bookingWaypoint1Group" class="booking-waypoint" hidden>
+                <div class="booking-waypoint-head">
+                    <label>🟡 停靠點 1</label>
+                    <button type="button" class="booking-waypoint-remove" onclick="removeBookingWaypoint(0)">移除</button>
+                </div>
+                <div id="waypoint1Box"></div>
+            </div>
+
+            <div id="bookingWaypoint2Group" class="booking-waypoint" hidden>
+                <div class="booking-waypoint-head">
+                    <label>🟡 停靠點 2</label>
+                    <button type="button" class="booking-waypoint-remove" onclick="removeBookingWaypoint(1)">移除</button>
+                </div>
+                <div id="waypoint2Box"></div>
+            </div>
+
+            <button type="button" id="addBookingWaypoint" class="booking-add-waypoint" onclick="addBookingWaypoint()">＋ 新增停靠點</button>
+            <div class="booking-waypoint-help">最多 2 個停靠點；Google 會依照您輸入的 A → B → C → D 順序計算</div>
+        </div>
+
+
         <!-- DROPOFF -->
 
         <div class="input-group">
@@ -1471,12 +1575,24 @@ input::placeholder {
         </div>
 
 
+        <!-- ROUTE MODE -->
+
+        <div class="input-group">
+            <label>🛣️ 行車路線</label>
+            <div class="booking-route-switch" role="group" aria-label="行車路線">
+                <button type="button" id="bookingSurfaceBtn" class="booking-route-option" onclick="selectBookingRouteMode('SURFACE')">🚕 平面道路</button>
+                <button type="button" id="bookingFastBtn" class="booking-route-option fast active" onclick="selectBookingRouteMode('FAST')">🛣️ 推薦快速</button>
+            </div>
+            <div class="booking-route-help">平面道路會優先避開高速／收費道路；推薦快速會依 Google 即時交通選擇完整行程路線。</div>
+        </div>
+
+
         <!-- FARE ESTIMATE -->
 
         <div class="fare-estimate" id="fareEstimate" aria-live="polite" hidden>
 
-            <div class="fare-estimate-title">
-                ✨ 系統推薦・快速路線
+            <div class="fare-estimate-title" id="fareEstimateTitle">
+                ✨ 推薦快速路線
             </div>
 
             <div class="fare-estimate-item">
@@ -1679,6 +1795,13 @@ let bookingDropoffPlace = null;
 let BookingRouteClass = null;
 let currentFareEstimate = null;
 let fareRequestNumber = 0;
+
+const MAX_BOOKING_WAYPOINTS = 2;
+let bookingWaypointPlaces = [null, null];
+let bookingWaypointAddressData = [null, null];
+let bookingWaypointActive = [false, false];
+let bookingRouteOptions = { FAST: null, SURFACE: null };
+let selectedBookingRouteMode = "FAST";
 
 /* ======================================================
    SHARED SAVED ADDRESSES - SAME STORAGE AS RIDE.HTML
@@ -1974,6 +2097,183 @@ function saveSharedAddressesFromBooking() {
 
 
 
+
+function updateBookingWaypointUi() {
+    for (let index = 0; index < MAX_BOOKING_WAYPOINTS; index++) {
+        const group = document.getElementById("bookingWaypoint" + (index + 1) + "Group");
+        if (group) group.hidden = !bookingWaypointActive[index];
+    }
+
+    const button = document.getElementById("addBookingWaypoint");
+    if (button) {
+        button.hidden = bookingWaypointActive.filter(Boolean).length >= MAX_BOOKING_WAYPOINTS;
+    }
+}
+
+function addBookingWaypoint() {
+    const index = bookingWaypointActive.findIndex(function(active) { return !active; });
+    if (index < 0) return;
+
+    bookingWaypointActive[index] = true;
+    updateBookingWaypointUi();
+    resetFareEstimate();
+
+    window.setTimeout(function() {
+        document.getElementById("waypoint" + (index + 1))?.focus();
+    }, 60);
+}
+
+function clearBookingWaypoint(index) {
+    bookingWaypointPlaces[index] = null;
+    bookingWaypointAddressData[index] = null;
+
+    const input = document.getElementById("waypoint" + (index + 1));
+    if (input) input.value = "";
+}
+
+function removeBookingWaypoint(index) {
+    if (index === 0 && bookingWaypointActive[1]) {
+        bookingWaypointPlaces[0] = bookingWaypointPlaces[1];
+        bookingWaypointAddressData[0] = bookingWaypointAddressData[1];
+
+        const first = document.getElementById("waypoint1");
+        const second = document.getElementById("waypoint2");
+        if (first && second) first.value = second.value;
+
+        clearBookingWaypoint(1);
+        bookingWaypointActive[0] = true;
+        bookingWaypointActive[1] = false;
+    } else {
+        clearBookingWaypoint(index);
+        bookingWaypointActive[index] = false;
+    }
+
+    updateBookingWaypointUi();
+
+    if (bookingPickupPlace && bookingDropoffPlace) {
+        updateFareEstimate();
+    } else {
+        resetFareEstimate();
+    }
+}
+
+function getActiveBookingWaypointPlaces() {
+    return bookingWaypointActive
+        .map(function(active, index) {
+            return active ? bookingWaypointPlaces[index] : null;
+        })
+        .filter(Boolean);
+}
+
+function getActiveBookingWaypointData() {
+    return bookingWaypointActive
+        .map(function(active, index) {
+            return active ? bookingWaypointAddressData[index] : null;
+        })
+        .filter(Boolean);
+}
+
+function validateBookingWaypoints(showError = false) {
+    for (let index = 0; index < MAX_BOOKING_WAYPOINTS; index++) {
+        if (!bookingWaypointActive[index]) continue;
+
+        const input = document.getElementById("waypoint" + (index + 1));
+        const typed = (input?.value || "").trim();
+
+        if (typed && !bookingWaypointPlaces[index]) {
+            if (showError) {
+                alert("停靠點 " + (index + 1) + " 請從 Google 地址建議中選擇。");
+                input?.focus();
+            }
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function summarizeBookingRoute(route, expectedLegCount) {
+    const legs = Array.isArray(route?.legs) ? route.legs : [];
+
+    if (legs.length !== expectedLegCount) {
+        throw new Error(
+            "Google 路線停靠點驗證失敗：預期 " +
+            expectedLegCount +
+            " 段，實際 " +
+            legs.length +
+            " 段"
+        );
+    }
+
+    const distanceMeters = legs.reduce(function(sum, leg) {
+        return sum + Number(leg?.distanceMeters || 0);
+    }, 0);
+
+    const durationMillis = legs.reduce(function(sum, leg) {
+        return sum + Number(leg?.durationMillis || 0);
+    }, 0);
+
+    if (
+        !Number.isFinite(distanceMeters) ||
+        !Number.isFinite(durationMillis) ||
+        distanceMeters <= 0 ||
+        durationMillis <= 0
+    ) {
+        throw new Error("Google 路線分段資料不完整");
+    }
+
+    return {
+        distanceMeters: distanceMeters,
+        durationMillis: durationMillis
+    };
+}
+
+function selectBookingRouteMode(mode) {
+    selectedBookingRouteMode = mode === "SURFACE" ? "SURFACE" : "FAST";
+
+    document.getElementById("bookingSurfaceBtn")?.classList.toggle(
+        "active",
+        selectedBookingRouteMode === "SURFACE"
+    );
+
+    document.getElementById("bookingFastBtn")?.classList.toggle(
+        "active",
+        selectedBookingRouteMode === "FAST"
+    );
+
+    if (bookingRouteOptions[selectedBookingRouteMode]) {
+        currentFareEstimate = bookingRouteOptions[selectedBookingRouteMode];
+        renderBookingFareEstimate();
+    } else if (bookingPickupPlace && bookingDropoffPlace) {
+        updateFareEstimate();
+    }
+}
+
+function renderBookingFareEstimate() {
+    if (!currentFareEstimate) return;
+
+    document.getElementById("fareEstimateTitle").textContent =
+        currentFareEstimate.routeMode === "SURFACE"
+            ? "🚕 平面道路"
+            : "🛣️ 推薦快速路線";
+
+    document.getElementById("estimateDistance").textContent =
+        currentFareEstimate.distanceKm.toFixed(1) + " km";
+
+    document.getElementById("estimateDuration").textContent =
+        currentFareEstimate.minutes + " 分鐘";
+
+    document.getElementById("estimateFare").textContent =
+        "$" + currentFareEstimate.fare;
+
+    document.getElementById("fareEstimateStatus").textContent =
+        currentFareEstimate.routeMode === "SURFACE"
+            ? "平面道路會優先避開高速／收費道路；實際路線仍依 Google 與即時交通為準"
+            : "推薦快速路線會依 Google 即時交通選擇完整行程路線";
+
+    document.getElementById("fareEstimate").hidden = false;
+}
+
 function calculateTaxiFare(distanceKm, minutes) {
 
     const baseFare = 80;
@@ -2006,6 +2306,7 @@ function resetFareEstimate(message) {
 
     fareRequestNumber++;
     currentFareEstimate = null;
+    bookingRouteOptions = { FAST: null, SURFACE: null };
 
     document.getElementById("estimateDistance").textContent = "--";
     document.getElementById("estimateDuration").textContent = "--";
@@ -2025,6 +2326,11 @@ async function updateFareEstimate() {
         return;
     }
 
+    if (!validateBookingWaypoints(false)) {
+        resetFareEstimate("停靠點請從 Google 地址建議中選擇");
+        return;
+    }
+
     if (!BookingRouteClass) {
         resetFareEstimate("路線服務載入中，請稍候幾秒");
         return;
@@ -2035,49 +2341,96 @@ async function updateFareEstimate() {
     const status = document.getElementById("fareEstimateStatus");
 
     currentFareEstimate = null;
+    bookingRouteOptions = { FAST: null, SURFACE: null };
     estimateBox.hidden = false;
     estimateBox.classList.add("loading");
-    status.textContent = "正在取得 Google 即時路線與預估時間…";
+    status.textContent = "正在取得 Google 完整行程路線與預估時間…";
 
     try {
-        const response = await BookingRouteClass.computeRoutes({
+        const intermediateWaypoints = getActiveBookingWaypointPlaces()
+            .map(function(place) {
+                return { location: place };
+            });
+
+        const expectedLegCount = intermediateWaypoints.length + 1;
+        const routeDepartureTime = new Date(Date.now() + 2 * 60 * 1000);
+
+        const baseRequest = {
             origin: bookingPickupPlace,
             destination: bookingDropoffPlace,
             travelMode: "DRIVING",
-            routingPreference: "TRAFFIC_AWARE",
-            routeModifiers: {
-                avoidHighways: false,
-                avoidTolls: false,
-                avoidFerries: true
-            },
-            fields: ["distanceMeters", "durationMillis"]
-        });
+            intermediates: intermediateWaypoints,
+            optimizeWaypointOrder: false,
+            routingPreference: "TRAFFIC_AWARE_OPTIMAL",
+            departureTime: routeDepartureTime,
+            fields: ["legs"]
+        };
+
+        const results = await Promise.all([
+            BookingRouteClass.computeRoutes({
+                ...baseRequest,
+                routeModifiers: {
+                    avoidHighways: false,
+                    avoidTolls: false,
+                    avoidFerries: true
+                }
+            }),
+            BookingRouteClass.computeRoutes({
+                ...baseRequest,
+                routeModifiers: {
+                    avoidHighways: true,
+                    avoidTolls: true,
+                    avoidFerries: true
+                }
+            })
+        ]);
 
         if (requestNumber !== fareRequestNumber) return;
 
-        const route = response.routes && response.routes[0];
-        if (!route) throw new Error("找不到可用路線");
+        const fastRoute = results[0].routes && results[0].routes[0];
+        const surfaceRoute = results[1].routes && results[1].routes[0];
 
-        const distanceKm = route.distanceMeters / 1000;
-        const minutes = Math.ceil(route.durationMillis / 60000);
-        const fare = bookingService === "driver"
-            ? calculateDriverFare(distanceKm, minutes)
-            : calculateTaxiFare(distanceKm, minutes);
+        if (!fastRoute || !surfaceRoute) {
+            throw new Error("找不到可用路線");
+        }
 
-        currentFareEstimate = {
-            distanceKm: distanceKm,
-            minutes: minutes,
-            fare: fare
+        const fastMetrics = summarizeBookingRoute(fastRoute, expectedLegCount);
+        const surfaceMetrics = summarizeBookingRoute(surfaceRoute, expectedLegCount);
+        const waypointData = getActiveBookingWaypointData();
+
+        function makeEstimate(mode, metrics) {
+            const distanceKm = metrics.distanceMeters / 1000;
+            const minutes = Math.ceil(metrics.durationMillis / 60000);
+            const fare = bookingService === "driver"
+                ? calculateDriverFare(distanceKm, minutes)
+                : calculateTaxiFare(distanceKm, minutes);
+
+            return {
+                routeMode: mode,
+                routeName: mode === "FAST" ? "推薦快速路線" : "平面道路",
+                routeStrategy: "WHOLE_TRIP",
+                routePreference: mode === "FAST"
+                    ? { avoidHighways: false, avoidTolls: false, avoidFerries: true }
+                    : { avoidHighways: true, avoidTolls: true, avoidFerries: true },
+                distanceKm: distanceKm,
+                minutes: minutes,
+                fare: fare,
+                pickup: placeToAddressData(bookingPickupPlace),
+                waypoints: waypointData,
+                dropoff: placeToAddressData(bookingDropoffPlace)
+            };
+        }
+
+        bookingRouteOptions = {
+            FAST: makeEstimate("FAST", fastMetrics),
+            SURFACE: makeEstimate("SURFACE", surfaceMetrics)
         };
 
-        document.getElementById("estimateDistance").textContent =
-            distanceKm.toFixed(1) + " km";
-        document.getElementById("estimateDuration").textContent =
-            minutes + " 分鐘";
-        document.getElementById("estimateFare").textContent =
-            "$" + fare;
-        status.textContent =
-            "如需指定平面道路，請填寫於特殊需求；實際金額以客服確認為準";
+        currentFareEstimate =
+            bookingRouteOptions[selectedBookingRouteMode] ||
+            bookingRouteOptions.FAST;
+
+        renderBookingFareEstimate();
 
     } catch (error) {
         if (requestNumber !== fareRequestNumber) return;
@@ -2592,6 +2945,15 @@ async function sendBooking() {
     }
 
 
+    if (
+        !validateBookingWaypoints(true)
+    ) {
+
+        return;
+
+    }
+
+
 
     if (
         !liffInitialized
@@ -2659,7 +3021,7 @@ async function sendBooking() {
 
     const fareDetails =
         currentFareEstimate
-            ? `\n📏 距離：${currentFareEstimate.distanceKm.toFixed(1)} km\n⏱️ 預估時間：${currentFareEstimate.minutes} 分鐘\n💰 預估車資：$${currentFareEstimate.fare}\n`
+            ? `\n🛣️ 行車路線：${currentFareEstimate.routeName}\n📏 距離：${currentFareEstimate.distanceKm.toFixed(1)} km\n⏱️ 預估時間：${currentFareEstimate.minutes} 分鐘\n💰 預估車資：$${currentFareEstimate.fare}\n`
             : "";
 
 
@@ -2670,6 +3032,18 @@ async function sendBooking() {
 ${pickupNote}
 `
             : "";
+
+
+    const waypointDetails =
+        bookingWaypointActive
+            .map(function(active, index) {
+                if (!active) return "";
+                const value = (document.getElementById("waypoint" + (index + 1))?.value || "").trim();
+                return value
+                    ? `\n🟡 停靠點 ${index + 1}\n${value}\n`
+                    : "";
+            })
+            .join("");
 
 
     const dropoffDetails =
@@ -2693,7 +3067,7 @@ ${passengerDetails}
 
 📍 上車地點
 ${pickup}
-${pickupNoteDetails}${dropoffDetails}${fareDetails}
+${pickupNoteDetails}${waypointDetails}${dropoffDetails}${fareDetails}
 
 💡 特殊需求
 ${memo}
@@ -2761,6 +3135,24 @@ ${memo}
                 : null,
 
 
+        routeMode:
+            currentFareEstimate
+                ? currentFareEstimate.routeMode
+                : null,
+
+
+        routeName:
+            currentFareEstimate
+                ? currentFareEstimate.routeName
+                : null,
+
+
+        routeStrategy:
+            currentFareEstimate
+                ? currentFareEstimate.routeStrategy
+                : null,
+
+
         pickup:
             pickup,
 
@@ -2780,6 +3172,10 @@ ${memo}
             bookingDropoffPlace
                 ? placeToAddressData(bookingDropoffPlace, { address: dropoff })
                 : normalizeAddressData({ address: dropoff }),
+
+
+        waypoints:
+            getActiveBookingWaypointData(),
 
 
         memo:
@@ -3129,7 +3525,7 @@ async function initGoogle() {
                         fields: ["id", "displayName", "formattedAddress", "location", "addressComponents"]
                     });
 
-                    input.value = place.formattedAddress || fallbackText ||
+                    input.value = addressDisplayText(placeToAddressData(place)) || fallbackText ||
                         (place.displayName ? place.displayName.toString() : "");
                     clearButton.hidden = !input.value;
 
@@ -3472,6 +3868,45 @@ async function initGoogle() {
                 resetFareEstimate();
             }
         });
+
+        createAddressAutocomplete({
+            containerId: "waypoint1Box",
+            inputId: "waypoint1",
+            placeholder: "請輸入停靠點 1 地址或地標名稱",
+            ariaLabel: "停靠點 1",
+            required: false,
+            onSelect: function (place) {
+                bookingWaypointPlaces[0] = place;
+                bookingWaypointAddressData[0] = placeToAddressData(place);
+                updateFareEstimate();
+            },
+            onReset: function () {
+                bookingWaypointPlaces[0] = null;
+                bookingWaypointAddressData[0] = null;
+                resetFareEstimate();
+            }
+        });
+
+        createAddressAutocomplete({
+            containerId: "waypoint2Box",
+            inputId: "waypoint2",
+            placeholder: "請輸入停靠點 2 地址或地標名稱",
+            ariaLabel: "停靠點 2",
+            required: false,
+            onSelect: function (place) {
+                bookingWaypointPlaces[1] = place;
+                bookingWaypointAddressData[1] = placeToAddressData(place);
+                updateFareEstimate();
+            },
+            onReset: function () {
+                bookingWaypointPlaces[1] = null;
+                bookingWaypointAddressData[1] = null;
+                resetFareEstimate();
+            }
+        });
+
+        updateBookingWaypointUi();
+        selectBookingRouteMode("FAST");
 
         createAddressAutocomplete({
             containerId: "dropoffBox",
