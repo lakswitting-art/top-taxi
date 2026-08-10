@@ -1763,6 +1763,46 @@ gmp-place-autocomplete:focus-within {
     .confirm-stats strong { font-size: 13px; }
     .confirm-price strong { font-size: 29px; }
 }
+
+/* =========================================
+   TOP TAXI COMPACT HEADER - WHOLE SYSTEM STANDARD
+========================================= */
+.hero{
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:18px;
+    width:min(100%,560px);
+    margin:0 auto;
+    padding:max(10px,env(safe-area-inset-top)) 24px 12px;
+    text-align:left;
+}
+.hero-copy{min-width:0;flex:1;text-align:center}
+.hero::after{content:"";flex:0 0 58px;width:58px}
+.hero .logo-wrap{margin:0;flex:0 0 auto}
+.hero .logo{width:58px;height:58px;border-radius:14px}
+.hero .logo-glow{width:66px;height:66px;filter:blur(16px)}
+.hero .brand{font-size:23px;line-height:1.08}
+.hero .system-name{margin-top:3px;font-size:13px;font-weight:800;letter-spacing:1.25px}
+.hero .hero-description{
+    margin-top:5px;
+    max-width:calc(100vw - 125px);
+    overflow:hidden;
+    color:#a8a8ae;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.2px;
+    line-height:1.4;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+@media(max-width:370px){
+    .hero{gap:13px;padding-left:18px;padding-right:18px}
+    .hero .logo{width:54px;height:54px;border-radius:13px}
+    .hero::after{flex-basis:54px;width:54px}
+    .hero .hero-description{max-width:calc(100vw - 112px);font-size:9.5px}
+}
+
 </style>
 
 </head>
@@ -1773,42 +1813,28 @@ gmp-place-autocomplete:focus-within {
 
 <header class="hero">
 
-
     <div class="logo-wrap">
-
         <div class="logo-glow"></div>
-
         <img
             src="logo.png"
             alt="TOP Taxi Logo"
             class="logo"
         >
-
     </div>
 
+    <div class="hero-copy">
+        <h1 class="brand">
+            <span class="brand-red">TOP</span> Taxi
+        </h1>
 
-    <h1 class="brand">
+        <div class="system-name">
+            24H 車資試算
+        </div>
 
-        <span class="brand-red">
-            TOP
-        </span>
-
-        Taxi
-
-    </h1>
-
-
-    <div class="system-name">
-        24H 車資試算
+        <div class="hero-description">
+            24H｜快速試算・一般搭車・代駕服務
+        </div>
     </div>
-
-
-    <div class="hero-description">
-
-        快速比較行車路線｜掌握預估距離・時間與車資
-
-    </div>
-
 
 </header>
 
@@ -2218,8 +2244,70 @@ gmp-place-autocomplete:focus-within {
 ========================================= */
 
 let pickupPlace = null;
-
 let dropoffPlace = null;
+let pickupAddressData = null;
+let dropoffAddressData = null;
+
+function fareAddressComponent(place, types) {
+    const components = place && Array.isArray(place.addressComponents)
+        ? place.addressComponents
+        : [];
+
+    for (const type of types) {
+        const component = components.find(item =>
+            Array.isArray(item.types) && item.types.includes(type)
+        );
+
+        if (component) {
+            return component.longText || component.shortText || "";
+        }
+    }
+
+    return "";
+}
+
+function farePlaceDisplayName(place) {
+    if (!place || !place.displayName) return "";
+    if (typeof place.displayName === "string") return place.displayName;
+    return place.displayName.toString?.() || "";
+}
+
+function farePlaceToAddressData(place) {
+    if (!place) return null;
+
+    const city = fareAddressComponent(place, [
+        "administrative_area_level_1"
+    ]);
+
+    const district = fareAddressComponent(place, [
+        "administrative_area_level_3",
+        "administrative_area_level_2",
+        "locality"
+    ]);
+
+    const lat = place.location
+        ? (typeof place.location.lat === "function"
+            ? place.location.lat()
+            : (place.location.lat ?? null))
+        : null;
+
+    const lng = place.location
+        ? (typeof place.location.lng === "function"
+            ? place.location.lng()
+            : (place.location.lng ?? null))
+        : null;
+
+    return {
+        displayName: farePlaceDisplayName(place),
+        address: place.formattedAddress || "",
+        city: city,
+        district: district,
+        areaLabel: [city, district].filter(Boolean).join(""),
+        placeId: place.id || "",
+        lat: lat,
+        lng: lng
+    };
+}
 
 let RouteClass = null;
 
@@ -2526,7 +2614,8 @@ async function initGoogle() {
                                 "id",
                                 "displayName",
                                 "formattedAddress",
-                                "location"
+                                "location",
+                                "addressComponents"
                             ]
                         });
 
@@ -2840,9 +2929,11 @@ async function initGoogle() {
                 "上車地點",
             onReset: () => {
                 pickupPlace = null;
+                pickupAddressData = null;
             },
             onSelect: (place) => {
                 pickupPlace = place;
+                pickupAddressData = farePlaceToAddressData(place);
                 hideResults();
             }
         });
@@ -2855,9 +2946,11 @@ async function initGoogle() {
                 "下車地點",
             onReset: () => {
                 dropoffPlace = null;
+                dropoffAddressData = null;
             },
             onSelect: (place) => {
                 dropoffPlace = place;
+                dropoffAddressData = farePlaceToAddressData(place);
                 hideResults();
             }
         });
