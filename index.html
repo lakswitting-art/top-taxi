@@ -1723,12 +1723,105 @@ let fareRequestNumber = 0;
    SHARED SAVED ADDRESSES - SAME STORAGE AS RIDE.HTML
 ====================================================== */
 const SHARED_ADDRESS_KEY = "topTaxiAddresses";
+
+function createEmptyAddressData(name = "") {
+    return {
+        name: name,
+        displayName: "",
+        address: "",
+        city: "",
+        district: "",
+        areaLabel: "",
+        placeId: "",
+        lat: null,
+        lng: null,
+        pickupNote: ""
+    };
+}
+
 const SHARED_ADDRESS_DEFAULTS = [
-    {name:"住家", address:"", placeId:"", pickupNote:""},
-    {name:"公司", address:"", placeId:"", pickupNote:""},
-    {name:"常用地點 1", address:"", placeId:"", pickupNote:""},
-    {name:"常用地點 2", address:"", placeId:"", pickupNote:""}
+    createEmptyAddressData("住家"),
+    createEmptyAddressData("公司"),
+    createEmptyAddressData("常用地點 1"),
+    createEmptyAddressData("常用地點 2")
 ];
+
+function getAddressComponent(place, types) {
+    const components = place && Array.isArray(place.addressComponents)
+        ? place.addressComponents
+        : [];
+
+    for (const type of types) {
+        const component = components.find(function(item) {
+            return Array.isArray(item.types) && item.types.includes(type);
+        });
+
+        if (component) {
+            return component.longText || component.shortText || "";
+        }
+    }
+
+    return "";
+}
+
+function getPlaceDisplayName(place) {
+    if (!place || !place.displayName) return "";
+    if (typeof place.displayName === "string") return place.displayName;
+    if (typeof place.displayName.toString === "function") return place.displayName.toString();
+    return "";
+}
+
+function placeToAddressData(place, extra = {}) {
+    const city = getAddressComponent(place, [
+        "administrative_area_level_1"
+    ]);
+
+    const district = getAddressComponent(place, [
+        "administrative_area_level_3",
+        "administrative_area_level_2",
+        "locality"
+    ]);
+
+    const lat = place && place.location
+        ? (typeof place.location.lat === "function" ? place.location.lat() : (place.location.lat ?? null))
+        : null;
+
+    const lng = place && place.location
+        ? (typeof place.location.lng === "function" ? place.location.lng() : (place.location.lng ?? null))
+        : null;
+
+    return {
+        name: extra.name || "",
+        displayName: getPlaceDisplayName(place),
+        address: (place && place.formattedAddress) || extra.address || "",
+        city: city,
+        district: district,
+        areaLabel: [city, district].filter(Boolean).join(""),
+        placeId: (place && place.id) || extra.placeId || "",
+        lat: lat,
+        lng: lng,
+        pickupNote: extra.pickupNote || ""
+    };
+}
+
+function normalizeAddressData(item = {}, fallback = {}) {
+    const city = item.city || "";
+    const district = item.district || "";
+
+    return {
+        name: item.name ?? fallback.name ?? "",
+        displayName: item.displayName || "",
+        address: item.address || "",
+        city: city,
+        district: district,
+        areaLabel: item.areaLabel || [city, district].filter(Boolean).join(""),
+        placeId: item.placeId || "",
+        lat: item.lat ?? null,
+        lng: item.lng ?? null,
+        pickupNote: item.pickupNote || ""
+    };
+}
+
 let sharedAddresses = loadSharedAddresses();
 
 function loadSharedAddresses() {
@@ -1736,11 +1829,14 @@ function loadSharedAddresses() {
         const saved = JSON.parse(localStorage.getItem(SHARED_ADDRESS_KEY) || "null");
         if (Array.isArray(saved)) {
             return SHARED_ADDRESS_DEFAULTS.map(function(def, i) {
-                return Object.assign({}, def, saved[i] || {});
+                return normalizeAddressData(saved[i] || {}, def);
             });
         }
     } catch (e) {}
-    return SHARED_ADDRESS_DEFAULTS.map(function(item){ return Object.assign({}, item); });
+
+    return SHARED_ADDRESS_DEFAULTS.map(function(item) {
+        return normalizeAddressData({}, item);
+    });
 }
 
 function renderSharedAddressEditor() {
@@ -1787,7 +1883,7 @@ async function resolveSharedAddress(item) {
     const placesLib = await google.maps.importLibrary("places");
     if (item.placeId && placesLib.Place) {
         const place = new placesLib.Place({id:item.placeId});
-        await place.fetchFields({fields:["id","displayName","formattedAddress","location"]});
+        await place.fetchFields({fields:["id","displayName","formattedAddress","location","addressComponents"]});
         return place;
     }
     const AutocompleteSuggestion = placesLib.AutocompleteSuggestion;
@@ -1803,7 +1899,7 @@ async function resolveSharedAddress(item) {
     const prediction = response.suggestions && response.suggestions[0] && response.suggestions[0].placePrediction;
     if (!prediction) throw new Error("找不到常用地址");
     const place = prediction.toPlace();
-    await place.fetchFields({fields:["id","displayName","formattedAddress","location"]});
+    await place.fetchFields({fields:["id","displayName","formattedAddress","location","addressComponents"]});
     return place;
 }
 
@@ -1818,6 +1914,17 @@ async function useSharedAddress(index, button) {
     if (pickupNoteInput) pickupNoteInput.value = item.pickupNote || "";
     try {
         bookingPickupPlace = await resolveSharedAddress(item);
+
+        const upgradedAddress = placeToAddressData(bookingPickupPlace, {
+            name: item.name || "",
+            address: item.address || "",
+            placeId: item.placeId || "",
+            pickupNote: item.pickupNote || ""
+        });
+
+        sharedAddresses[index] = normalizeAddressData(upgradedAddress, item);
+        localStorage.setItem(SHARED_ADDRESS_KEY, JSON.stringify(sharedAddresses));
+
         pickupInput.value = bookingPickupPlace.formattedAddress || item.address;
         updateFareEstimate();
     } catch (error) {
@@ -1831,12 +1938,21 @@ function saveSharedAddressesFromBooking() {
         const name = (document.getElementById("sharedName"+index)?.value || "").trim() || ("常用地點 " + (index + 1));
         const address = (document.getElementById("sharedAddress"+index)?.value || "").trim();
         const pickupNote = (document.getElementById("sharedNote"+index)?.value || "").trim();
-        return {
-            name:name,
-            address:address,
-            placeId: address === oldItem.address ? (oldItem.placeId || "") : "",
-            pickupNote:pickupNote
-        };
+        const addressChanged = address !== (oldItem.address || "");
+
+        return normalizeAddressData({
+            ...oldItem,
+            name: name,
+            address: address,
+            pickupNote: pickupNote,
+            displayName: addressChanged ? "" : (oldItem.displayName || ""),
+            city: addressChanged ? "" : (oldItem.city || ""),
+            district: addressChanged ? "" : (oldItem.district || ""),
+            areaLabel: addressChanged ? "" : (oldItem.areaLabel || ""),
+            placeId: addressChanged ? "" : (oldItem.placeId || ""),
+            lat: addressChanged ? null : (oldItem.lat ?? null),
+            lng: addressChanged ? null : (oldItem.lng ?? null)
+        });
     });
     localStorage.setItem(SHARED_ADDRESS_KEY, JSON.stringify(next));
     sharedAddresses = next;
@@ -2637,12 +2753,22 @@ ${memo}
         pickup:
             pickup,
 
+        pickupPlace:
+            bookingPickupPlace
+                ? placeToAddressData(bookingPickupPlace, { address: pickup, pickupNote: pickupNote })
+                : normalizeAddressData({ address: pickup, pickupNote: pickupNote }),
+
         pickupNote:
             pickupNote,
 
 
         dropoff:
             dropoff,
+
+        dropoffPlace:
+            bookingDropoffPlace
+                ? placeToAddressData(bookingDropoffPlace, { address: dropoff })
+                : normalizeAddressData({ address: dropoff }),
 
 
         memo:
@@ -2989,7 +3115,7 @@ async function initGoogle() {
                 try {
                     const place = prediction.toPlace();
                     await place.fetchFields({
-                        fields: ["id", "displayName", "formattedAddress", "location"]
+                        fields: ["id", "displayName", "formattedAddress", "location", "addressComponents"]
                     });
 
                     input.value = place.formattedAddress || fallbackText ||
