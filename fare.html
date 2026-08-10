@@ -2105,18 +2105,18 @@ gmp-place-autocomplete:focus-within {
 
 
 
-        <!-- 平面道路 -->
+        <!-- 平面／省里程 -->
 
         <div class="route-option">
 
             <div class="route-top">
 
                 <div class="route-name">
-                    🚕 平面道路
+                    🚕 平面／省里程
                 </div>
 
                 <span class="route-tag">
-                    優先避開高速／收費
+                    優先較短距離
                 </span>
 
             </div>
@@ -2149,7 +2149,7 @@ gmp-place-autocomplete:focus-within {
             <button
                 type="button"
                 class="route-btn"
-                onclick="selectRoute('平面道路')"
+                onclick="selectRoute('平面／省里程')"
             >
 
                 選擇此路線
@@ -3563,18 +3563,17 @@ async function calculateRoutes() {
         const expectedLegCount =
             intermediateWaypoints.length + 1;
 
-        // Use the same near-future timestamp for both route modes so
-        // FAST and SURFACE are compared under the same traffic snapshot.
-        // A 2-minute buffer avoids Google's "Timestamp must be set to a future time".
+        // Same safely-future traffic snapshot for both route objectives.
         const routeDepartureTime =
             new Date(Date.now() + 2 * 60 * 1000);
 
         /* =====================================
-           快速路線
-           允許高速公路
+           同一個 Google Routes 請求
+           DEFAULT_ROUTE = 推薦快速
+           SHORTER_DISTANCE = 平面／省里程
         ====================================== */
 
-        const fastRequest = {
+        const routeRequest = {
 
             origin:
                 pickupPlace,
@@ -3588,22 +3587,17 @@ async function calculateRoutes() {
             intermediates:
                 intermediateWaypoints,
 
-            optimizeWaypointOrder:
-                false,
-
             routingPreference:
                 "TRAFFIC_AWARE_OPTIMAL",
 
             departureTime:
                 routeDepartureTime,
 
+            requestedReferenceRoutes: [
+                "SHORTER_DISTANCE"
+            ],
+
             routeModifiers: {
-
-                avoidHighways:
-                    false,
-
-                avoidTolls:
-                    false,
 
                 avoidFerries:
                     true
@@ -3611,92 +3605,42 @@ async function calculateRoutes() {
             },
 
             fields: [
-                "legs"
+                "legs",
+                "routeLabels",
+                "routeToken"
             ]
 
         };
 
 
-        /* =====================================
-           平面道路
-           避開高速公路
-        ====================================== */
-
-        const normalRequest = {
-
-            origin:
-                pickupPlace,
-
-            destination:
-                dropoffPlace,
-
-            travelMode:
-                "DRIVING",
-
-            intermediates:
-                intermediateWaypoints,
-
-            optimizeWaypointOrder:
-                false,
-
-            routingPreference:
-                "TRAFFIC_AWARE_OPTIMAL",
-
-            departureTime:
-                routeDepartureTime,
-
-            routeModifiers: {
-
-                avoidHighways:
-                    true,
-
-                avoidTolls:
-                    true,
-
-                avoidFerries:
-                    true
-
-            },
-
-            fields: [
-                "legs"
-            ]
-
-        };
+        const routeResponse =
+            await RouteClass.computeRoutes(
+                routeRequest
+            );
 
 
-
-        /* =====================================
-           同時計算兩條
-        ====================================== */
-
-        const [
-            fastResponse,
-            normalResponse
-        ] =
-        await Promise.all([
-
-            RouteClass.computeRoutes(
-                fastRequest
-            ),
-
-            RouteClass.computeRoutes(
-                normalRequest
-            )
-
-        ]);
-
+        const returnedRoutes =
+            routeResponse.routes || [];
 
 
         const fastRoute =
-            fastResponse
-            .routes?.[0];
+            returnedRoutes.find((route) =>
+                (route.routeLabels || [])
+                    .some((label) =>
+                        String(label).includes("DEFAULT_ROUTE")
+                    )
+            )
+            ||
+            returnedRoutes[0];
 
 
         const normalRoute =
-            normalResponse
-            .routes?.[0];
-
+            returnedRoutes.find((route) =>
+                (route.routeLabels || [])
+                    .some((label) =>
+                        String(label).includes("SHORTER_DISTANCE")
+                    )
+            );
 
 
         if (
@@ -3704,13 +3648,11 @@ async function calculateRoutes() {
             !normalRoute
         ) {
 
-
             throw new Error(
-                "找不到可用路線"
+                "Google 未回傳完整的推薦快速／較短距離路線"
             );
 
         }
-
 
 
         /* =====================================
@@ -3761,11 +3703,11 @@ async function calculateRoutes() {
                 expectedLegCount,
                 fastLegCount:
                     fastMetrics.legCount,
-                surfaceLegCount:
+                shorterLegCount:
                     normalMetrics.legCount,
                 fastDistanceKm:
                     Number(fastDistance.toFixed(1)),
-                surfaceDistanceKm:
+                shorterDistanceKm:
                     Number(normalDistance.toFixed(1)),
                 fastLegs:
                     (fastRoute.legs || []).map((leg, index) => ({
@@ -3775,7 +3717,7 @@ async function calculateRoutes() {
                         minutes:
                             Math.ceil((leg.durationMillis || 0) / 60000)
                     })),
-                surfaceLegs:
+                shorterLegs:
                     (normalRoute.legs || []).map((leg, index) => ({
                         leg: index + 1,
                         distanceKm:
@@ -3853,8 +3795,19 @@ async function calculateRoutes() {
 
 
             saveTime.textContent =
-                "快速路線約可節省 " +
+                "推薦快速路線約可節省 " +
                 save +
+                " 分鐘";
+
+
+        }
+
+        else if (save < 0) {
+
+
+            saveTime.textContent =
+                "省里程路線約可節省 " +
+                Math.abs(save) +
                 " 分鐘";
 
 
@@ -3903,7 +3856,8 @@ const activeWaypointData =
 routeResults = {
     SURFACE: {
         routeMode: "SURFACE",
-        routeName: "平面道路",
+        routeName: "平面／省里程",
+        referenceRoute: "SHORTER_DISTANCE",
         distanceKm: normalDistance,
         durationMinutes: normalMinutes,
         estimatedFare: normalFare,
@@ -4034,7 +3988,7 @@ document
 function selectRoute(routeName) {
 
     const routeMode =
-        routeName === "平面道路"
+        routeName === "平面／省里程"
             ? "SURFACE"
             : "FAST";
 
