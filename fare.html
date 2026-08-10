@@ -601,6 +601,105 @@ gmp-place-autocomplete:focus-within {
 }
 
 
+
+/* =========================================
+   MULTI-STOP WAYPOINTS
+========================================= */
+
+.waypoint-section {
+    margin: -2px 0 12px;
+}
+
+.waypoint-group {
+    position: relative;
+    margin: 10px 0 14px;
+    padding-left: 18px;
+}
+
+.waypoint-group::before {
+    content: "";
+    position: absolute;
+    left: 4px;
+    top: -14px;
+    bottom: -14px;
+    width: 2px;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            #dddddd 0,
+            #dddddd 3px,
+            transparent 3px,
+            transparent 6px
+        );
+}
+
+.waypoint-label-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.waypoint-label-row label {
+    margin: 0;
+}
+
+.waypoint-remove-btn {
+    flex: 0 0 auto;
+    min-height: 32px;
+    padding: 0 11px;
+    border: 1px solid #e4e4e7;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #77777d;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.waypoint-remove-btn:active {
+    transform: scale(.98);
+}
+
+.add-waypoint-btn {
+    width: 100%;
+    min-height: 44px;
+    border: 1px dashed #d7d7dc;
+    border-radius: 12px;
+    background: #ffffff;
+    color: #4f4f55;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 850;
+    cursor: pointer;
+}
+
+.add-waypoint-btn:hover,
+.add-waypoint-btn:focus-visible {
+    border-color: #ff6672;
+    color: var(--red);
+    background: #fff8f9;
+}
+
+.add-waypoint-btn[hidden],
+.waypoint-group[hidden] {
+    display: none !important;
+}
+
+.waypoint-limit-note {
+    margin-top: 7px;
+    color: #9a9aa0;
+    font-size: 12px;
+    line-height: 1.45;
+    text-align: center;
+}
+
+.confirm-dot.waypoint-dot {
+    background: #f0a000;
+}
+
 /* =========================================
    ROUTE LINE
 ========================================= */
@@ -1899,6 +1998,50 @@ gmp-place-autocomplete:focus-within {
 
 
 
+    <div id="waypointSection" class="waypoint-section">
+
+        <div id="waypoint1Group" class="input-group waypoint-group" hidden>
+            <div class="waypoint-label-row">
+                <label>🟡 停靠點 1</label>
+                <button
+                    type="button"
+                    class="waypoint-remove-btn"
+                    onclick="removeWaypoint(0)"
+                >移除</button>
+            </div>
+
+            <div id="waypoint1Box" class="place-box"></div>
+        </div>
+
+        <div id="waypoint2Group" class="input-group waypoint-group" hidden>
+            <div class="waypoint-label-row">
+                <label>🟡 停靠點 2</label>
+                <button
+                    type="button"
+                    class="waypoint-remove-btn"
+                    onclick="removeWaypoint(1)"
+                >移除</button>
+            </div>
+
+            <div id="waypoint2Box" class="place-box"></div>
+        </div>
+
+        <button
+            id="addWaypointBtn"
+            type="button"
+            class="add-waypoint-btn"
+            onclick="addWaypoint()"
+        >
+            ＋ 新增停靠點
+        </button>
+
+        <div class="waypoint-limit-note">
+            最多可新增 2 個停靠點，路線會依照您輸入的順序計算
+        </div>
+
+    </div>
+
+
     <div class="route-visual"></div>
 
 
@@ -1973,7 +2116,7 @@ gmp-place-autocomplete:focus-within {
                 </div>
 
                 <span class="route-tag">
-                    避開高速
+                    優先避開高速／收費
                 </span>
 
             </div>
@@ -2024,7 +2167,7 @@ gmp-place-autocomplete:focus-within {
             <div class="route-top">
 
                 <div class="route-name">
-                    🛣️ 快速路線
+                    🛣️ 推薦快速路線
                 </div>
 
                 <span class="route-tag">
@@ -2067,7 +2210,7 @@ gmp-place-autocomplete:focus-within {
             <button
                 type="button"
                 class="route-btn"
-                onclick="selectRoute('快速路線')"
+                onclick="selectRoute('推薦快速路線')"
             >
 
                 選擇此路線
@@ -2149,6 +2292,8 @@ gmp-place-autocomplete:focus-within {
                     <div id="confirmPickup" class="confirm-address">--</div>
                 </div>
             </div>
+
+            <div id="confirmWaypointRows"></div>
 
             <div class="confirm-line"></div>
 
@@ -2247,6 +2392,19 @@ let pickupPlace = null;
 let dropoffPlace = null;
 let pickupAddressData = null;
 let dropoffAddressData = null;
+
+const MAX_WAYPOINTS = 2;
+let waypointPlaces = [null, null];
+let waypointAddressData = [null, null];
+let waypointActive = [false, false];
+let waypointControllers = [null, null];
+
+let routeResults = {
+    FAST: null,
+    SURFACE: null
+};
+
+let selectedRouteData = null;
 
 function fareAddressComponent(place, types) {
     const components = place && Array.isArray(place.addressComponents)
@@ -2437,6 +2595,141 @@ function setServiceMode(mode) {
 }
 
 
+
+
+/* =========================================
+   MULTI-STOP UI
+========================================= */
+
+function updateWaypointUi() {
+    for (let index = 0; index < MAX_WAYPOINTS; index++) {
+        const group = document.getElementById(`waypoint${index + 1}Group`);
+        if (group) {
+            group.hidden = !waypointActive[index];
+        }
+    }
+
+    const addButton = document.getElementById("addWaypointBtn");
+    if (addButton) {
+        addButton.hidden = waypointActive.filter(Boolean).length >= MAX_WAYPOINTS;
+    }
+}
+
+function addWaypoint() {
+    const index = waypointActive.findIndex(active => !active);
+
+    if (index === -1) {
+        return;
+    }
+
+    waypointActive[index] = true;
+    updateWaypointUi();
+    hideResults();
+
+    setTimeout(() => {
+        waypointControllers[index]?.focus();
+    }, 60);
+}
+
+function clearWaypointSlot(index) {
+    waypointPlaces[index] = null;
+    waypointAddressData[index] = null;
+    waypointControllers[index]?.setValue("");
+}
+
+function removeWaypoint(index) {
+    if (index < 0 || index >= MAX_WAYPOINTS) {
+        return;
+    }
+
+    if (index === 0 && waypointActive[1]) {
+        waypointPlaces[0] = waypointPlaces[1];
+        waypointAddressData[0] = waypointAddressData[1];
+        waypointControllers[0]?.setValue(
+            waypointControllers[1]?.getValue() || ""
+        );
+
+        clearWaypointSlot(1);
+        waypointActive[0] = true;
+        waypointActive[1] = false;
+    } else {
+        clearWaypointSlot(index);
+        waypointActive[index] = false;
+    }
+
+    updateWaypointUi();
+    hideResults();
+}
+
+function getActiveWaypointPlaces() {
+    return waypointActive
+        .map((active, index) => active ? waypointPlaces[index] : null)
+        .filter(Boolean);
+}
+
+function getActiveWaypointAddressData() {
+    return waypointActive
+        .map((active, index) => active ? waypointAddressData[index] : null)
+        .filter(Boolean);
+}
+
+function validateWaypoints() {
+    for (let index = 0; index < MAX_WAYPOINTS; index++) {
+        if (!waypointActive[index]) {
+            continue;
+        }
+
+        const typed = waypointControllers[index]?.getValue() || "";
+
+        if (typed && !waypointPlaces[index]) {
+            showStatus(
+                `停靠點 ${index + 1} 請從 Google 地址建議中選擇。`,
+                true
+            );
+            waypointControllers[index]?.focus();
+            return false;
+        }
+    }
+
+    return true;
+}
+
+function renderConfirmWaypoints() {
+    const container = document.getElementById("confirmWaypointRows");
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML = "";
+
+    const waypoints = getActiveWaypointAddressData();
+
+    waypoints.forEach((data, index) => {
+        const line = document.createElement("div");
+        line.className = "confirm-line";
+
+        const row = document.createElement("div");
+        row.className = "confirm-location-row";
+
+        const dot = document.createElement("div");
+        dot.className = "confirm-dot waypoint-dot";
+
+        const textWrap = document.createElement("div");
+
+        const label = document.createElement("div");
+        label.className = "confirm-label";
+        label.textContent = `停靠點 ${index + 1}`;
+
+        const address = document.createElement("div");
+        address.className = "confirm-address";
+        address.textContent = fareAddressDisplayText(data) || "--";
+
+        textWrap.append(label, address);
+        row.append(dot, textWrap);
+        container.append(line, row);
+    });
+}
 
 /* =========================================
    INITIALIZE GOOGLE
@@ -2950,6 +3243,16 @@ async function initGoogle() {
                     }
                 }
             );
+
+            return {
+                input,
+                getValue: () => input.value.trim(),
+                setValue: (value) => {
+                    input.value = value || "";
+                },
+                focus: () => input.focus(),
+                hideSuggestions
+            };
         };
 
         createAddressAutocomplete({
@@ -2968,6 +3271,42 @@ async function initGoogle() {
                 hideResults();
             }
         });
+
+        waypointControllers[0] = createAddressAutocomplete({
+            containerId: "waypoint1Box",
+            placeholder:
+                "請輸入停靠點 1 地址或地標",
+            ariaLabel:
+                "停靠點 1",
+            onReset: () => {
+                waypointPlaces[0] = null;
+                waypointAddressData[0] = null;
+            },
+            onSelect: (place) => {
+                waypointPlaces[0] = place;
+                waypointAddressData[0] = farePlaceToAddressData(place);
+                hideResults();
+            }
+        });
+
+        waypointControllers[1] = createAddressAutocomplete({
+            containerId: "waypoint2Box",
+            placeholder:
+                "請輸入停靠點 2 地址或地標",
+            ariaLabel:
+                "停靠點 2",
+            onReset: () => {
+                waypointPlaces[1] = null;
+                waypointAddressData[1] = null;
+            },
+            onSelect: (place) => {
+                waypointPlaces[1] = place;
+                waypointAddressData[1] = farePlaceToAddressData(place);
+                hideResults();
+            }
+        });
+
+        updateWaypointUi();
 
         createAddressAutocomplete({
             containerId: "dropoffBox",
@@ -3123,6 +3462,11 @@ async function calculateRoutes() {
 
 
 
+    if (!validateWaypoints()) {
+        return;
+    }
+
+
     if (!RouteClass) {
 
 
@@ -3159,6 +3503,13 @@ async function calculateRoutes() {
     try {
 
 
+        const intermediateWaypoints =
+            getActiveWaypointPlaces()
+                .map((place) => ({
+                    location: place
+                }));
+
+
         /* =====================================
            快速路線
            允許高速公路
@@ -3174,6 +3525,12 @@ async function calculateRoutes() {
 
             travelMode:
                 "DRIVING",
+
+            intermediates:
+                intermediateWaypoints,
+
+            optimizeWaypointOrder:
+                false,
 
             routingPreference:
                 "TRAFFIC_AWARE",
@@ -3217,6 +3574,12 @@ async function calculateRoutes() {
             travelMode:
                 "DRIVING",
 
+            intermediates:
+                intermediateWaypoints,
+
+            optimizeWaypointOrder:
+                false,
+
             routingPreference:
                 "TRAFFIC_AWARE",
 
@@ -3226,7 +3589,7 @@ async function calculateRoutes() {
                     true,
 
                 avoidTolls:
-                    false,
+                    true,
 
                 avoidFerries:
                     true
@@ -3429,6 +3792,32 @@ const fastFare =
         fastMinutes
     );
 
+const activeWaypointData =
+    getActiveWaypointAddressData();
+
+routeResults = {
+    SURFACE: {
+        routeMode: "SURFACE",
+        routeName: "平面道路",
+        distanceKm: normalDistance,
+        durationMinutes: normalMinutes,
+        estimatedFare: normalFare,
+        pickup: pickupAddressData,
+        waypoints: activeWaypointData,
+        dropoff: dropoffAddressData
+    },
+    FAST: {
+        routeMode: "FAST",
+        routeName: "推薦快速路線",
+        distanceKm: fastDistance,
+        durationMinutes: fastMinutes,
+        estimatedFare: fastFare,
+        pickup: pickupAddressData,
+        waypoints: activeWaypointData,
+        dropoff: dropoffAddressData
+    }
+};
+
 
 document
     .getElementById(
@@ -3510,7 +3899,9 @@ document
 
 
         button.textContent =
-            "開始試算 →";
+            serviceMode === "driver"
+                ? "開始試算代駕費用 →"
+                : "開始試算 →";
 
 
     }
@@ -3525,11 +3916,34 @@ document
 
 function selectRoute(routeName) {
 
+    const routeMode =
+        routeName === "平面道路"
+            ? "SURFACE"
+            : "FAST";
+
+    const routeData =
+        routeResults[routeMode];
+
+    if (!routeData) {
+        showStatus(
+            "請先重新試算路線。",
+            true
+        );
+        return;
+    }
+
+    selectedRouteData = {
+        ...routeData,
+        pickup: pickupAddressData,
+        waypoints: getActiveWaypointAddressData(),
+        dropoff: dropoffAddressData
+    };
+
     let distance = "";
     let duration = "";
     let fare = "";
 
-    if (routeName === "平面道路") {
+    if (routeMode === "SURFACE") {
 
         distance = document
             .getElementById("normalDistance")
@@ -3564,14 +3978,14 @@ function selectRoute(routeName) {
 
 
     document.getElementById("confirmPickup").textContent =
-        pickupPlace?.formattedAddress ||
-        pickupPlace?.displayName ||
+        fareAddressDisplayText(pickupAddressData) ||
         "--";
 
     document.getElementById("confirmDropoff").textContent =
-        dropoffPlace?.formattedAddress ||
-        dropoffPlace?.displayName ||
+        fareAddressDisplayText(dropoffAddressData) ||
         "--";
+
+    renderConfirmWaypoints();
 
     const serviceName =
         serviceMode === "driver"
@@ -3702,13 +4116,27 @@ async function confirmTrip() {
             ? "代駕需求已送出！客服確認後會立刻幫您安排！"
             : "叫車需求已送出！客服確認後會立刻幫您安排！";
 
-    const message = [
-    serviceIcon + " TOP Taxi｜" + serviceTitle,
-    "",
-    "📋 服務類型：" + serviceName,
-    "",
-    "📍 上車地點",
-    pickup,
+    const messageParts = [
+        serviceIcon + " TOP Taxi｜" + serviceTitle,
+        "",
+        "📋 服務類型：" + serviceName,
+        "",
+        "📍 上車地點",
+        pickup
+    ];
+
+    const selectedWaypoints =
+        selectedRouteData?.waypoints || [];
+
+    selectedWaypoints.forEach((data, index) => {
+        messageParts.push(
+            "",
+            "🟡 停靠點 " + (index + 1),
+            fareAddressDisplayText(data)
+        );
+    });
+
+    messageParts.push(
         "",
         "🏁 下車地點",
         dropoff,
@@ -3720,7 +4148,10 @@ async function confirmTrip() {
         "",
         "━━━━━━━━━━━━━",
         successText
-    ].join("\n");
+    );
+
+    const message =
+        messageParts.join("\n");
 
     const submitButton =
         document.querySelector(
@@ -3823,6 +4254,12 @@ function hideStatus() {
 
 function hideResults() {
 
+    selectedRouteData = null;
+
+    routeResults = {
+        FAST: null,
+        SURFACE: null
+    };
 
     document
         .getElementById(
