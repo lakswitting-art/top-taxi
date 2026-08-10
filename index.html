@@ -1839,6 +1839,8 @@ function loadSharedAddresses() {
     });
 }
 
+let sharedAddressAutocompleteInitializer = null;
+
 function renderSharedAddressEditor() {
     const box = document.getElementById("bookingSavedAddressRows");
     if (!box) return;
@@ -1848,10 +1850,17 @@ function renderSharedAddressEditor() {
         row.className = "saved-address-row";
         row.innerHTML =
             '<input type="text" id="sharedName'+index+'" aria-label="常用地點名稱" value="'+escapeHtml(item.name || "")+'">' +
-            '<input type="text" id="sharedAddress'+index+'" aria-label="常用地址" placeholder="請輸入地址或地標" value="'+escapeHtml(item.address || "")+'">' +
+            '<div class="address-autocomplete">' +
+                '<input type="search" id="sharedAddress'+index+'" aria-label="常用地址" autocomplete="off" placeholder="請輸入地址或地標" value="'+escapeHtml(item.address || "")+'">' +
+                '<div id="sharedAddressSuggestions'+index+'" class="address-suggestions" role="listbox"></div>' +
+            '</div>' +
             '<input type="text" id="sharedNote'+index+'" class="saved-address-note" aria-label="上車位置補充" placeholder="上車位置補充（選填）" value="'+escapeHtml(item.pickupNote || "")+'">';
         box.appendChild(row);
     });
+
+    if (typeof sharedAddressAutocompleteInitializer === "function") {
+        sharedAddressAutocompleteInitializer();
+    }
 }
 
 function renderSharedAddressChips() {
@@ -1938,20 +1947,21 @@ function saveSharedAddressesFromBooking() {
         const name = (document.getElementById("sharedName"+index)?.value || "").trim() || ("常用地點 " + (index + 1));
         const address = (document.getElementById("sharedAddress"+index)?.value || "").trim();
         const pickupNote = (document.getElementById("sharedNote"+index)?.value || "").trim();
-        const addressChanged = address !== (oldItem.address || "");
+        const currentItem = sharedAddresses[index] || oldItem;
+        const addressChanged = address !== (currentItem.address || "");
 
         return normalizeAddressData({
-            ...oldItem,
+            ...currentItem,
             name: name,
             address: address,
             pickupNote: pickupNote,
-            displayName: addressChanged ? "" : (oldItem.displayName || ""),
-            city: addressChanged ? "" : (oldItem.city || ""),
-            district: addressChanged ? "" : (oldItem.district || ""),
-            areaLabel: addressChanged ? "" : (oldItem.areaLabel || ""),
-            placeId: addressChanged ? "" : (oldItem.placeId || ""),
-            lat: addressChanged ? null : (oldItem.lat ?? null),
-            lng: addressChanged ? null : (oldItem.lng ?? null)
+            displayName: addressChanged ? "" : (currentItem.displayName || ""),
+            city: addressChanged ? "" : (currentItem.city || ""),
+            district: addressChanged ? "" : (currentItem.district || ""),
+            areaLabel: addressChanged ? "" : (currentItem.areaLabel || ""),
+            placeId: addressChanged ? "" : (currentItem.placeId || ""),
+            lat: addressChanged ? null : (currentItem.lat ?? null),
+            lng: addressChanged ? null : (currentItem.lng ?? null)
         });
     });
     localStorage.setItem(SHARED_ADDRESS_KEY, JSON.stringify(next));
@@ -3258,6 +3268,194 @@ async function initGoogle() {
                 if (!container.contains(event.target)) hideSuggestions();
             });
         }
+
+        sharedAddressAutocompleteInitializer = function () {
+            sharedAddresses.forEach(function (item, index) {
+                const input = document.getElementById("sharedAddress" + index);
+                const suggestions = document.getElementById("sharedAddressSuggestions" + index);
+
+                if (!input || !suggestions || input.dataset.googleReady === "1") return;
+
+                input.dataset.googleReady = "1";
+
+                let sessionToken = new AutocompleteSessionToken();
+                let debounceTimer = null;
+                let requestNumber = 0;
+
+                function hideSuggestions() {
+                    suggestions.classList.remove("show");
+                    suggestions.innerHTML = "";
+                }
+
+                function getPredictionText(prediction) {
+                    if (prediction.text && typeof prediction.text.toString === "function") {
+                        return prediction.text.toString();
+                    }
+                    return "";
+                }
+
+                async function choosePrediction(prediction) {
+                    const fallbackText = getPredictionText(prediction);
+                    input.value = fallbackText;
+                    hideSuggestions();
+
+                    try {
+                        const place = prediction.toPlace();
+
+                        await place.fetchFields({
+                            fields: ["id", "displayName", "formattedAddress", "location", "addressComponents"]
+                        });
+
+                        const addressData = placeToAddressData(place, {
+                            name: (document.getElementById("sharedName" + index)?.value || item.name || "").trim(),
+                            address: place.formattedAddress || fallbackText,
+                            pickupNote: (document.getElementById("sharedNote" + index)?.value || item.pickupNote || "").trim()
+                        });
+
+                        sharedAddresses[index] = normalizeAddressData(addressData, item);
+
+                        input.value =
+                            place.formattedAddress ||
+                            fallbackText ||
+                            getPlaceDisplayName(place);
+
+                    } catch (placeError) {
+                        console.warn("SHARED ADDRESS PLACE DETAILS ERROR:", placeError);
+                    }
+
+                    sessionToken = new AutocompleteSessionToken();
+                }
+
+                function renderSuggestions(items) {
+                    suggestions.innerHTML = "";
+
+                    const predictions = (items || [])
+                        .map(function (entry) { return entry.placePrediction; })
+                        .filter(Boolean)
+                        .slice(0, 6);
+
+                    if (!predictions.length) {
+                        const empty = document.createElement("div");
+                        empty.className = "address-no-results";
+                        empty.textContent = "找不到相符地點，請輸入更完整的名稱或地址";
+                        suggestions.appendChild(empty);
+                        suggestions.classList.add("show");
+                        return;
+                    }
+
+                    predictions.forEach(function (prediction) {
+                        const row = document.createElement("button");
+                        row.type = "button";
+                        row.className = "address-suggestion";
+                        row.setAttribute("role", "option");
+
+                        const icon = document.createElement("span");
+                        icon.className = "address-suggestion-icon";
+                        icon.textContent = "📍";
+
+                        const textBox = document.createElement("span");
+
+                        const main = document.createElement("strong");
+                        main.className = "address-suggestion-main";
+                        main.textContent = prediction.mainText
+                            ? prediction.mainText.toString()
+                            : getPredictionText(prediction);
+
+                        const secondary = document.createElement("span");
+                        secondary.className = "address-suggestion-secondary";
+                        secondary.textContent = prediction.secondaryText
+                            ? prediction.secondaryText.toString()
+                            : "";
+
+                        textBox.append(main, secondary);
+                        row.append(icon, textBox);
+
+                        row.addEventListener("pointerdown", function (event) {
+                            event.preventDefault();
+                            choosePrediction(prediction);
+                        });
+
+                        suggestions.appendChild(row);
+                    });
+
+                    const attribution = document.createElement("div");
+                    attribution.className = "address-google-attribution";
+                    attribution.textContent = "Google Maps";
+                    suggestions.appendChild(attribution);
+                    suggestions.classList.add("show");
+                }
+
+                async function fetchSuggestions(query) {
+                    const currentRequest = ++requestNumber;
+
+                    try {
+                        const response = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+                            input: query,
+                            includedRegionCodes: ["tw"],
+                            language: "zh-TW",
+                            region: "TW",
+                            locationBias: {
+                                center: searchCenter,
+                                radius: 50000
+                            },
+                            origin: searchCenter,
+                            sessionToken: sessionToken
+                        });
+
+                        if (currentRequest !== requestNumber) return;
+                        renderSuggestions(response.suggestions || []);
+
+                    } catch (searchError) {
+                        if (currentRequest !== requestNumber) return;
+                        console.warn("SHARED ADDRESS SEARCH ERROR:", searchError);
+                        hideSuggestions();
+                    }
+                }
+
+                input.addEventListener("input", function () {
+                    const query = input.value.trim();
+                    window.clearTimeout(debounceTimer);
+
+                    // As soon as the user edits the text, discard stale place metadata.
+                    sharedAddresses[index] = normalizeAddressData({
+                        ...sharedAddresses[index],
+                        address: query,
+                        displayName: "",
+                        city: "",
+                        district: "",
+                        areaLabel: "",
+                        placeId: "",
+                        lat: null,
+                        lng: null
+                    });
+
+                    if (!query) {
+                        requestNumber++;
+                        hideSuggestions();
+                        return;
+                    }
+
+                    debounceTimer = window.setTimeout(function () {
+                        fetchSuggestions(query);
+                    }, 220);
+                });
+
+                input.addEventListener("focus", function () {
+                    const query = input.value.trim();
+                    if (query) fetchSuggestions(query);
+                });
+
+                input.addEventListener("keydown", function (event) {
+                    if (event.key === "Escape") hideSuggestions();
+                });
+
+                document.addEventListener("pointerdown", function (event) {
+                    if (!suggestions.parentElement.contains(event.target)) {
+                        hideSuggestions();
+                    }
+                });
+            });
+        };
 
         createAddressAutocomplete({
             containerId: "pickupBox",
