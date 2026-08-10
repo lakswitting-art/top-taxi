@@ -2231,6 +2231,15 @@ const WEBHOOK_URL =
     "https://lakswitting.app.n8n.cloud/webhook/96798dda-c12a-4552-bcaa-e51a1166a1a8";
 
 
+/* ======================================================
+   BROWSER TEST MODE
+   Add ?test=1 to bypass LINE login for Safari / Chrome UI testing.
+   In test mode, LINE sendMessages and n8n submission are disabled.
+====================================================== */
+const BROWSER_TEST_MODE =
+    new URLSearchParams(window.location.search).get("test") === "1";
+
+
 let lineDisplayName =
     "";
 
@@ -3565,6 +3574,13 @@ function escapeHtml(
 async function initializeLiff() {
 
 
+    if (BROWSER_TEST_MODE) {
+        liffInitialized = false;
+        console.info("TOP Taxi Booking: browser test mode enabled; LINE login is bypassed.");
+        return;
+    }
+
+
     try {
 
 
@@ -3932,6 +3948,17 @@ async function sendBooking() {
 
     }
 
+
+
+    if (BROWSER_TEST_MODE) {
+        button.disabled = false;
+        button.innerHTML = getSubmitButtonText();
+        showMessage(
+            "🧪 瀏覽器測試模式：表單驗證通過。<br>LINE 訊息與 n8n 不會送出。",
+            "success"
+        );
+        return;
+    }
 
 
     if (
@@ -5139,6 +5166,19 @@ window.addEventListener(
         updateBookingSmokingPreferenceUi();
         updateBookingOtherNeedsSummary();
         updateBookingLuggageNotice();
+
+        if (BROWSER_TEST_MODE) {
+            const box = document.getElementById("messageBox");
+            if (box) {
+                box.style.display = "block";
+                box.style.marginTop = "0";
+                box.style.marginBottom = "14px";
+                box.style.background = "#f5f5f7";
+                box.style.border = "1px solid #e4e4e8";
+                box.style.color = "#66666c";
+                box.innerHTML = "🧪 瀏覽器測試模式｜LINE 登入、sendMessages 與 n8n 已停用";
+            }
+        }
 
         initializeLiff();
         initGoogle();
