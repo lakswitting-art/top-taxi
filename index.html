@@ -1828,6 +1828,118 @@ input::placeholder {
     font-size: 12px;
 }
 
+
+/* ===== #5 WHOLE-SYSTEM VISUAL CONSISTENCY FINAL ===== */
+/* Fixed shell height: no longer depends on total document height */
+body{
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255,31,45,.22) 0,
+            rgba(255,31,45,.12) 72px,
+            transparent 300px
+        ),
+        linear-gradient(
+            180deg,
+            #070709 0,
+            #101014 220px,
+            #f2f3f5 220px,
+            #f2f3f5 100%
+        ) !important;
+}
+
+.hero{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:18px !important;
+    width:min(100%,560px) !important;
+    max-width:560px !important;
+    margin:0 auto !important;
+    padding:max(10px,env(safe-area-inset-top)) 24px 12px !important;
+    text-align:left !important;
+}
+.hero-copy{
+    min-width:0 !important;
+    flex:1 !important;
+    text-align:center !important;
+}
+.hero::after{
+    content:"";
+    flex:0 0 58px !important;
+    width:58px !important;
+}
+.hero .logo-wrap{
+    margin:0 !important;
+    flex:0 0 auto !important;
+}
+.hero .logo{
+    width:58px !important;
+    height:58px !important;
+    border-radius:14px !important;
+}
+.hero .logo-glow{
+    width:66px !important;
+    height:66px !important;
+    filter:blur(16px) !important;
+}
+.hero .brand{
+    font-size:23px !important;
+    line-height:1.08 !important;
+}
+.hero .system-name{
+    margin-top:3px !important;
+    font-size:13px !important;
+    font-weight:800 !important;
+    letter-spacing:1.25px !important;
+}
+.hero .hero-description{
+    margin-top:5px !important;
+    max-width:calc(100vw - 125px) !important;
+    overflow:hidden !important;
+    color:#a8a8ae !important;
+    font-size:10.5px !important;
+    font-weight:600 !important;
+    letter-spacing:.2px !important;
+    line-height:1.4 !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+}
+@media(max-width:370px){
+    .hero{
+        gap:13px !important;
+        padding-left:18px !important;
+        padding-right:18px !important;
+    }
+    .hero .logo{
+        width:54px !important;
+        height:54px !important;
+        border-radius:13px !important;
+    }
+    .hero::after{
+        flex-basis:54px !important;
+        width:54px !important;
+    }
+    .hero .hero-description{
+        max-width:calc(100vw - 112px) !important;
+        font-size:9.5px !important;
+    }
+}
+
+.page{
+    margin:-6px auto 0 !important;
+}
+
+/* Fare page is the typography standard for +新增停靠點 */
+.booking-add-waypoint{
+    min-height:44px !important;
+    border:1px dashed #d7d7dc !important;
+    border-radius:12px !important;
+    color:#4f4f55 !important;
+    font-size:14px !important;
+    font-weight:850 !important;
+}
+
 </style>
 
 </head>
@@ -2086,7 +2198,7 @@ input::placeholder {
                 🏁 下車地點 <span class="field-tag optional-tag">選填</span>
             </label>
             <div id="dropoffBox"></div>
-            <div class="booking-compact-help">未填下車地點時，不顯示路線與預估車資</div>
+            <div class="booking-compact-help">可留空；填寫後可查看路線與預估車資</div>
         </div>
 
 
@@ -5190,7 +5302,7 @@ async function initGoogle() {
         createAddressAutocomplete({
             containerId: "dropoffBox",
             inputId: "dropoff",
-            placeholder: "選填；可輸入地址或地標名稱",
+            placeholder: "請輸入下車地址或地標（可留空）",
             ariaLabel: "下車地點",
             required: false,
             onSelect: function (place) {
@@ -5219,7 +5331,7 @@ async function initGoogle() {
             input.id = item[1];
             input.placeholder = item[3]
                 ? "請輸入完整地址或地標名稱"
-                : "選填；可輸入地址或地標名稱";
+                : "請輸入下車地址或地標（可留空）";
             input.setAttribute("aria-label", item[2]);
             input.required = item[3];
             container.appendChild(input);
