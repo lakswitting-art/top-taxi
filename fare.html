@@ -3438,6 +3438,54 @@ function calculateDriverFare(distanceKm, minutes) {
     return Math.floor(totalFare / 10) * 10;
 }
 /* =========================================
+   ROUTE LEG VALIDATION
+========================================= */
+
+function summarizeRouteByLegs(route, expectedLegCount) {
+
+    const legs =
+        Array.isArray(route?.legs)
+            ? route.legs
+            : [];
+
+    if (legs.length !== expectedLegCount) {
+        throw new Error(
+            `Google 路線停靠點驗證失敗：預期 ${expectedLegCount} 段，實際 ${legs.length} 段`
+        );
+    }
+
+    const totalDistanceMeters =
+        legs.reduce(
+            (sum, leg) => sum + Number(leg?.distanceMeters || 0),
+            0
+        );
+
+    const totalDurationMillis =
+        legs.reduce(
+            (sum, leg) => sum + Number(leg?.durationMillis || 0),
+            0
+        );
+
+    if (
+        !Number.isFinite(totalDistanceMeters) ||
+        !Number.isFinite(totalDurationMillis) ||
+        totalDistanceMeters <= 0 ||
+        totalDurationMillis <= 0
+    ) {
+        throw new Error(
+            "Google 路線分段資料不完整，請重新試算。"
+        );
+    }
+
+    return {
+        distanceMeters: totalDistanceMeters,
+        durationMillis: totalDurationMillis,
+        legCount: legs.length
+    };
+}
+
+
+/* =========================================
    CALCULATE ROUTES
 ========================================= */
 
@@ -3503,11 +3551,21 @@ async function calculateRoutes() {
     try {
 
 
+        const activeWaypointPlaces =
+            getActiveWaypointPlaces();
+
         const intermediateWaypoints =
-            getActiveWaypointPlaces()
+            activeWaypointPlaces
                 .map((place) => ({
-                    location: place
+                    location: place.location,
+                    vehicleStopover: true
                 }));
+
+        const expectedLegCount =
+            intermediateWaypoints.length + 1;
+
+        const routeDepartureTime =
+            new Date();
 
 
         /* =====================================
@@ -3533,7 +3591,10 @@ async function calculateRoutes() {
                 false,
 
             routingPreference:
-                "TRAFFIC_AWARE",
+                "TRAFFIC_AWARE_OPTIMAL",
+
+            departureTime:
+                routeDepartureTime,
 
             routeModifiers: {
 
@@ -3551,7 +3612,8 @@ async function calculateRoutes() {
             fields: [
 
                 "distanceMeters",
-                "durationMillis"
+                "durationMillis",
+                "legs"
 
             ]
 
@@ -3581,7 +3643,10 @@ async function calculateRoutes() {
                 false,
 
             routingPreference:
-                "TRAFFIC_AWARE",
+                "TRAFFIC_AWARE_OPTIMAL",
+
+            departureTime:
+                routeDepartureTime,
 
             routeModifiers: {
 
@@ -3599,7 +3664,8 @@ async function calculateRoutes() {
             fields: [
 
                 "distanceMeters",
-                "durationMillis"
+                "durationMillis",
+                "legs"
 
             ]
 
@@ -3658,28 +3724,58 @@ async function calculateRoutes() {
            FORMAT DATA
         ====================================== */
 
+        const fastMetrics =
+            summarizeRouteByLegs(
+                fastRoute,
+                expectedLegCount
+            );
+
+        const normalMetrics =
+            summarizeRouteByLegs(
+                normalRoute,
+                expectedLegCount
+            );
+
         const fastDistance =
-            fastRoute.distanceMeters /
+            fastMetrics.distanceMeters /
             1000;
 
 
         const normalDistance =
-            normalRoute.distanceMeters /
+            normalMetrics.distanceMeters /
             1000;
 
 
         const fastMinutes =
             Math.ceil(
-                fastRoute.durationMillis /
+                fastMetrics.durationMillis /
                 60000
             );
 
 
         const normalMinutes =
             Math.ceil(
-                normalRoute.durationMillis /
+                normalMetrics.durationMillis /
                 60000
             );
+
+
+        console.info(
+            "TOP Taxi route validation",
+            {
+                waypointCount:
+                    intermediateWaypoints.length,
+                expectedLegCount,
+                fastLegCount:
+                    fastMetrics.legCount,
+                surfaceLegCount:
+                    normalMetrics.legCount,
+                fastDistanceKm:
+                    Number(fastDistance.toFixed(1)),
+                surfaceDistanceKm:
+                    Number(normalDistance.toFixed(1))
+            }
+        );
 
 
 
@@ -3880,9 +3976,14 @@ document
         );
 
 
+        const routeErrorMessage =
+            String(error?.message || "");
+
         showStatus(
 
-            "路線計算失敗。請確認 Maps JavaScript API、Places API（新版）與 Routes API 都已啟用。",
+            routeErrorMessage.includes("停靠點驗證失敗")
+                ? "停靠點沒有被 Google 正確加入路線，請重新選擇停靠點後再試一次。"
+                : "路線計算失敗。請確認地址與 Google 路線服務後再試一次。",
 
             true
 
