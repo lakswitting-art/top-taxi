@@ -1201,7 +1201,80 @@
       $("#"+id).hidden=true;
       document.body.style.overflow="";
     }
-    async function useLocation(){if(!navigator.geolocation)return setStatus("pickupStatus","此裝置無法取得目前位置。","error");$("#useLocation").textContent="正在取得位置…";navigator.geolocation.getCurrentPosition(async pos=>{try{const {Geocoder}=await google.maps.importLibrary("geocoding");const result=await new Geocoder().geocode({location:{lat:pos.coords.latitude,lng:pos.coords.longitude}});const address=result.results?.[0]?.formatted_address;if(!address)throw new Error();pickupPlace=await resolveAddress(address);$("#pickup").value=pickupPlace.formattedAddress||address;setStatus("pickupStatus","已帶入目前位置","ok");$("#useLocation").textContent="已取得目前位置";await recalculate()}catch(e){setStatus("pickupStatus","目前位置轉換地址失敗，請手動輸入。","error");$("#useLocation").textContent="使用目前位置"}},()=>{setStatus("pickupStatus","未取得定位權限，請手動輸入地址。","error");$("#useLocation").textContent="使用目前位置"},{enableHighAccuracy:true,timeout:10000,maximumAge:60000})}
+    async function useLocation(){
+      if(!navigator.geolocation){
+        setStatus("pickupStatus","此裝置無法取得目前位置。","error");
+        return;
+      }
+
+      const button=$("#useLocation");
+      const text=$("#useLocationText");
+
+      if(button)button.disabled=true;
+      if(text)text.textContent="定位中…";
+      setStatus("pickupStatus","");
+
+      try{
+        const position=await new Promise((resolve,reject)=>{
+          navigator.geolocation.getCurrentPosition(resolve,reject,{
+            enableHighAccuracy:true,
+            timeout:10000,
+            maximumAge:60000
+          });
+        });
+
+        const {Geocoder}=await google.maps.importLibrary("geocoding");
+        const result=await new Geocoder().geocode({
+          location:{
+            lat:position.coords.latitude,
+            lng:position.coords.longitude
+          }
+        });
+
+        const first=result.results?.[0];
+        if(!first?.place_id){
+          throw new Error("目前位置無法轉換成 Google Place");
+        }
+
+        const {Place}=await google.maps.importLibrary("places");
+        const place=new Place({id:first.place_id});
+        await place.fetchFields({
+          fields:["id","displayName","formattedAddress","location","addressComponents"]
+        });
+
+        pickupPlace=place;
+
+        const data=placeToAddressData(place,{
+          address:first.formatted_address||""
+        });
+
+        $("#pickup").value=
+          addressDisplayText(data)
+          || place.formattedAddress
+          || first.formatted_address
+          || "";
+
+        document.querySelectorAll("#savedChips .chip").forEach(chip=>{
+          chip.classList.remove("active");
+        });
+
+        setStatus("pickupStatus","已帶入目前位置","ok");
+        await recalculate();
+
+        if(text){
+          text.textContent="已取得目前位置";
+          window.setTimeout(()=>{
+            if(text)text.textContent="使用目前位置";
+          },1800);
+        }
+      }catch(error){
+        console.warn("RIDE GEOLOCATION ERROR:",error);
+        setStatus("pickupStatus","未取得定位或地址，請手動輸入上車地點。","error");
+        if(text)text.textContent="使用目前位置";
+      }finally{
+        if(button)button.disabled=false;
+      }
+    }
 
     function noteText(){const parts=[];if(smokingMode&&smokingMode!=="不限")parts.push(smokingMode);document.querySelectorAll("[data-note].active").forEach(b=>parts.push(b.dataset.note));if(petMode==="no-carrier")parts.push("寵物無籠（+$50）");if(petMode==="carrier")parts.push("寵物有籠");if($("#note").value.trim())parts.push($("#note").value.trim());return parts.join("、")||"無"}
     function openConfirmation(){
