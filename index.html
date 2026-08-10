@@ -1665,63 +1665,76 @@ input::placeholder {
     line-height: 1.4;
 }
 
-.booking-payment-preference {
-    margin-top: 10px;
-    padding: 11px 12px;
-    border: 1px solid var(--gray-2);
-    border-radius: 12px;
-    background: #f7f7f9;
+.booking-payment-option {
+    position: relative;
 }
-.booking-payment-preference-main {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-}
-.booking-payment-preference-status {
-    min-width: 0;
-    color: #66666c;
-    font-size: 11.5px;
-    font-weight: 700;
-    line-height: 1.45;
-}
-.booking-payment-preference-status.success {
-    color: #168447;
-}
-.booking-payment-preference-action {
+
+.booking-payment-default-badge {
+    display: none;
     flex: 0 0 auto;
-    min-height: 34px;
-    padding: 0 11px;
+    margin-left: auto;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f1f1f3;
+    color: #66666c;
+    font-size: 10.5px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.booking-payment-default-badge.show {
+    display: inline-flex;
+}
+
+.booking-payment-set-default {
+    display: none;
+    flex: 0 0 auto;
+    margin-left: auto;
+    min-height: 30px;
+    padding: 0 9px;
     border: 1px solid #d8d8dc;
-    border-radius: 10px;
+    border-radius: 9px;
     background: #fff;
-    color: #35353a;
-    font-size: 11.5px;
+    color: #44444a;
+    font-size: 10.8px;
     font-weight: 850;
     cursor: pointer;
+    white-space: nowrap;
 }
-.booking-payment-preference-action:active {
+
+.booking-payment-set-default.show {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.booking-payment-set-default:active {
     transform: scale(.98);
 }
-.booking-payment-preference-clear {
-    margin-top: 7px;
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: #9a9aa0;
+
+.booking-payment-toast {
+    display: none;
+    margin-top: 8px;
+    color: #168447;
     font-size: 11px;
-    font-weight: 750;
-    cursor: pointer;
+    font-weight: 800;
+    line-height: 1.45;
 }
-.booking-payment-preference-clear[hidden] { display: none !important; }
+
+.booking-payment-toast.show {
+    display: block;
+}
 
 @media (max-width: 390px) {
-    .booking-payment-preference-main {
+    .booking-payment-option {
         align-items: flex-start;
     }
-    .booking-payment-preference-action {
-        padding: 0 9px;
-        font-size: 11px;
+    .booking-payment-set-default {
+        padding: 0 8px;
+        font-size: 10.3px;
+    }
+    .booking-payment-default-badge {
+        font-size: 10px;
     }
 }
 
@@ -2146,23 +2159,20 @@ input::placeholder {
         <div class="input-group">
             <label>💳 付款方式</label>
             <div class="booking-payment-list">
-                <label class="booking-payment-option">
+                <label class="booking-payment-option" data-payment-option="現金｜行程結束後付款">
                     <input type="radio" name="bookingPayment" value="現金｜行程結束後付款" checked>
                     <span class="booking-payment-copy">現金 <small>行程結束後付款</small></span>
+                    <span class="booking-payment-default-badge" data-payment-default-badge="現金｜行程結束後付款">預設</span>
+                    <button class="booking-payment-set-default" type="button" data-payment-set-default="現金｜行程結束後付款">設為預設</button>
                 </label>
-                <label class="booking-payment-option">
+                <label class="booking-payment-option" data-payment-option="車資後結">
                     <input type="radio" name="bookingPayment" value="車資後結">
                     <span class="booking-payment-copy">車資後結 <small>限已與 TOP Taxi 約定的後結客戶使用</small></span>
+                    <span class="booking-payment-default-badge" data-payment-default-badge="車資後結">預設</span>
+                    <button class="booking-payment-set-default" type="button" data-payment-set-default="車資後結">設為預設</button>
                 </label>
             </div>
-
-            <div class="booking-payment-preference">
-                <div class="booking-payment-preference-main">
-                    <span id="bookingPaymentPreferenceHint" class="booking-payment-preference-status">尚未設定固定付款</span>
-                    <button id="setBookingPaymentPreference" class="booking-payment-preference-action" type="button">設為固定付款</button>
-                </div>
-                <button id="clearBookingPaymentPreference" class="booking-payment-preference-clear" type="button" hidden>清除固定付款</button>
-            </div>
+            <div id="bookingPaymentDefaultToast" class="booking-payment-toast" aria-live="polite"></div>
         </div>
 
 
@@ -3010,77 +3020,54 @@ function bookingPaymentLabel(value) {
     return value === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
 }
 
-let bookingPaymentPreferenceMessageTimer = null;
+let bookingPaymentDefaultToastTimer = null;
 
 function updateBookingPaymentPreferenceUi() {
     const selected = getSelectedBookingPayment();
-    const hint = document.getElementById("bookingPaymentPreferenceHint");
-    const action = document.getElementById("setBookingPaymentPreference");
-    const clear = document.getElementById("clearBookingPaymentPreference");
 
-    if (!hint || !action) return;
+    document.querySelectorAll("[data-payment-default-badge]").forEach(function(badge) {
+        badge.classList.toggle(
+            "show",
+            !!savedBookingPaymentPreference &&
+            badge.dataset.paymentDefaultBadge === savedBookingPaymentPreference
+        );
+    });
 
-    hint.classList.remove("success");
+    document.querySelectorAll("[data-payment-set-default]").forEach(function(button) {
+        const value = button.dataset.paymentSetDefault || "";
+        const shouldShow =
+            value === selected &&
+            (!savedBookingPaymentPreference || selected !== savedBookingPaymentPreference);
 
-    if (!savedBookingPaymentPreference) {
-        hint.textContent = "尚未設定固定付款";
-        action.textContent = "設為固定付款";
-        clear.hidden = true;
-        return;
-    }
-
-    const selectedLabel = bookingPaymentLabel(selected);
-    const savedLabel = bookingPaymentLabel(savedBookingPaymentPreference);
-
-    if (selected === savedBookingPaymentPreference) {
-        hint.textContent = "固定付款：" + savedLabel;
-        action.textContent = "更新固定付款";
-    } else {
-        hint.textContent = "本次：" + selectedLabel + "｜固定：" + savedLabel;
-        action.textContent = "更新固定付款";
-    }
-
-    clear.hidden = false;
+        button.classList.toggle("show", shouldShow);
+    });
 }
 
-function saveSelectedBookingPaymentAsPreference() {
-    const selected = getSelectedBookingPayment();
-    const selectedLabel = bookingPaymentLabel(selected);
+function saveBookingPaymentAsDefault(value) {
+    const allowed = [BOOKING_DEFAULT_PAYMENT, BOOKING_POSTPAID_PAYMENT];
+    if (!allowed.includes(value)) return;
 
-    saveCustomerPreferences({ paymentMode: selected });
+    const target = Array.from(document.querySelectorAll('input[name="bookingPayment"]'))
+        .find(function(input) { return input.value === value; });
 
-    const hint = document.getElementById("bookingPaymentPreferenceHint");
-    if (hint) {
-        hint.textContent = "✓ 已設為固定付款：" + selectedLabel;
-        hint.classList.add("success");
-    }
+    if (target) target.checked = true;
 
-    if (bookingPaymentPreferenceMessageTimer) {
-        window.clearTimeout(bookingPaymentPreferenceMessageTimer);
-    }
-
-    bookingPaymentPreferenceMessageTimer = window.setTimeout(function() {
-        updateBookingPaymentPreferenceUi();
-    }, 1600);
-
-    const clear = document.getElementById("clearBookingPaymentPreference");
-    if (clear) clear.hidden = false;
-}
-
-function clearSavedBookingPaymentPreference() {
-    if (!savedBookingPaymentPreference) return;
-
-    const savedLabel = bookingPaymentLabel(savedBookingPaymentPreference);
-    if (!window.confirm("確定要清除已記住的「" + savedLabel + "」固定付款方式嗎？")) return;
-
-    saveCustomerPreferences({ paymentMode: "" });
-
-    if (bookingPaymentPreferenceMessageTimer) {
-        window.clearTimeout(bookingPaymentPreferenceMessageTimer);
-        bookingPaymentPreferenceMessageTimer = null;
-    }
-
+    saveCustomerPreferences({ paymentMode: value });
     updateBookingPaymentPreferenceUi();
+
+    const toast = document.getElementById("bookingPaymentDefaultToast");
+    if (toast) {
+        toast.textContent = "✓ 已設為下次預設付款方式";
+        toast.classList.add("show");
+    }
+
+    if (bookingPaymentDefaultToastTimer) {
+        window.clearTimeout(bookingPaymentDefaultToastTimer);
+    }
+
+    bookingPaymentDefaultToastTimer = window.setTimeout(function() {
+        toast?.classList.remove("show");
+    }, 1800);
 }
 
 function getBookingMemoValue() {
@@ -5284,8 +5271,13 @@ window.addEventListener(
             });
         });
 
-        document.getElementById("setBookingPaymentPreference")?.addEventListener("click", saveSelectedBookingPaymentAsPreference);
-        document.getElementById("clearBookingPaymentPreference")?.addEventListener("click", clearSavedBookingPaymentPreference);
+        document.querySelectorAll("[data-payment-set-default]").forEach(function(button) {
+            button.addEventListener("click", function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                saveBookingPaymentAsDefault(button.dataset.paymentSetDefault || "");
+            });
+        });
 
         const pickupNoteToggle = document.getElementById("toggleBookingPickupNote");
         const pickupNoteCollapse = document.getElementById("collapseBookingPickupNote");
