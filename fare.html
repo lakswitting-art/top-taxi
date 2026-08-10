@@ -3438,49 +3438,152 @@ function calculateDriverFare(distanceKm, minutes) {
     return Math.floor(totalFare / 10) * 10;
 }
 /* =========================================
-   ROUTE LEG VALIDATION
+   SEGMENT ROUTE ENGINE
 ========================================= */
 
-function summarizeRouteByLegs(route, expectedLegCount) {
+function summarizeSingleSegmentRoute(route, segmentNumber) {
 
     const legs =
         Array.isArray(route?.legs)
             ? route.legs
             : [];
 
-    if (legs.length !== expectedLegCount) {
+    if (legs.length !== 1) {
         throw new Error(
-            `Google 路線停靠點驗證失敗：預期 ${expectedLegCount} 段，實際 ${legs.length} 段`
+            `Google 第 ${segmentNumber} 段路線資料異常：預期 1 段，實際 ${legs.length} 段`
         );
     }
 
-    const totalDistanceMeters =
-        legs.reduce(
-            (sum, leg) => sum + Number(leg?.distanceMeters || 0),
-            0
-        );
+    const leg = legs[0];
 
-    const totalDurationMillis =
-        legs.reduce(
-            (sum, leg) => sum + Number(leg?.durationMillis || 0),
-            0
-        );
+    const distanceMeters =
+        Number(leg?.distanceMeters || 0);
+
+    const durationMillis =
+        Number(leg?.durationMillis || 0);
 
     if (
-        !Number.isFinite(totalDistanceMeters) ||
-        !Number.isFinite(totalDurationMillis) ||
-        totalDistanceMeters <= 0 ||
-        totalDurationMillis <= 0
+        !Number.isFinite(distanceMeters) ||
+        !Number.isFinite(durationMillis) ||
+        distanceMeters <= 0 ||
+        durationMillis <= 0
     ) {
         throw new Error(
-            "Google 路線分段資料不完整，請重新試算。"
+            `Google 第 ${segmentNumber} 段路線資料不完整，請重新試算。`
         );
     }
 
     return {
-        distanceMeters: totalDistanceMeters,
-        durationMillis: totalDurationMillis,
-        legCount: legs.length
+        distanceMeters,
+        durationMillis
+    };
+}
+
+
+async function computeSegmentRoutePair(
+    origin,
+    destination,
+    departureTime,
+    segmentNumber
+) {
+
+    const request = {
+
+        origin,
+        destination,
+
+        travelMode:
+            "DRIVING",
+
+        routingPreference:
+            "TRAFFIC_AWARE_OPTIMAL",
+
+        departureTime,
+
+        requestedReferenceRoutes: [
+            "SHORTER_DISTANCE"
+        ],
+
+        routeModifiers: {
+            avoidFerries:
+                true
+        },
+
+        fields: [
+            "legs",
+            "routeLabels",
+            "routeToken"
+        ]
+
+    };
+
+
+    const response =
+        await RouteClass.computeRoutes(
+            request
+        );
+
+
+    const routes =
+        response.routes || [];
+
+
+    const fastRoute =
+        routes.find((route) =>
+            (route.routeLabels || [])
+                .some((label) =>
+                    String(label).includes("DEFAULT_ROUTE")
+                )
+        )
+        ||
+        routes[0];
+
+
+    const shorterRoute =
+        routes.find((route) =>
+            (route.routeLabels || [])
+                .some((label) =>
+                    String(label).includes("SHORTER_DISTANCE")
+                )
+        )
+        ||
+        fastRoute;
+
+
+    if (!fastRoute) {
+        throw new Error(
+            `Google 第 ${segmentNumber} 段沒有回傳推薦路線`
+        );
+    }
+
+
+    const fastMetrics =
+        summarizeSingleSegmentRoute(
+            fastRoute,
+            segmentNumber
+        );
+
+
+    const shorterMetrics =
+        summarizeSingleSegmentRoute(
+            shorterRoute,
+            segmentNumber
+        );
+
+
+    return {
+        fast: {
+            ...fastMetrics,
+            route:
+                fastRoute
+        },
+        shorter: {
+            ...shorterMetrics,
+            route:
+                shorterRoute,
+            usedFallback:
+                shorterRoute === fastRoute
+        }
     };
 }
 
@@ -3554,180 +3657,175 @@ async function calculateRoutes() {
         const activeWaypointPlaces =
             getActiveWaypointPlaces();
 
-        const intermediateWaypoints =
-            activeWaypointPlaces
-                .map((place) => ({
-                    location: place
-                }));
+        const routeStops = [
+            pickupPlace,
+            ...activeWaypointPlaces,
+            dropoffPlace
+        ];
 
-        const expectedLegCount =
-            intermediateWaypoints.length + 1;
+        const routeStopData = [
+            pickupAddressData,
+            ...getActiveWaypointAddressData(),
+            dropoffAddressData
+        ];
 
-        // Same safely-future traffic snapshot for both route objectives.
+        // Every segment is calculated independently.
+        // This allows Google SHORTER_DISTANCE to choose a genuinely shorter
+        // road between each pair of customer-specified stops.
         const routeDepartureTime =
             new Date(Date.now() + 2 * 60 * 1000);
 
-        /* =====================================
-           同一個 Google Routes 請求
-           DEFAULT_ROUTE = 推薦快速
-           SHORTER_DISTANCE = 平面／省里程
-        ====================================== */
+        const segmentPromises = [];
 
-        const routeRequest = {
-
-            origin:
-                pickupPlace,
-
-            destination:
-                dropoffPlace,
-
-            travelMode:
-                "DRIVING",
-
-            intermediates:
-                intermediateWaypoints,
-
-            routingPreference:
-                "TRAFFIC_AWARE_OPTIMAL",
-
-            departureTime:
-                routeDepartureTime,
-
-            requestedReferenceRoutes: [
-                "SHORTER_DISTANCE"
-            ],
-
-            routeModifiers: {
-
-                avoidFerries:
-                    true
-
-            },
-
-            fields: [
-                "legs",
-                "routeLabels",
-                "routeToken"
-            ]
-
-        };
-
-
-        const routeResponse =
-            await RouteClass.computeRoutes(
-                routeRequest
-            );
-
-
-        const returnedRoutes =
-            routeResponse.routes || [];
-
-
-        const fastRoute =
-            returnedRoutes.find((route) =>
-                (route.routeLabels || [])
-                    .some((label) =>
-                        String(label).includes("DEFAULT_ROUTE")
-                    )
-            )
-            ||
-            returnedRoutes[0];
-
-
-        const normalRoute =
-            returnedRoutes.find((route) =>
-                (route.routeLabels || [])
-                    .some((label) =>
-                        String(label).includes("SHORTER_DISTANCE")
-                    )
-            );
-
-
-        if (
-            !fastRoute ||
-            !normalRoute
+        for (
+            let index = 0;
+            index < routeStops.length - 1;
+            index++
         ) {
 
-            throw new Error(
-                "Google 未回傳完整的推薦快速／較短距離路線"
+            segmentPromises.push(
+                computeSegmentRoutePair(
+                    routeStops[index],
+                    routeStops[index + 1],
+                    routeDepartureTime,
+                    index + 1
+                )
             );
 
         }
 
 
-        /* =====================================
-           FORMAT DATA
-        ====================================== */
-
-        const fastMetrics =
-            summarizeRouteByLegs(
-                fastRoute,
-                expectedLegCount
+        const segmentResults =
+            await Promise.all(
+                segmentPromises
             );
 
-        const normalMetrics =
-            summarizeRouteByLegs(
-                normalRoute,
-                expectedLegCount
+
+        const fastDistanceMeters =
+            segmentResults.reduce(
+                (sum, segment) =>
+                    sum + segment.fast.distanceMeters,
+                0
             );
+
+
+        const fastDurationMillis =
+            segmentResults.reduce(
+                (sum, segment) =>
+                    sum + segment.fast.durationMillis,
+                0
+            );
+
+
+        const shorterDistanceMeters =
+            segmentResults.reduce(
+                (sum, segment) =>
+                    sum + segment.shorter.distanceMeters,
+                0
+            );
+
+
+        const shorterDurationMillis =
+            segmentResults.reduce(
+                (sum, segment) =>
+                    sum + segment.shorter.durationMillis,
+                0
+            );
+
 
         const fastDistance =
-            fastMetrics.distanceMeters /
+            fastDistanceMeters /
             1000;
 
 
         const normalDistance =
-            normalMetrics.distanceMeters /
+            shorterDistanceMeters /
             1000;
 
 
         const fastMinutes =
             Math.ceil(
-                fastMetrics.durationMillis /
+                fastDurationMillis /
                 60000
             );
 
 
         const normalMinutes =
             Math.ceil(
-                normalMetrics.durationMillis /
+                shorterDurationMillis /
                 60000
             );
 
 
+        const segmentDiagnostics =
+            segmentResults.map(
+                (segment, index) => ({
+                    segment:
+                        index + 1,
+
+                    from:
+                        fareAddressDisplayText(
+                            routeStopData[index]
+                        ),
+
+                    to:
+                        fareAddressDisplayText(
+                            routeStopData[index + 1]
+                        ),
+
+                    fastDistanceKm:
+                        Number(
+                            (
+                                segment.fast.distanceMeters /
+                                1000
+                            ).toFixed(1)
+                        ),
+
+                    fastMinutes:
+                        Math.ceil(
+                            segment.fast.durationMillis /
+                            60000
+                        ),
+
+                    shorterDistanceKm:
+                        Number(
+                            (
+                                segment.shorter.distanceMeters /
+                                1000
+                            ).toFixed(1)
+                        ),
+
+                    shorterMinutes:
+                        Math.ceil(
+                            segment.shorter.durationMillis /
+                            60000
+                        ),
+
+                    shorterFallbackToDefault:
+                        segment.shorter.usedFallback
+                })
+            );
+
+
         console.info(
-            "TOP Taxi route validation",
+            "TOP Taxi segmented route validation",
             {
-                waypointCount:
-                    intermediateWaypoints.length,
-                expectedLegCount,
-                fastLegCount:
-                    fastMetrics.legCount,
-                shorterLegCount:
-                    normalMetrics.legCount,
+                stopCount:
+                    routeStops.length,
+                segmentCount:
+                    segmentResults.length,
                 fastDistanceKm:
-                    Number(fastDistance.toFixed(1)),
+                    Number(
+                        fastDistance.toFixed(1)
+                    ),
                 shorterDistanceKm:
-                    Number(normalDistance.toFixed(1)),
-                fastLegs:
-                    (fastRoute.legs || []).map((leg, index) => ({
-                        leg: index + 1,
-                        distanceKm:
-                            Number(((leg.distanceMeters || 0) / 1000).toFixed(1)),
-                        minutes:
-                            Math.ceil((leg.durationMillis || 0) / 60000)
-                    })),
-                shorterLegs:
-                    (normalRoute.legs || []).map((leg, index) => ({
-                        leg: index + 1,
-                        distanceKm:
-                            Number(((leg.distanceMeters || 0) / 1000).toFixed(1)),
-                        minutes:
-                            Math.ceil((leg.durationMillis || 0) / 60000)
-                    }))
+                    Number(
+                        normalDistance.toFixed(1)
+                    ),
+                segments:
+                    segmentDiagnostics
             }
         );
-
 
 
         /* =====================================
@@ -3857,7 +3955,7 @@ routeResults = {
     SURFACE: {
         routeMode: "SURFACE",
         routeName: "平面／省里程",
-        referenceRoute: "SHORTER_DISTANCE",
+        referenceRoute: "SHORTER_DISTANCE_SEGMENTED",
         distanceKm: normalDistance,
         durationMinutes: normalMinutes,
         estimatedFare: normalFare,
@@ -3949,8 +4047,8 @@ document
 
         showStatus(
 
-            routeErrorMessage.includes("停靠點驗證失敗")
-                ? "停靠點沒有被 Google 正確加入路線，請重新選擇停靠點後再試一次。"
+            routeErrorMessage.includes("路線資料")
+                ? "Google 分段路線資料異常，請重新選擇地址後再試一次。"
                 : routeErrorMessage
                     ? "路線計算失敗：" + routeErrorMessage
                     : "路線計算失敗。請確認地址與 Google 路線服務後再試一次。",
