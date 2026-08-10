@@ -1783,6 +1783,17 @@ function normalizeAddressData(item = {}, fallback = {}) {
     };
 }
 
+function addressDisplayText(item = {}) {
+    const name = (item.displayName || "").trim();
+    const address = (item.address || "").trim();
+
+    if (name && address && !address.includes(name)) {
+        return name + "｜" + address;
+    }
+
+    return name || address;
+}
+
 let sharedAddresses = loadSharedAddresses();
 
 function loadSharedAddresses() {
@@ -1812,7 +1823,7 @@ function renderSharedAddressEditor() {
         row.innerHTML =
             '<input type="text" id="sharedName'+index+'" aria-label="常用地點名稱" value="'+escapeHtml(item.name || "")+'">' +
             '<div class="address-autocomplete">' +
-                '<input type="search" id="sharedAddress'+index+'" aria-label="常用地址" autocomplete="off" placeholder="請輸入地址或地標" value="'+escapeHtml(item.address || "")+'">' +
+                '<input type="search" id="sharedAddress'+index+'" aria-label="常用地址" autocomplete="off" placeholder="請輸入地址或地標" value="'+escapeHtml(addressDisplayText(item))+'">' +
                 '<div id="sharedAddressSuggestions'+index+'" class="address-suggestions" role="listbox"></div>' +
             '</div>' +
             '<input type="text" id="sharedNote'+index+'" class="saved-address-note" aria-label="上車位置補充" placeholder="上車位置補充（選填）" value="'+escapeHtml(item.pickupNote || "")+'">';
@@ -1880,7 +1891,7 @@ async function useSharedAddress(index, button) {
     if (!item || !item.address || !pickupInput) return;
     document.querySelectorAll(".saved-address-chip").forEach(function(b){ b.classList.remove("active"); });
     if (button) button.classList.add("active");
-    pickupInput.value = item.address;
+    pickupInput.value = addressDisplayText(item);
     if (pickupNoteInput) pickupNoteInput.value = item.pickupNote || "";
     try {
         bookingPickupPlace = await resolveSharedAddress(item);
@@ -1895,7 +1906,7 @@ async function useSharedAddress(index, button) {
         sharedAddresses[index] = normalizeAddressData(upgradedAddress, item);
         localStorage.setItem(SHARED_ADDRESS_KEY, JSON.stringify(sharedAddresses));
 
-        pickupInput.value = bookingPickupPlace.formattedAddress || item.address;
+        pickupInput.value = addressDisplayText(sharedAddresses[index]) || bookingPickupPlace.formattedAddress || item.address;
         updateFareEstimate();
     } catch (error) {
         bookingPickupPlace = null;
@@ -1909,20 +1920,27 @@ function saveSharedAddressesFromBooking() {
         const address = (document.getElementById("sharedAddress"+index)?.value || "").trim();
         const pickupNote = (document.getElementById("sharedNote"+index)?.value || "").trim();
         const currentItem = sharedAddresses[index] || oldItem;
-        const addressChanged = address !== (currentItem.address || "");
+
+        if (currentItem.placeId) {
+            return normalizeAddressData({
+                ...currentItem,
+                name: name,
+                pickupNote: pickupNote
+            });
+        }
 
         return normalizeAddressData({
             ...currentItem,
             name: name,
             address: address,
             pickupNote: pickupNote,
-            displayName: addressChanged ? "" : (currentItem.displayName || ""),
-            city: addressChanged ? "" : (currentItem.city || ""),
-            district: addressChanged ? "" : (currentItem.district || ""),
-            areaLabel: addressChanged ? "" : (currentItem.areaLabel || ""),
-            placeId: addressChanged ? "" : (currentItem.placeId || ""),
-            lat: addressChanged ? null : (currentItem.lat ?? null),
-            lng: addressChanged ? null : (currentItem.lng ?? null)
+            displayName: "",
+            city: "",
+            district: "",
+            areaLabel: "",
+            placeId: "",
+            lat: null,
+            lng: null
         });
     });
     localStorage.setItem(SHARED_ADDRESS_KEY, JSON.stringify(next));
@@ -3276,7 +3294,7 @@ async function initGoogle() {
                         sharedAddresses[index] = normalizeAddressData(addressData, item);
 
                         input.value =
-                            place.formattedAddress ||
+                            addressDisplayText(sharedAddresses[index]) ||
                             fallbackText ||
                             getPlaceDisplayName(place);
 
