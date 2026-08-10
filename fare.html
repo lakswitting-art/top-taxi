@@ -3557,8 +3557,7 @@ async function calculateRoutes() {
         const intermediateWaypoints =
             activeWaypointPlaces
                 .map((place) => ({
-                    location: place.location,
-                    vehicleStopover: true
+                    location: place
                 }));
 
         const expectedLegCount =
@@ -3591,7 +3590,7 @@ async function calculateRoutes() {
                 false,
 
             routingPreference:
-                "TRAFFIC_AWARE_OPTIMAL",
+                "TRAFFIC_AWARE",
 
             departureTime:
                 routeDepartureTime,
@@ -3610,11 +3609,7 @@ async function calculateRoutes() {
             },
 
             fields: [
-
-                "distanceMeters",
-                "durationMillis",
                 "legs"
-
             ]
 
         };
@@ -3643,7 +3638,7 @@ async function calculateRoutes() {
                 false,
 
             routingPreference:
-                "TRAFFIC_AWARE_OPTIMAL",
+                "TRAFFIC_AWARE",
 
             departureTime:
                 routeDepartureTime,
@@ -3662,11 +3657,7 @@ async function calculateRoutes() {
             },
 
             fields: [
-
-                "distanceMeters",
-                "durationMillis",
                 "legs"
-
             ]
 
         };
@@ -3773,7 +3764,23 @@ async function calculateRoutes() {
                 fastDistanceKm:
                     Number(fastDistance.toFixed(1)),
                 surfaceDistanceKm:
-                    Number(normalDistance.toFixed(1))
+                    Number(normalDistance.toFixed(1)),
+                fastLegs:
+                    (fastRoute.legs || []).map((leg, index) => ({
+                        leg: index + 1,
+                        distanceKm:
+                            Number(((leg.distanceMeters || 0) / 1000).toFixed(1)),
+                        minutes:
+                            Math.ceil((leg.durationMillis || 0) / 60000)
+                    })),
+                surfaceLegs:
+                    (normalRoute.legs || []).map((leg, index) => ({
+                        leg: index + 1,
+                        distanceKm:
+                            Number(((leg.distanceMeters || 0) / 1000).toFixed(1)),
+                        minutes:
+                            Math.ceil((leg.durationMillis || 0) / 60000)
+                    }))
             }
         );
 
@@ -3979,11 +3986,18 @@ document
         const routeErrorMessage =
             String(error?.message || "");
 
+        console.error(
+            "TOP Taxi route error detail:",
+            routeErrorMessage
+        );
+
         showStatus(
 
             routeErrorMessage.includes("停靠點驗證失敗")
                 ? "停靠點沒有被 Google 正確加入路線，請重新選擇停靠點後再試一次。"
-                : "路線計算失敗。請確認地址與 Google 路線服務後再試一次。",
+                : routeErrorMessage
+                    ? "路線計算失敗：" + routeErrorMessage
+                    : "路線計算失敗。請確認地址與 Google 路線服務後再試一次。",
 
             true
 
