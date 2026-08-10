@@ -3563,6 +3563,12 @@ async function calculateRoutes() {
         const expectedLegCount =
             intermediateWaypoints.length + 1;
 
+        // Use the same near-future timestamp for both route modes so
+        // FAST and SURFACE are compared under the same traffic snapshot.
+        // A 2-minute buffer avoids Google's "Timestamp must be set to a future time".
+        const routeDepartureTime =
+            new Date(Date.now() + 2 * 60 * 1000);
+
         /* =====================================
            快速路線
            允許高速公路
@@ -3586,7 +3592,10 @@ async function calculateRoutes() {
                 false,
 
             routingPreference:
-                "TRAFFIC_AWARE",
+                "TRAFFIC_AWARE_OPTIMAL",
+
+            departureTime:
+                routeDepartureTime,
 
             routeModifiers: {
 
@@ -3631,7 +3640,10 @@ async function calculateRoutes() {
                 false,
 
             routingPreference:
-                "TRAFFIC_AWARE",
+                "TRAFFIC_AWARE_OPTIMAL",
+
+            departureTime:
+                routeDepartureTime,
 
             routeModifiers: {
 
