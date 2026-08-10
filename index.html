@@ -1665,7 +1665,65 @@ input::placeholder {
     line-height: 1.4;
 }
 
-.booking-payment-preference { margin-top: 10px; }
+.booking-payment-preference {
+    margin-top: 10px;
+    padding: 11px 12px;
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    background: #f7f7f9;
+}
+.booking-payment-preference-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.booking-payment-preference-status {
+    min-width: 0;
+    color: #66666c;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.45;
+}
+.booking-payment-preference-status.success {
+    color: #168447;
+}
+.booking-payment-preference-action {
+    flex: 0 0 auto;
+    min-height: 34px;
+    padding: 0 11px;
+    border: 1px solid #d8d8dc;
+    border-radius: 10px;
+    background: #fff;
+    color: #35353a;
+    font-size: 11.5px;
+    font-weight: 850;
+    cursor: pointer;
+}
+.booking-payment-preference-action:active {
+    transform: scale(.98);
+}
+.booking-payment-preference-clear {
+    margin-top: 7px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #9a9aa0;
+    font-size: 11px;
+    font-weight: 750;
+    cursor: pointer;
+}
+.booking-payment-preference-clear[hidden] { display: none !important; }
+
+@media (max-width: 390px) {
+    .booking-payment-preference-main {
+        align-items: flex-start;
+    }
+    .booking-payment-preference-action {
+        padding: 0 9px;
+        font-size: 11px;
+    }
+}
 
 
 /* ===== STEP 3：MULTI-STOP + ROUTE MODE ===== */
@@ -2098,15 +2156,12 @@ input::placeholder {
                 </label>
             </div>
 
-            <div class="booking-preference-card booking-payment-preference">
-                <label class="booking-preference-check">
-                    <input id="rememberBookingPaymentPreference" type="checkbox">
-                    <span id="rememberBookingPaymentLabel">記住這個付款方式，下次自動帶入</span>
-                </label>
-                <div class="booking-preference-meta">
-                    <span id="bookingPaymentPreferenceHint">尚未設定固定付款方式</span>
-                    <button id="clearBookingPaymentPreference" class="booking-preference-clear" type="button" hidden>清除固定付款</button>
+            <div class="booking-payment-preference">
+                <div class="booking-payment-preference-main">
+                    <span id="bookingPaymentPreferenceHint" class="booking-payment-preference-status">尚未設定固定付款</span>
+                    <button id="setBookingPaymentPreference" class="booking-payment-preference-action" type="button">設為固定付款</button>
                 </div>
+                <button id="clearBookingPaymentPreference" class="booking-payment-preference-clear" type="button" hidden>清除固定付款</button>
             </div>
         </div>
 
@@ -2951,50 +3006,80 @@ function applyBookingPaymentPreferenceOnLoad() {
     if (target) target.checked = true;
     updateBookingPaymentPreferenceUi();
 }
+function bookingPaymentLabel(value) {
+    return value === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
+}
+
+let bookingPaymentPreferenceMessageTimer = null;
+
 function updateBookingPaymentPreferenceUi() {
     const selected = getSelectedBookingPayment();
-    const checkbox = document.getElementById("rememberBookingPaymentPreference");
-    const label = document.getElementById("rememberBookingPaymentLabel");
     const hint = document.getElementById("bookingPaymentPreferenceHint");
+    const action = document.getElementById("setBookingPaymentPreference");
     const clear = document.getElementById("clearBookingPaymentPreference");
 
-    const selectedLabel = selected === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
+    if (!hint || !action) return;
 
-    if (savedBookingPaymentPreference) {
-        const savedLabel = savedBookingPaymentPreference === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
-        if (label) label.textContent = "更新我的固定付款方式";
-        if (hint) {
-            hint.textContent = selected === savedBookingPaymentPreference
-                ? "已記住：" + savedLabel + "｜本次已自動套用"
-                : "本次：" + selectedLabel + "｜固定仍為：" + savedLabel;
-        }
-        if (clear) clear.hidden = false;
-    } else {
-        if (label) label.textContent = "記住這個付款方式，下次自動帶入";
-        if (hint) hint.textContent = "尚未設定固定付款方式";
-        if (clear) clear.hidden = true;
+    hint.classList.remove("success");
+
+    if (!savedBookingPaymentPreference) {
+        hint.textContent = "尚未設定固定付款";
+        action.textContent = "設為固定付款";
+        clear.hidden = true;
+        return;
     }
+
+    const selectedLabel = bookingPaymentLabel(selected);
+    const savedLabel = bookingPaymentLabel(savedBookingPaymentPreference);
+
+    if (selected === savedBookingPaymentPreference) {
+        hint.textContent = "固定付款：" + savedLabel;
+        action.textContent = "更新固定付款";
+    } else {
+        hint.textContent = "本次：" + selectedLabel + "｜固定：" + savedLabel;
+        action.textContent = "更新固定付款";
+    }
+
+    clear.hidden = false;
 }
-function commitBookingPaymentPreferenceIfRequested() {
-    const checkbox = document.getElementById("rememberBookingPaymentPreference");
-    if (!checkbox?.checked) return;
-    saveCustomerPreferences({ paymentMode: getSelectedBookingPayment() });
-    checkbox.checked = true;
-    updateBookingPaymentPreferenceUi();
+
+function saveSelectedBookingPaymentAsPreference() {
+    const selected = getSelectedBookingPayment();
+    const selectedLabel = bookingPaymentLabel(selected);
+
+    saveCustomerPreferences({ paymentMode: selected });
 
     const hint = document.getElementById("bookingPaymentPreferenceHint");
     if (hint) {
-        const savedLabel = savedBookingPaymentPreference === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
-        hint.textContent = "已更新固定付款方式：" + savedLabel;
+        hint.textContent = "✓ 已設為固定付款：" + selectedLabel;
+        hint.classList.add("success");
     }
+
+    if (bookingPaymentPreferenceMessageTimer) {
+        window.clearTimeout(bookingPaymentPreferenceMessageTimer);
+    }
+
+    bookingPaymentPreferenceMessageTimer = window.setTimeout(function() {
+        updateBookingPaymentPreferenceUi();
+    }, 1600);
+
+    const clear = document.getElementById("clearBookingPaymentPreference");
+    if (clear) clear.hidden = false;
 }
+
 function clearSavedBookingPaymentPreference() {
     if (!savedBookingPaymentPreference) return;
-    const savedLabel = savedBookingPaymentPreference === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
+
+    const savedLabel = bookingPaymentLabel(savedBookingPaymentPreference);
     if (!window.confirm("確定要清除已記住的「" + savedLabel + "」固定付款方式嗎？")) return;
+
     saveCustomerPreferences({ paymentMode: "" });
-    const checkbox = document.getElementById("rememberBookingPaymentPreference");
-    if (checkbox) checkbox.checked = false;
+
+    if (bookingPaymentPreferenceMessageTimer) {
+        window.clearTimeout(bookingPaymentPreferenceMessageTimer);
+        bookingPaymentPreferenceMessageTimer = null;
+    }
+
     updateBookingPaymentPreferenceUi();
 }
 
@@ -5195,16 +5280,11 @@ window.addEventListener(
 
         document.querySelectorAll('input[name="bookingPayment"]').forEach(function(input) {
             input.addEventListener("change", function() {
-                const checkbox = document.getElementById("rememberBookingPaymentPreference");
-                if (checkbox) checkbox.checked = false;
                 updateBookingPaymentPreferenceUi();
             });
         });
 
-        document.getElementById("rememberBookingPaymentPreference")?.addEventListener("change", function() {
-            if (this.checked) commitBookingPaymentPreferenceIfRequested();
-        });
-
+        document.getElementById("setBookingPaymentPreference")?.addEventListener("click", saveSelectedBookingPaymentAsPreference);
         document.getElementById("clearBookingPaymentPreference")?.addEventListener("click", clearSavedBookingPaymentPreference);
 
         const pickupNoteToggle = document.getElementById("toggleBookingPickupNote");
