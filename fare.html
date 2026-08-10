@@ -3563,10 +3563,6 @@ async function calculateRoutes() {
         const expectedLegCount =
             intermediateWaypoints.length + 1;
 
-        const routeDepartureTime =
-            new Date();
-
-
         /* =====================================
            快速路線
            允許高速公路
@@ -3591,9 +3587,6 @@ async function calculateRoutes() {
 
             routingPreference:
                 "TRAFFIC_AWARE",
-
-            departureTime:
-                routeDepartureTime,
 
             routeModifiers: {
 
@@ -3639,9 +3632,6 @@ async function calculateRoutes() {
 
             routingPreference:
                 "TRAFFIC_AWARE",
-
-            departureTime:
-                routeDepartureTime,
 
             routeModifiers: {
 
