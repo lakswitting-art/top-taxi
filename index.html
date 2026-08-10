@@ -1232,6 +1232,14 @@ input::placeholder {
     font-size: 11px;
     line-height: 1.5;
 }
+.booking-route-switch-result {
+    margin-bottom: 4px;
+}
+.booking-route-switch-result .booking-route-option {
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 12px;
+}
 
 </style>
 
@@ -1575,24 +1583,13 @@ input::placeholder {
         </div>
 
 
-        <!-- ROUTE MODE -->
-
-        <div class="input-group">
-            <label>🛣️ 行車路線</label>
-            <div class="booking-route-switch" role="group" aria-label="行車路線">
-                <button type="button" id="bookingSurfaceBtn" class="booking-route-option" onclick="selectBookingRouteMode('SURFACE')">🚕 平面道路</button>
-                <button type="button" id="bookingFastBtn" class="booking-route-option fast active" onclick="selectBookingRouteMode('FAST')">🛣️ 推薦快速</button>
-            </div>
-            <div class="booking-route-help">平面道路會優先避開高速／收費道路；推薦快速會依 Google 即時交通選擇完整行程路線。</div>
-        </div>
-
-
         <!-- FARE ESTIMATE -->
 
         <div class="fare-estimate" id="fareEstimate" aria-live="polite" hidden>
 
-            <div class="fare-estimate-title" id="fareEstimateTitle">
-                ✨ 推薦快速路線
+            <div class="booking-route-switch booking-route-switch-result" role="group" aria-label="行車路線">
+                <button type="button" id="bookingSurfaceBtn" class="booking-route-option" onclick="selectBookingRouteMode('SURFACE')">🚕 平面道路</button>
+                <button type="button" id="bookingFastBtn" class="booking-route-option fast active" onclick="selectBookingRouteMode('FAST')">🛣️ 推薦快速</button>
             </div>
 
             <div class="fare-estimate-item">
@@ -2252,11 +2249,6 @@ function selectBookingRouteMode(mode) {
 function renderBookingFareEstimate() {
     if (!currentFareEstimate) return;
 
-    document.getElementById("fareEstimateTitle").textContent =
-        currentFareEstimate.routeMode === "SURFACE"
-            ? "🚕 平面道路"
-            : "🛣️ 推薦快速路線";
-
     document.getElementById("estimateDistance").textContent =
         currentFareEstimate.distanceKm.toFixed(1) + " km";
 
@@ -2268,8 +2260,8 @@ function renderBookingFareEstimate() {
 
     document.getElementById("fareEstimateStatus").textContent =
         currentFareEstimate.routeMode === "SURFACE"
-            ? "平面道路會優先避開高速／收費道路；實際路線仍依 Google 與即時交通為準"
-            : "推薦快速路線會依 Google 即時交通選擇完整行程路線";
+            ? "平面道路｜優先避開高速／收費道路"
+            : "推薦快速｜依 Google 即時交通";
 
     document.getElementById("fareEstimate").hidden = false;
 }
