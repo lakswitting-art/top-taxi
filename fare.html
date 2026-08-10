@@ -2309,6 +2309,17 @@ function farePlaceToAddressData(place) {
     };
 }
 
+function fareAddressDisplayText(data = {}) {
+    const name = (data.displayName || "").trim();
+    const address = (data.address || "").trim();
+
+    if (name && address && !address.includes(name)) {
+        return name + "｜" + address;
+    }
+
+    return name || address;
+}
+
 let RouteClass = null;
 
 let serviceMode = "taxi";
@@ -2620,13 +2631,11 @@ async function initGoogle() {
                         });
 
                         input.value =
+                            fareAddressDisplayText(farePlaceToAddressData(place))
+                            ||
                             getText(
                                 prediction.text
                             )
-                            ||
-                            place.formattedAddress
-                            ||
-                            place.displayName
                             ||
                             "";
 
