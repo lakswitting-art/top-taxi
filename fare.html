@@ -1902,6 +1902,118 @@ gmp-place-autocomplete:focus-within {
     .hero .hero-description{max-width:calc(100vw - 112px);font-size:9.5px}
 }
 
+
+/* ===== #5 WHOLE-SYSTEM VISUAL CONSISTENCY FINAL ===== */
+/* Fixed shell height: no longer depends on total document height */
+body{
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255,31,45,.22) 0,
+            rgba(255,31,45,.12) 72px,
+            transparent 300px
+        ),
+        linear-gradient(
+            180deg,
+            #070709 0,
+            #101014 220px,
+            #f2f3f5 220px,
+            #f2f3f5 100%
+        ) !important;
+}
+
+.hero{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:18px !important;
+    width:min(100%,560px) !important;
+    max-width:560px !important;
+    margin:0 auto !important;
+    padding:max(10px,env(safe-area-inset-top)) 24px 12px !important;
+    text-align:left !important;
+}
+.hero-copy{
+    min-width:0 !important;
+    flex:1 !important;
+    text-align:center !important;
+}
+.hero::after{
+    content:"";
+    flex:0 0 58px !important;
+    width:58px !important;
+}
+.hero .logo-wrap{
+    margin:0 !important;
+    flex:0 0 auto !important;
+}
+.hero .logo{
+    width:58px !important;
+    height:58px !important;
+    border-radius:14px !important;
+}
+.hero .logo-glow{
+    width:66px !important;
+    height:66px !important;
+    filter:blur(16px) !important;
+}
+.hero .brand{
+    font-size:23px !important;
+    line-height:1.08 !important;
+}
+.hero .system-name{
+    margin-top:3px !important;
+    font-size:13px !important;
+    font-weight:800 !important;
+    letter-spacing:1.25px !important;
+}
+.hero .hero-description{
+    margin-top:5px !important;
+    max-width:calc(100vw - 125px) !important;
+    overflow:hidden !important;
+    color:#a8a8ae !important;
+    font-size:10.5px !important;
+    font-weight:600 !important;
+    letter-spacing:.2px !important;
+    line-height:1.4 !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+}
+@media(max-width:370px){
+    .hero{
+        gap:13px !important;
+        padding-left:18px !important;
+        padding-right:18px !important;
+    }
+    .hero .logo{
+        width:54px !important;
+        height:54px !important;
+        border-radius:13px !important;
+    }
+    .hero::after{
+        flex-basis:54px !important;
+        width:54px !important;
+    }
+    .hero .hero-description{
+        max-width:calc(100vw - 112px) !important;
+        font-size:9.5px !important;
+    }
+}
+
+.page{
+    margin:-6px auto 0 !important;
+}
+
+/* Keep Fare as the +新增停靠點 visual standard */
+.add-waypoint-btn{
+    min-height:44px !important;
+    border:1px dashed #d7d7dc !important;
+    border-radius:12px !important;
+    color:#4f4f55 !important;
+    font-size:14px !important;
+    font-weight:850 !important;
+}
+
 </style>
 
 </head>
@@ -2430,7 +2542,7 @@ function farePlaceDisplayName(place) {
     return place.displayName.toString?.() || "";
 }
 
-function farePlaceToAddressData(place) {
+function farePlaceToAddressData(place, extra = {}) {
     if (!place) return null;
 
     const city = fareAddressComponent(place, [
@@ -2456,14 +2568,16 @@ function farePlaceToAddressData(place) {
         : null;
 
     return {
+        name: extra.name || "",
         displayName: farePlaceDisplayName(place),
-        address: place.formattedAddress || "",
+        address: place.formattedAddress || extra.address || "",
         city: city,
         district: district,
         areaLabel: [city, district].filter(Boolean).join(""),
-        placeId: place.id || "",
+        placeId: place.id || extra.placeId || "",
         lat: lat,
-        lng: lng
+        lng: lng,
+        pickupNote: extra.pickupNote || ""
     };
 }
 
