@@ -169,9 +169,29 @@
         pickupNote:item.pickupNote||""
       };
     }
+    function compactTaiwanAddress(raw = "") {
+        let address = String(raw || "").trim();
+    
+        // Remove common Taiwan postal codes at the beginning (3, 5, or 6 digits).
+        address = address.replace(/^\s*\d{3}(?:\d{2,3})?\s*/, "");
+    
+        // Remove village / neighborhood level text that is not useful for riders.
+        address = address.replace(/[^縣市區鄉鎮路街段巷弄號\d\s]{1,12}(?:里|村)/g, "");
+        address = address.replace(/\d+\s*鄰/g, "");
+    
+        // Remove floor / room / unit details from customer-facing text.
+        address = address.replace(/[，,、\s-]*(?:地下)?\d+\s*樓(?:之\d+)?(?:\s*\d+\s*室)?$/u, "");
+        address = address.replace(/[，,、\s-]*B\d+\s*樓?$/iu, "");
+        address = address.replace(/[，,、\s-]*\d+\s*F(?:-\d+)?$/iu, "");
+        address = address.replace(/[，,、\s-]*\d+\s*室$/u, "");
+    
+        // Normalize spaces.
+        address = address.replace(/\s+/g, "");
+        return address;
+    }
     function addressDisplayText(data={}){
       const name=(data.displayName||"").trim();
-      const address=(data.address||"").trim();
+      const address=compactTaiwanAddress(data.address||"");
       if(name&&address&&!address.includes(name))return name+"｜"+address;
       return name||address;
     }
