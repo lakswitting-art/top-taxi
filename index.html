@@ -396,64 +396,74 @@ body {
 
 .fare-estimate {
     display: grid;
-    grid-template-columns: 1fr 1fr 1.15fr;
-    gap: 8px;
+    gap: 12px;
     margin: 2px 0 16px;
-    padding: 12px;
-    border: 1px solid #f0dfe2;
-    border-radius: 15px;
-    background: #fff7f8;
+    padding: 15px;
+    border: 1px solid var(--gray-2);
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(0,0,0,.05);
 }
-
-.fare-estimate[hidden] {
-    display: none;
+.fare-estimate[hidden] { display: none; }
+.fare-estimate-top,
+.fare-estimate-money-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
 }
-
-.fare-estimate-item {
-    min-width: 0;
-    text-align: center;
-}
-
-.fare-estimate-title {
-    grid-column: 1 / -1;
-    color: var(--red);
-    font-size: 14px;
-    font-weight: 900;
-}
-
-.fare-estimate-label {
-    display: block;
-    margin-bottom: 4px;
-    color: #929298;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.fare-estimate-value {
-    display: block;
-    color: #252529;
-    font-size: 14px;
-    font-weight: 900;
+.fare-estimate-top { align-items: stretch; }
+.fare-estimate-duration-badge {
+    flex: 0 0 auto;
+    align-self: center;
+    border-radius: 999px;
+    background: #f1f1f3;
+    padding: 6px 9px;
+    color: #55555b;
+    font-size: 12px;
+    font-weight: 800;
     white-space: nowrap;
 }
-
-.fare-estimate-value.price {
-    color: var(--red);
-    font-size: 19px;
-}
-
-.fare-estimate-status {
-    grid-column: 1 / -1;
-    padding-top: 8px;
-    border-top: 1px solid #f0e3e5;
-    color: #99999f;
+.fare-estimate-distance {
+    min-width: 0;
+    color: #74747c;
     font-size: 12px;
     line-height: 1.5;
-    text-align: center;
 }
-
-.fare-estimate.loading .fare-estimate-status {
-    color: #b16c75;
+.fare-estimate-money {
+    flex: 0 0 auto;
+    color: var(--red);
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1.05;
+    white-space: nowrap;
+}
+.fare-estimate-status,
+.fare-estimate-note {
+    color: #8f8f95;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.fare-estimate-note { color: #74747c; }
+.fare-estimate-long-distance {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f6f6f8;
+    color: #66666c;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.fare-estimate-long-distance.active {
+    border: 1px solid #ffd3d7;
+    background: #fff0f1;
+    color: #a31320;
+    font-weight: 800;
+}
+.fare-estimate.loading .fare-estimate-status { color: #8f8f95; }
+@media (max-width: 390px) {
+    .fare-estimate { padding: 14px; }
+    .fare-estimate-top { gap: 9px; }
+    .fare-estimate-money { font-size: 28px; }
 }
 
 
@@ -618,6 +628,9 @@ input::placeholder {
     background: #ffffff;
     box-shadow: 0 16px 38px rgba(0, 0, 0, .18);
     -webkit-overflow-scrolling: touch;
+    pointer-events: auto;
+    touch-action: pan-y;
+    isolation: isolate;
 }
 
 .address-suggestions.show {
@@ -952,7 +965,7 @@ input::placeholder {
 .brand,
 .system-name,
 .hero-description { animation: fadeDown .55s ease both; }
-.booking-card { animation: cardUp .5s cubic-bezier(.2,.8,.2,1) both; }
+.booking-card { animation: cardUp .5s cubic-bezier(.2,.8,.2,1); }
 .message-box.success { animation: successPop .42s cubic-bezier(.2,.8,.2,1) both; }
 
 /* =========================================
@@ -1408,23 +1421,29 @@ input::placeholder {
 
 .booking-sheet-overlay {
     position: fixed;
-    z-index: 120;
+    z-index: 12000;
     inset: 0;
     display: flex;
     align-items: flex-end;
     justify-content: center;
+    padding-top: max(8px, env(safe-area-inset-top));
     background: rgba(0,0,0,.45);
+    overscroll-behavior: contain;
 }
 .booking-sheet-overlay[hidden] { display: none !important; }
 .booking-bottom-sheet {
     width: min(100%,560px);
     max-height: 84vh;
-    overflow: auto;
+    max-height: min(88dvh, calc(100dvh - max(8px, env(safe-area-inset-top))));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     background: #fff;
     border-radius: 24px 24px 0 0;
     padding: 10px 18px max(18px,env(safe-area-inset-bottom));
     box-shadow: 0 -18px 55px rgba(0,0,0,.24);
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
 }
 .booking-sheet-handle {
     width: 42px;
@@ -1434,11 +1453,18 @@ input::placeholder {
     margin: 2px auto 14px;
 }
 .booking-sheet-head {
+    position: sticky;
+    top: -10px;
+    z-index: 3;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 14px;
+    margin: 0 -2px 14px;
+    padding: 8px 2px 7px;
+    background: rgba(255,255,255,.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 .booking-sheet-title {
     font-size: 19px;
@@ -1542,10 +1568,15 @@ input::placeholder {
 }
 .booking-preference-clear:active { opacity: .6; }
 .booking-sheet-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
     display: grid;
     grid-template-columns: 1fr 1.4fr;
     gap: 10px;
-    margin-top: 20px;
+    margin: 20px -2px 0;
+    padding: 12px 2px max(18px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(255,255,255,.82) 0%, #fff 24%, #fff 100%);
 }
 .booking-sheet-secondary,
 .booking-sheet-primary {
@@ -1632,6 +1663,8 @@ input::placeholder {
     font-weight: 600;
     line-height: 1.4;
 }
+
+.booking-payment-preference { margin-top: 10px; }
 
 
 /* ===== STEP 3：MULTI-STOP + ROUTE MODE ===== */
@@ -1986,31 +2019,23 @@ input::placeholder {
         <!-- FARE ESTIMATE -->
 
         <div class="fare-estimate" id="fareEstimate" aria-live="polite" hidden>
-            <div class="booking-route-switch booking-route-switch-result" role="group" aria-label="行車路線">
-                <button type="button" id="bookingSurfaceBtn" class="booking-route-option" onclick="selectBookingRouteMode('SURFACE')">🚕 平面道路</button>
-                <button type="button" id="bookingFastBtn" class="booking-route-option fast active" onclick="selectBookingRouteMode('FAST')">🛣️ 推薦快速</button>
+            <div class="fare-estimate-top">
+                <div class="booking-route-switch booking-route-switch-result" role="group" aria-label="行車路線">
+                    <button type="button" id="bookingSurfaceBtn" class="booking-route-option" onclick="selectBookingRouteMode('SURFACE')">🚕 平面道路</button>
+                    <button type="button" id="bookingFastBtn" class="booking-route-option fast active" onclick="selectBookingRouteMode('FAST')">🛣️ 推薦快速</button>
+                </div>
+                <span class="fare-estimate-duration-badge" id="estimateDuration">計算中</span>
             </div>
 
-            <div class="fare-estimate-item">
-                <span class="fare-estimate-label">📏 距離</span>
-                <strong class="fare-estimate-value" id="estimateDistance">--</strong>
-            </div>
-
-            <div class="fare-estimate-item">
-                <span class="fare-estimate-label">⏱️ 時間</span>
-                <strong class="fare-estimate-value" id="estimateDuration">--</strong>
-            </div>
-
-            <div class="fare-estimate-item">
-                <span class="fare-estimate-label">💰 預估車資</span>
-                <strong class="fare-estimate-value price" id="estimateFare">--</strong>
+            <div class="fare-estimate-money-row">
+                <span class="fare-estimate-distance" id="estimateDistance">--</span>
+                <strong class="fare-estimate-money" id="estimateFare">--</strong>
             </div>
 
             <div id="fareEstimateSurcharge" class="booking-fare-surcharge" hidden></div>
-
-            <div class="fare-estimate-status" id="fareEstimateStatus">
-                請從地址建議中選擇上下車地點，系統會自動試算
-            </div>
+            <div id="fareEstimateLongDistance" class="fare-estimate-long-distance">超過 40 公里另有長途優惠，請洽客服</div>
+            <div class="fare-estimate-status" id="fareEstimateStatus">推薦快速｜依 Google 即時交通</div>
+            <div class="fare-estimate-note">預估金額僅供參考，實際車資依行駛狀況為準</div>
         </div>
 
 
@@ -2070,6 +2095,17 @@ input::placeholder {
                     <input type="radio" name="bookingPayment" value="車資後結">
                     <span class="booking-payment-copy">車資後結 <small>限已與 TOP Taxi 約定的後結客戶使用</small></span>
                 </label>
+            </div>
+
+            <div class="booking-preference-card booking-payment-preference">
+                <label class="booking-preference-check">
+                    <input id="rememberBookingPaymentPreference" type="checkbox">
+                    <span id="rememberBookingPaymentLabel">記住這個付款方式，下次自動帶入</span>
+                </label>
+                <div class="booking-preference-meta">
+                    <span id="bookingPaymentPreferenceHint">尚未設定固定付款方式</span>
+                    <button id="clearBookingPaymentPreference" class="booking-preference-clear" type="button" hidden>清除固定付款</button>
+                </div>
             </div>
         </div>
 
@@ -2340,7 +2376,19 @@ let selectedBookingRouteMode = "FAST";
 let bookingPetMode = "";
 let bookingSmokingMode = "不限";
 let savedBookingSmokingPreference = "";
+let savedBookingPaymentPreference = "";
+let bookingAddressSelectionGuardUntil = 0;
 const bookingOtherNeeds = new Set();
+
+const BOOKING_DEFAULT_PAYMENT = "現金｜行程結束後付款";
+const BOOKING_POSTPAID_PAYMENT = "車資後結";
+
+function armBookingAddressSelectionGuard() {
+    bookingAddressSelectionGuardUntil = Date.now() + 650;
+}
+function isBookingCompactTapSuppressed() {
+    return Date.now() < bookingAddressSelectionGuardUntil;
+}
 
 /* ======================================================
    SHARED SAVED ADDRESSES + CUSTOMER PREFERENCES
@@ -2353,37 +2401,47 @@ function loadCustomerPreferences() {
     try {
         const raw = JSON.parse(localStorage.getItem(CUSTOMER_PREFERENCE_KEY) || "null");
         if (raw && typeof raw === "object") {
-            const allowed = ["禁菸", "可電子煙", "可加熱菸"];
+            const allowedSmoking = ["禁菸", "可電子煙", "可加熱菸"];
+            const allowedPayment = [BOOKING_DEFAULT_PAYMENT, BOOKING_POSTPAID_PAYMENT];
             return {
-                version: 1,
-                smokingMode: allowed.includes(raw.smokingMode) ? raw.smokingMode : ""
+                version: 2,
+                smokingMode: allowedSmoking.includes(raw.smokingMode) ? raw.smokingMode : "",
+                paymentMode: allowedPayment.includes(raw.paymentMode) ? raw.paymentMode : ""
             };
         }
     } catch (e) {}
-
-    return { version: 1, smokingMode: "" };
+    return { version: 2, smokingMode: "", paymentMode: "" };
 }
 
-function saveCustomerPreferences(next) {
-    const value = {
-        version: 1,
-        smokingMode: ["禁菸", "可電子煙", "可加熱菸"].includes(next?.smokingMode)
-            ? next.smokingMode
-            : ""
-    };
+function saveCustomerPreferences(next = {}) {
+    const current = loadCustomerPreferences();
+    const allowedSmoking = ["禁菸", "可電子煙", "可加熱菸"];
+    const allowedPayment = [BOOKING_DEFAULT_PAYMENT, BOOKING_POSTPAID_PAYMENT];
 
-    if (!value.smokingMode) {
+    const smokingMode = Object.prototype.hasOwnProperty.call(next, "smokingMode")
+        ? (allowedSmoking.includes(next.smokingMode) ? next.smokingMode : "")
+        : current.smokingMode;
+
+    const paymentMode = Object.prototype.hasOwnProperty.call(next, "paymentMode")
+        ? (allowedPayment.includes(next.paymentMode) ? next.paymentMode : "")
+        : current.paymentMode;
+
+    const value = { version: 2, smokingMode, paymentMode };
+
+    if (!value.smokingMode && !value.paymentMode) {
         localStorage.removeItem(CUSTOMER_PREFERENCE_KEY);
     } else {
         localStorage.setItem(CUSTOMER_PREFERENCE_KEY, JSON.stringify(value));
     }
 
     savedBookingSmokingPreference = value.smokingMode;
+    savedBookingPaymentPreference = value.paymentMode;
     return value;
 }
 
 const initialCustomerPreferences = loadCustomerPreferences();
 savedBookingSmokingPreference = initialCustomerPreferences.smokingMode || "";
+savedBookingPaymentPreference = initialCustomerPreferences.paymentMode || "";
 bookingSmokingMode = savedBookingSmokingPreference || "不限";
 
 function createEmptyAddressData(name = "") {
@@ -2725,10 +2783,24 @@ async function saveSharedAddressesFromBooking() {
 
 
 
+let bookingSheetScrollY = 0;
+
 function openBookingSheet(id) {
     const sheet = document.getElementById(id);
     if (!sheet) return;
+
+    document.querySelectorAll(".booking-sheet-overlay").forEach(function(other) {
+        if (other.id !== id) other.hidden = true;
+    });
+
+    bookingSheetScrollY = window.scrollY || window.pageYOffset || 0;
     sheet.hidden = false;
+
+    document.body.style.position = "fixed";
+    document.body.style.top = "-" + bookingSheetScrollY + "px";
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
     document.body.style.overflow = "hidden";
 }
 
@@ -2736,7 +2808,19 @@ function closeBookingSheet(id) {
     const sheet = document.getElementById(id);
     if (!sheet) return;
     sheet.hidden = true;
-    document.body.style.overflow = "";
+
+    const stillOpen = Array.from(document.querySelectorAll(".booking-sheet-overlay"))
+        .some(function(item) { return !item.hidden; });
+
+    if (!stillOpen) {
+        document.body.style.position = "";
+        document.body.style.top = "";
+        document.body.style.left = "";
+        document.body.style.right = "";
+        document.body.style.width = "";
+        document.body.style.overflow = "";
+        window.scrollTo(0, bookingSheetScrollY);
+    }
 }
 
 function updateBookingRideNeedsSummary() {
@@ -2854,6 +2938,56 @@ function clearSavedBookingSmokingPreference() {
     saveCustomerPreferences({ smokingMode: "" });
     updateBookingSmokingPreferenceUi();
     updateBookingOtherNeedsSummary();
+}
+
+function getSelectedBookingPayment() {
+    return document.querySelector('input[name="bookingPayment"]:checked')?.value || BOOKING_DEFAULT_PAYMENT;
+}
+function applyBookingPaymentPreferenceOnLoad() {
+    const payment = savedBookingPaymentPreference || BOOKING_DEFAULT_PAYMENT;
+    const target = Array.from(document.querySelectorAll('input[name="bookingPayment"]'))
+        .find(function(input) { return input.value === payment; });
+    if (target) target.checked = true;
+    updateBookingPaymentPreferenceUi();
+}
+function updateBookingPaymentPreferenceUi() {
+    const selected = getSelectedBookingPayment();
+    const checkbox = document.getElementById("rememberBookingPaymentPreference");
+    const label = document.getElementById("rememberBookingPaymentLabel");
+    const hint = document.getElementById("bookingPaymentPreferenceHint");
+    const clear = document.getElementById("clearBookingPaymentPreference");
+
+    if (checkbox) checkbox.checked = false;
+    const selectedLabel = selected === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
+
+    if (savedBookingPaymentPreference) {
+        const savedLabel = savedBookingPaymentPreference === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
+        if (label) label.textContent = "更新我的固定付款方式";
+        if (hint) {
+            hint.textContent = selected === savedBookingPaymentPreference
+                ? "已記住：" + savedLabel + "｜本次已自動套用"
+                : "本次：" + selectedLabel + "｜固定仍為：" + savedLabel;
+        }
+        if (clear) clear.hidden = false;
+    } else {
+        if (label) label.textContent = "記住這個付款方式，下次自動帶入";
+        if (hint) hint.textContent = "尚未設定固定付款方式";
+        if (clear) clear.hidden = true;
+    }
+}
+function commitBookingPaymentPreferenceIfRequested() {
+    const checkbox = document.getElementById("rememberBookingPaymentPreference");
+    if (!checkbox?.checked) return;
+    saveCustomerPreferences({ paymentMode: getSelectedBookingPayment() });
+    checkbox.checked = false;
+    updateBookingPaymentPreferenceUi();
+}
+function clearSavedBookingPaymentPreference() {
+    if (!savedBookingPaymentPreference) return;
+    const savedLabel = savedBookingPaymentPreference === BOOKING_POSTPAID_PAYMENT ? "車資後結" : "現金";
+    if (!window.confirm("確定要清除已記住的「" + savedLabel + "」固定付款方式嗎？")) return;
+    saveCustomerPreferences({ paymentMode: "" });
+    updateBookingPaymentPreferenceUi();
 }
 
 function getBookingMemoValue() {
@@ -3066,9 +3200,10 @@ function addBookingWaypoint() {
     updateBookingWaypointUi();
     resetFareEstimate();
 
-    window.setTimeout(function() {
-        document.getElementById("waypoint" + (index + 1))?.focus();
-    }, 60);
+    const group = document.getElementById("bookingWaypoint" + (index + 1) + "Group");
+    window.requestAnimationFrame(function() {
+        group?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
 }
 
 function clearBookingWaypoint(index) {
@@ -3201,14 +3336,12 @@ function renderBookingFareEstimate() {
     if (!currentFareEstimate) return;
 
     document.getElementById("estimateDistance").textContent =
-        currentFareEstimate.distanceKm.toFixed(1) + " km";
-
+        "距離 " + currentFareEstimate.distanceKm.toFixed(1) + " km";
     document.getElementById("estimateDuration").textContent =
         currentFareEstimate.minutes + " 分鐘";
 
     const quote = getBookingFareQuote();
-    document.getElementById("estimateFare").textContent =
-        quote ? quote.display : "--";
+    document.getElementById("estimateFare").textContent = quote ? quote.display : "--";
 
     const surcharge = document.getElementById("fareEstimateSurcharge");
     if (surcharge && quote) {
@@ -3223,6 +3356,10 @@ function renderBookingFareEstimate() {
             surcharge.textContent = "";
         }
     }
+
+    document.getElementById("fareEstimateLongDistance")?.classList.toggle(
+        "active", currentFareEstimate.distanceKm > 40
+    );
 
     document.getElementById("fareEstimateStatus").textContent =
         currentFareEstimate.routeMode === "SURFACE"
@@ -3267,12 +3404,13 @@ function resetFareEstimate(message) {
     bookingRouteOptions = { FAST: null, SURFACE: null };
 
     document.getElementById("estimateDistance").textContent = "--";
-    document.getElementById("estimateDuration").textContent = "--";
+    document.getElementById("estimateDuration").textContent = "計算中";
     document.getElementById("estimateFare").textContent = "--";
     document.getElementById("fareEstimateStatus").textContent =
         message || "請從地址建議中選擇上下車地點，系統會自動試算";
     const surcharge = document.getElementById("fareEstimateSurcharge");
     if (surcharge) { surcharge.hidden = true; surcharge.textContent = ""; }
+    document.getElementById("fareEstimateLongDistance")?.classList.remove("active");
     document.getElementById("fareEstimate").classList.remove("loading");
     document.getElementById("fareEstimate").hidden = true;
 
@@ -3304,6 +3442,9 @@ async function updateFareEstimate() {
     bookingRouteOptions = { FAST: null, SURFACE: null };
     estimateBox.hidden = false;
     estimateBox.classList.add("loading");
+    document.getElementById("estimateDistance").textContent = "正在計算路線…";
+    document.getElementById("estimateDuration").textContent = "計算中";
+    document.getElementById("estimateFare").textContent = "--";
     status.textContent = "正在取得 Google 完整行程路線與預估時間…";
 
     try {
@@ -4538,6 +4679,7 @@ async function initGoogle() {
             }
 
             async function choosePrediction(prediction) {
+                armBookingAddressSelectionGuard();
                 const fallbackText = getPredictionText(prediction);
                 input.value = fallbackText;
                 clearButton.hidden = !input.value;
@@ -4605,7 +4747,13 @@ async function initGoogle() {
 
                     row.addEventListener("pointerdown", function (event) {
                         event.preventDefault();
+                        event.stopPropagation();
+                        armBookingAddressSelectionGuard();
                         choosePrediction(prediction);
+                    });
+                    row.addEventListener("click", function (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
                     });
 
                     suggestions.appendChild(row);
@@ -4716,6 +4864,7 @@ async function initGoogle() {
                 }
 
                 async function choosePrediction(prediction) {
+                    armBookingAddressSelectionGuard();
                     const fallbackText = getPredictionText(prediction);
                     input.value = fallbackText;
                     hideSuggestions();
@@ -4793,7 +4942,13 @@ async function initGoogle() {
 
                         row.addEventListener("pointerdown", function (event) {
                             event.preventDefault();
+                            event.stopPropagation();
+                            armBookingAddressSelectionGuard();
                             choosePrediction(prediction);
+                        });
+                        row.addEventListener("click", function (event) {
+                            event.preventDefault();
+                            event.stopPropagation();
                         });
 
                         suggestions.appendChild(row);
@@ -5007,6 +5162,22 @@ window.addEventListener(
 
         document.getElementById("useBookingLocation")?.addEventListener("click", useBookingCurrentLocation);
 
+        applyBookingPaymentPreferenceOnLoad();
+
+        document.querySelectorAll('input[name="bookingPayment"]').forEach(function(input) {
+            input.addEventListener("change", function() {
+                const checkbox = document.getElementById("rememberBookingPaymentPreference");
+                if (checkbox) checkbox.checked = false;
+                updateBookingPaymentPreferenceUi();
+            });
+        });
+
+        document.getElementById("rememberBookingPaymentPreference")?.addEventListener("change", function() {
+            if (this.checked) commitBookingPaymentPreferenceIfRequested();
+        });
+
+        document.getElementById("clearBookingPaymentPreference")?.addEventListener("click", clearSavedBookingPaymentPreference);
+
         const pickupNoteToggle = document.getElementById("toggleBookingPickupNote");
         const pickupNoteCollapse = document.getElementById("collapseBookingPickupNote");
 
@@ -5028,6 +5199,7 @@ window.addEventListener(
         });
 
         document.getElementById("openBookingRideNeeds")?.addEventListener("click", function(){
+            if (isBookingCompactTapSuppressed()) return;
             updateBookingRideNeedsSummary();
             openBookingSheet("bookingRideNeedsSheet");
         });
@@ -5062,6 +5234,7 @@ window.addEventListener(
         });
 
         document.getElementById("openBookingOtherNeeds")?.addEventListener("click", function(){
+            if (isBookingCompactTapSuppressed()) return;
             updateBookingSmokingPreferenceUi();
             updateBookingOtherNeedsSummary();
             openBookingSheet("bookingOtherNeedsSheet");
