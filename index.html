@@ -3222,6 +3222,249 @@ function addressDisplayText(item = {}) {
     return name || address;
 }
 
+
+    /* =========================================
+       TOP TAXI｜UNIFIED DISPATCH ADDRESS FORMAT
+       僅負責派車單文字顯示，不改 Google 路線 / 車資 / 停靠順序
+    ========================================= */
+
+    function normalizeDispatchTaiwanText(raw = "") {
+      return String(raw || "")
+        .trim()
+        .replace(/臺/g, "台")
+        .replace(/^台灣省?/u, "")
+        .replace(/^中華民國/u, "");
+    }
+
+    function extractDispatchTaiwanArea(raw = "") {
+      const text = normalizeDispatchTaiwanText(raw)
+        .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "")
+        .replace(/\s+/g, "");
+
+      const cityMatch = text.match(
+        /(新北市|台北市|桃園市|台中市|台南市|高雄市|基隆市|新竹市|嘉義市|宜蘭縣|新竹縣|苗栗縣|彰化縣|南投縣|雲林縣|嘉義縣|屏東縣|台東縣|花蓮縣|澎湖縣|金門縣|連江縣)/u
+      );
+
+      if (!cityMatch) {
+        return { city: "", district: "", areaLabel: "" };
+      }
+
+      const city = cityMatch[1];
+      const rest = text.slice(cityMatch.index + city.length);
+      const districtMatch = rest.match(
+        /^([^0-9路街大道段巷弄號]{1,8}(?:區|鄉|鎮|市))/u
+      );
+
+      const district = districtMatch ? districtMatch[1] : "";
+
+      return {
+        city,
+        district,
+        areaLabel: [city, district].filter(Boolean).join("")
+      };
+    }
+
+    function dispatchAreaLabel(data = {}) {
+      const parsed = extractDispatchTaiwanArea(data.address || "");
+      const city =
+        parsed.city ||
+        normalizeDispatchTaiwanText(data.city || "").replace(/\s+/g, "");
+
+      let district =
+        parsed.district ||
+        normalizeDispatchTaiwanText(data.district || "").replace(/\s+/g, "");
+
+      if (/(?:里|村|鄰)$/u.test(district)) {
+        district = "";
+      }
+
+      return [city, district].filter(Boolean).join("");
+    }
+
+    function compactDispatchTaiwanAddress(raw = "") {
+      let address = normalizeDispatchTaiwanText(raw);
+
+      address = address
+        .replace(/^台灣/u, "")
+        .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "");
+
+      address = address
+        .replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)/gu, "")
+        .replace(/\d+\s*鄰/gu, "");
+
+      address = address
+        .replace(/[，,、\s-]*(?:地下)?\d+\s*樓(?:之\d+)?(?:\s*\d+\s*室)?/gu, "")
+        .replace(/[，,、\s-]*B\d+\s*(?:樓)?/giu, "")
+        .replace(/[，,、\s-]*\d+\s*F(?:-\d+)?/giu, "")
+        .replace(/[，,、\s-]*\d+\s*室/gu, "");
+
+      return address
+        .replace(/[，,、]{2,}/g, "，")
+        .replace(/^[，,、\s-]+|[，,、\s-]+$/g, "")
+        .replace(/\s+/g, "");
+    }
+
+    function compactDispatchPlaceName(raw = "") {
+      return normalizeDispatchTaiwanText(raw)
+        .replace(/[，,、\s-]*(?:地下)?\d+\s*樓(?:之\d+)?(?:\s*\d+\s*室)?$/u, "")
+        .replace(/[，,、\s-]*B\d+\s*(?:樓)?$/iu, "")
+        .replace(/[，,、\s-]*\d+\s*F(?:-\d+)?$/iu, "")
+        .replace(/[，,、\s-]*\d+\s*室$/u, "")
+        .trim();
+    }
+
+    function dispatchMeaningfulPlaceName(data = {}) {
+      const address = compactDispatchTaiwanAddress(data.address || "");
+      const name = compactDispatchPlaceName(data.displayName || "");
+
+      const normalizedName = name.replace(/\s+/g, "");
+      const normalizedAddress = address.replace(/\s+/g, "");
+
+      const looksLikeStreetAddress =
+        /(?:路|街|大道|段|巷|弄).*\d+\s*號/u.test(normalizedName);
+
+      const duplicatesAddress =
+        !!normalizedName &&
+        (
+          normalizedAddress.includes(normalizedName) ||
+          normalizedName.includes(normalizedAddress)
+        );
+
+      return (
+        normalizedName &&
+        !looksLikeStreetAddress &&
+        !duplicatesAddress
+      ) ? name : "";
+    }
+
+    function dispatchLocalStreetAddress(data = {}) {
+      const full = compactDispatchTaiwanAddress(data.address || "");
+      const area = dispatchAreaLabel(data);
+
+      let local = full;
+
+      if (area && local.startsWith(area)) {
+        local = local.slice(area.length);
+      } else {
+        const parsed = extractDispatchTaiwanArea(full);
+
+        if (parsed.city && local.startsWith(parsed.city)) {
+          local = local.slice(parsed.city.length);
+        }
+
+        if (parsed.district && local.startsWith(parsed.district)) {
+          local = local.slice(parsed.district.length);
+        }
+      }
+
+      return local
+        .replace(/^[，,、\s-]+/g, "")
+        .trim();
+    }
+
+    function dispatchNodeDisplayText(data = {}) {
+      const name = dispatchMeaningfulPlaceName(data);
+      const localAddress = dispatchLocalStreetAddress(data);
+
+      if (name && localAddress) {
+        return name + "｜" + localAddress;
+      }
+
+      return (
+        name ||
+        localAddress ||
+        compactDispatchTaiwanAddress(data.address || "")
+      );
+    }
+
+    function dispatchHasStreetNumber(raw = "") {
+      return /(?:路|街|大道|段|巷|弄).*\d+(?:-\d+)?號/u.test(
+        compactDispatchTaiwanAddress(raw)
+      );
+    }
+
+    function dispatchGeocoderHasStreetNumber(result) {
+      const components = Array.isArray(result?.address_components)
+        ? result.address_components
+        : [];
+
+      const hasRoute = components.some(
+        item => Array.isArray(item.types) && item.types.includes("route")
+      );
+
+      const hasNumber = components.some(
+        item => Array.isArray(item.types) && item.types.includes("street_number")
+      );
+
+      return hasRoute && hasNumber;
+    }
+
+    async function ensureDispatchStreetAddress(data = {}) {
+      if (
+        !data ||
+        dispatchHasStreetNumber(data.address || "") ||
+        data.lat == null ||
+        data.lng == null
+      ) {
+        return data;
+      }
+
+      try {
+        const { Geocoder } = await google.maps.importLibrary("geocoding");
+        const response = await new Geocoder().geocode({
+          location: {
+            lat: Number(data.lat),
+            lng: Number(data.lng)
+          }
+        });
+
+        const results = Array.isArray(response.results)
+          ? response.results
+          : [];
+
+        const candidate =
+          results.find(
+            item =>
+              item?.formatted_address &&
+              Array.isArray(item.types) &&
+              item.types.includes("street_address") &&
+              dispatchGeocoderHasStreetNumber(item)
+          ) ||
+          results.find(
+            item =>
+              item?.formatted_address &&
+              dispatchGeocoderHasStreetNumber(item)
+          );
+
+        if (!candidate?.formatted_address) {
+          return data;
+        }
+
+        const address = normalizeDispatchTaiwanText(candidate.formatted_address);
+        const area = extractDispatchTaiwanArea(address);
+
+        return {
+          ...data,
+          address,
+          city: area.city || data.city || "",
+          district: area.district || data.district || "",
+          areaLabel: area.areaLabel || data.areaLabel || ""
+        };
+      } catch (error) {
+        console.warn("Dispatch address enrichment skipped:", error);
+        return data;
+      }
+    }
+
+    function dispatchNodeHeader(icon, role, data = {}, index = null) {
+      const area = dispatchAreaLabel(data);
+      const suffix = index == null ? role : role + " " + index;
+
+      return area
+        ? icon + " " + area + "｜" + suffix
+        : icon + " " + suffix;
+    }
+
 let sharedAddresses = loadSharedAddresses();
 
 function loadSharedAddresses() {
@@ -5016,10 +5259,20 @@ async function sendBooking() {
     ----------------------------------------- */
 
 
+    const passengerDetailLines = [];
+
+    if (bookingService !== "driver" && passengerCount !== "1人") {
+        passengerDetailLines.push(`👥 乘車人數：${passengerCountText}`);
+    }
+
+    if (bookingService !== "driver" && luggageCount !== "無行李") {
+        passengerDetailLines.push(`🧳 行李件數：${luggageCountText}`);
+    }
+
     const passengerDetails =
-        bookingService === "driver"
-            ? ""
-            : `\n👥 乘車人數：${passengerCountText}\n🧳 行李件數：${luggageCountText}\n`;
+        passengerDetailLines.length
+            ? "\n" + passengerDetailLines.join("\n") + "\n"
+            : "";
 
     const vehicleCheckDetails =
         bookingService === "driver"
@@ -5036,34 +5289,53 @@ async function sendBooking() {
             : "";
 
 
+    const pickupDataForDispatch =
+        await ensureDispatchStreetAddress(
+            bookingPickupPlace
+                ? placeToAddressData(bookingPickupPlace, {
+                    address: pickup,
+                    pickupNote: pickupNote
+                })
+                : normalizeAddressData({ address: pickup })
+        );
+
+    const pickupDispatchHeader =
+        dispatchNodeHeader("📍", "上車", pickupDataForDispatch);
+
+    const pickupDispatchText =
+        dispatchNodeDisplayText(pickupDataForDispatch) || pickup;
+
     const pickupNoteDetails =
         pickupNote
-            ? `
-📌 上車位置補充
-${pickupNote}
-`
+            ? `\n📌 上車補充｜${pickupNote}\n`
             : "";
 
+    const bookingWaypointDataForDispatch =
+        await Promise.all(
+            getActiveBookingWaypointData().map(function(data) {
+                return ensureDispatchStreetAddress(data);
+            })
+        );
 
     const waypointDetails =
-        bookingWaypointActive
-            .map(function(active, index) {
-                if (!active) return "";
-                const value = (document.getElementById("waypoint" + (index + 1))?.value || "").trim();
-                return value
-                    ? `\n🟡 停靠點 ${index + 1}\n${value}\n`
-                    : "";
+        bookingWaypointDataForDispatch
+            .map(function(data, index) {
+                if (!data) return "";
+                return `\n${dispatchNodeHeader("🟡", "停靠", data, index + 1)}\n${dispatchNodeDisplayText(data)}\n`;
             })
             .join("");
 
+    const dropoffDataForDispatch =
+        dropoff && bookingDropoffPlace
+            ? await ensureDispatchStreetAddress(
+                placeToAddressData(bookingDropoffPlace, { address: dropoff })
+            )
+            : null;
 
     const dropoffDetails =
-        dropoff
-            ? `
-🏁 下車地點
-${dropoff}
-`
-            : "";
+        dropoffDataForDispatch
+            ? `\n${dispatchNodeHeader("🏁", "下車", dropoffDataForDispatch)}\n${dispatchNodeDisplayText(dropoffDataForDispatch)}\n`
+            : `\n🏁 下車｜未提供\n`;
 
 
     const lineMessage =
@@ -5075,14 +5347,16 @@ ${dropoff}
 📅 預約日期：${bookDate}
 ⏰ 預約時間：${bookTime}
 ${passengerDetails}${vehicleCheckDetails}
-📍 上車地點
-${pickup}
+${pickupDispatchHeader}
+${pickupDispatchText}
 ${pickupNoteDetails}${waypointDetails}${dropoffDetails}${fareDetails}
 
 💡 特殊需求
 ${memo}
 
 💳 付款方式：${payment}
+
+📡 TOP Taxi｜預約叫車
 
 ━━━━━━━━━━━━━
 預約完成！客服確認後會立刻幫您安排！`;
