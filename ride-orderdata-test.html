@@ -1585,7 +1585,7 @@ main{
         .find(button=>button.dataset.note===value);
     }
 
-    function buildOrderDataV1(){
+    async function buildOrderDataV1(){
       const identity=ensureOrderIdentity();
       const isDriver=rideService==="driver";
       const passengerValue=$("#passengers").value;
@@ -1593,7 +1593,7 @@ main{
       const pickupNote=$("#pickupNote").value.trim();
 
       const pickupRaw=pickupPlace
-        ?placeToAddressData(pickupPlace,{pickupNote})
+        ?await ensureDispatchStreetAddress(placeToAddressData(pickupPlace,{pickupNote}))
         :emptyAddress();
 
       const waypointData=[];
@@ -1601,10 +1601,15 @@ main{
         if(!rideWaypointActive[i])continue;
         const raw=rideWaypointAddressData[i]
           ||(rideWaypointPlaces[i]?placeToAddressData(rideWaypointPlaces[i]):null);
-        if(raw)waypointData.push(orderAddressData(raw));
+        if(raw){
+          const enriched=await ensureDispatchStreetAddress(raw);
+          waypointData.push(orderAddressData(enriched));
+        }
       }
 
-      const dropoffRaw=dropoffPlace?placeToAddressData(dropoffPlace):null;
+      const dropoffRaw=dropoffPlace
+        ?await ensureDispatchStreetAddress(placeToAddressData(dropoffPlace))
+        :null;
       const quotedAmount=routeData&&!quoteRequired
         ?Number(routeData.baseFare+extras().amount)
         :null;
@@ -3107,7 +3112,7 @@ main{
           button.textContent="正在產生資料…";
         }
         try{
-          const orderData=buildOrderDataV1();
+          const orderData=await buildOrderDataV1();
           showOrderDataTest(orderData);
           // Test mode: the next generated sample is a new simulated order.
           // Production retries will keep the same ID until the same send attempt is resolved.
