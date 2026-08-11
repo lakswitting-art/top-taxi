@@ -2787,26 +2787,122 @@ function compactTaiwanAddress(raw = "") {
     address = address.replace(/[^縣市區鄉鎮路街段巷弄號\d\s]{1,12}(?:里|村)/g, "");
     address = address.replace(/\d+\s*鄰/g, "");
 
-    // Remove floor / room / unit details from customer-facing text.
-    address = address.replace(/[，,、\s-]*(?:地下)?\d+\s*樓(?:之\d+)?(?:\s*\d+\s*室)?$/u, "");
-    address = address.replace(/[，,、\s-]*B\d+\s*樓?$/iu, "");
-    address = address.replace(/[，,、\s-]*\d+\s*F(?:-\d+)?$/iu, "");
-    address = address.replace(/[，,、\s-]*\d+\s*室$/u, "");
+    /*
+       Customer / dispatch-facing address must stay compact.
+       Google reverse-geocoding can occasionally return floor, room,
+       subpremise or B1/F style suffixes. Keep them internally for routing
+       if Google provides them, but never show them in the compact label.
+    */
+    address = address.replace(
+        /[，,、\s-]*(?:地下\s*)?(?:B?\d+|\d+\s*F)\s*(?:樓|F)?(?:之\d+)?(?:\s*\d+\s*室)?(?=$|[，,、])/giu,
+        ""
+    );
+    address = address.replace(
+        /[，,、\s-]*(?:地下)?\d+\s*樓(?:之\d+)?(?:\s*\d+\s*室)?/gu,
+        ""
+    );
+    address = address.replace(
+        /[，,、\s-]*B\d+\s*(?:樓)?/giu,
+        ""
+    );
+    address = address.replace(
+        /[，,、\s-]*\d+\s*F(?:-\d+)?/giu,
+        ""
+    );
+    address = address.replace(
+        /[，,、\s-]*\d+\s*室/gu,
+        ""
+    );
 
-    // Normalize spaces.
-    address = address.replace(/\s+/g, "");
+    // Normalize punctuation and spaces left by removed subpremise data.
+    address = address
+        .replace(/[，,、]{2,}/g, "，")
+        .replace(/^[，,、\s-]+|[，,、\s-]+$/g, "")
+        .replace(/\s+/g, "");
+
     return address;
 }
 
-function fareAddressDisplayText(data = {}) {
-    const name = (data.displayName || "").trim();
-    const address = compactTaiwanAddress(data.address || "");
 
-    if (name && address && !address.includes(name)) {
-        return name + "｜" + address;
+function compactFarePlaceName(raw = "") {
+    let name = String(raw || "").trim();
+
+    // Remove floor / room suffixes from a Google place display name too.
+    name = name.replace(
+        /[，,、\s-]*(?:地下)?\d+\s*樓(?:之\d+)?(?:\s*\d+\s*室)?$/u,
+        ""
+    );
+    name = name.replace(
+        /[，,、\s-]*B\d+\s*(?:樓)?$/iu,
+        ""
+    );
+    name = name.replace(
+        /[，,、\s-]*\d+\s*F(?:-\d+)?$/iu,
+        ""
+    );
+    name = name.replace(
+        /[，,、\s-]*\d+\s*室$/u,
+        ""
+    );
+
+    return name.trim();
+}
+
+
+function fareAddressDisplayText(data = {}) {
+    const address =
+        compactTaiwanAddress(
+            data.address || ""
+        );
+
+    const name =
+        compactFarePlaceName(
+            data.displayName || ""
+        );
+
+    /*
+       A reverse-geocoded "displayName" is sometimes merely another
+       spelling of the street address. Do not render:
+       地址名稱｜同一個地址
+       Only keep a genuine POI / building / landmark name.
+    */
+    const normalizedName =
+        name.replace(/\s+/g, "");
+
+    const normalizedAddress =
+        address.replace(/\s+/g, "");
+
+    const looksLikeStreetAddress =
+        /(?:路|街|大道|段|巷|弄).*\d+\s*號/u.test(
+            normalizedName
+        );
+
+    const nameAlreadyInAddress =
+        !!normalizedName &&
+        (
+            normalizedAddress.includes(normalizedName) ||
+            normalizedName.includes(normalizedAddress)
+        );
+
+    const meaningfulName =
+        normalizedName &&
+        !looksLikeStreetAddress &&
+        !nameAlreadyInAddress
+            ? name
+            : "";
+
+    if (
+        meaningfulName &&
+        address
+    ) {
+        return (
+            meaningfulName +
+            "｜" +
+            address
+        );
     }
 
-    return name || address;
+    return meaningfulName || address;
 }
 
 let RouteClass = null;
@@ -3781,8 +3877,71 @@ async function useFareCurrentLocation() {
                 }
             });
 
+        const geocodeCandidates =
+            Array.isArray(
+                geocodeResult.results
+            )
+                ? geocodeResult.results
+                : [];
+
+        /*
+           Reverse geocoding may return "subpremise" first
+           (e.g. a floor / room). For a taxi pickup this is noisy.
+           Prefer a meaningful POI / premise; otherwise use street address.
+        */
+        const scoreGeocodeResult =
+            function(result) {
+
+                const types =
+                    Array.isArray(result?.types)
+                        ? result.types
+                        : [];
+
+                if (
+                    types.includes("point_of_interest") ||
+                    types.includes("establishment")
+                ) {
+                    return 50;
+                }
+
+                if (
+                    types.includes("premise")
+                ) {
+                    return 40;
+                }
+
+                if (
+                    types.includes("street_address")
+                ) {
+                    return 30;
+                }
+
+                if (
+                    types.includes("route")
+                ) {
+                    return 20;
+                }
+
+                if (
+                    types.includes("subpremise")
+                ) {
+                    return 0;
+                }
+
+                return 10;
+            };
+
         const first =
-            geocodeResult.results?.[0];
+            [...geocodeCandidates]
+                .filter(
+                    item =>
+                        item?.place_id
+                )
+                .sort(
+                    (a, b) =>
+                        scoreGeocodeResult(b) -
+                        scoreGeocodeResult(a)
+                )[0];
 
         if (!first?.place_id) {
             throw new Error(
@@ -4771,7 +4930,7 @@ function fareTripResultCopy(mode, serviceName) {
             copy:
                 "TOP Taxi 已收到您的行程，客服確認後將為您安排。",
             subcopy:
-                "即將返回 TOP Taxi LINE 聊天室。",
+                "如有其他乘車需求（如禁菸、寵物、輪椅或收據等），請直接於 LINE 聊天室告知客服。即將返回 TOP Taxi LINE 聊天室。",
             className:
                 "trip-result-state success"
         };
@@ -4937,15 +5096,45 @@ async function confirmTrip() {
                 ""
             );
 
+    const pickupData =
+        selectedRouteData?.pickup ||
+        pickupAddressData ||
+        {};
+
     const pickup =
+        fareAddressDisplayText(
+            pickupData
+        )
+        ||
         document
             .getElementById("confirmPickup")
             .textContent;
 
+    const pickupArea =
+        String(
+            pickupData.areaLabel ||
+            [
+                pickupData.city,
+                pickupData.district
+            ]
+                .filter(Boolean)
+                .join("")
+        ).trim();
+
     const dropoff =
-        document
-            .getElementById("confirmDropoff")
-            .textContent;
+        selectedRouteData?.dropoff
+            ? (
+                fareAddressDisplayText(
+                    selectedRouteData.dropoff
+                )
+                ||
+                document
+                    .getElementById("confirmDropoff")
+                    .textContent
+            )
+            : document
+                .getElementById("confirmDropoff")
+                .textContent;
 
     const distance =
         document
@@ -4982,7 +5171,11 @@ async function confirmTrip() {
         "",
         "📋 服務類型：" + serviceName,
         "",
-        "📍 上車地點",
+        (
+            pickupArea
+                ? "📍 " + pickupArea + "｜上車"
+                : "📍 上車地點"
+        ),
         pickup
     ];
 
@@ -5008,7 +5201,9 @@ async function confirmTrip() {
         "💰 預估車資：" + fare,
         "",
         "━━━━━━━━━━━━━",
-        successText
+        successText,
+        "",
+        "💬 如有其他乘車需求（如禁菸、寵物、輪椅或收據等），請直接於 LINE 聊天室告知客服。"
     );
 
     const message =
