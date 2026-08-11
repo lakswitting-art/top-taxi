@@ -2453,6 +2453,49 @@ body{
   .errand-choice{font-size:13px;padding:10px 8px;}
 }
 
+
+/* =========================================
+   TOP Taxi Errand V1.3 UX fixes
+========================================= */
+.errand-task-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+.errand-task-grid .errand-choice:last-child:nth-child(odd){grid-column:auto;}
+.errand-move-plans{display:grid;gap:10px;margin-top:8px;}
+.errand-move-plan{width:100%;text-align:left;border:1px solid #e2e2e7;background:#fff;border-radius:15px;padding:13px 14px;cursor:pointer;color:#28282d;}
+.errand-move-plan.active{border-color:#ff1f2d;background:#fff5f6;box-shadow:0 6px 18px rgba(255,31,45,.08);}
+.errand-move-plan-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.errand-move-plan-head strong{font-size:14px;font-weight:900;}
+.errand-move-plan-head em{font-size:13px;font-style:normal;font-weight:900;color:#d20a1e;white-space:nowrap;}
+.errand-move-plan small{display:block;margin-top:6px;color:#6f6f77;font-size:12px;line-height:1.65;}
+.errand-move-photo-box,.errand-move-lift{margin-top:12px;padding:12px;border:1px solid #e8e8ec;border-radius:14px;background:#fafafa;}
+.errand-move-photo-head{display:flex;align-items:center;gap:8px;}
+.errand-photo-upload-btn{display:flex;align-items:center;justify-content:center;margin-top:10px;min-height:44px;border:1px dashed #cfcfd5;border-radius:12px;background:#fff;color:#44444a;font-size:13px;font-weight:850;cursor:pointer;}
+.errand-move-photo-preview{margin-top:10px;display:flex;align-items:flex-start;gap:10px;}
+.errand-move-photo-preview img{width:92px;height:92px;object-fit:cover;border-radius:12px;border:1px solid #e4e4e8;background:#fff;}
+.errand-move-lift>label{display:block;margin-bottom:8px;}
+/* Confirm modal: fixed close, readable rows, stable footer */
+.errand-confirm-card{max-height:min(90dvh,760px);padding:0!important;overflow:hidden!important;display:flex;flex-direction:column;}
+.booking-confirm-head{position:relative;flex:0 0 auto;padding:20px 58px 14px 20px;border-bottom:1px solid #eeeeF1;background:#fff;}
+.booking-confirm-head #closeConfirm{position:absolute;right:14px;top:14px;z-index:5;width:36px;height:36px;display:flex;align-items:center;justify-content:center;}
+.errand-confirm-content{flex:1 1 auto;min-height:0;overflow-y:auto;padding:6px 20px 16px;-webkit-overflow-scrolling:touch;}
+.booking-confirm-section{display:block;padding:12px 0;border-bottom:1px solid #eeeeF1;}
+.booking-confirm-section>span{display:block;margin:0 0 6px;color:#8b8b92;font-size:11.5px;font-weight:750;line-height:1.35;}
+.booking-confirm-section>strong,.booking-confirm-section>.errand-confirm-task{display:block;color:#242429;font-size:13.5px;font-weight:820;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;}
+.booking-confirm-price{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding:16px 0 8px;}
+.booking-confirm-price span{font-size:13px;font-weight:800;color:#5d5d64;}
+.booking-confirm-price strong{font-size:27px;color:#e10b22;font-weight:950;white-space:nowrap;}
+.booking-confirm-footer{flex:0 0 auto;display:grid;grid-template-columns:.9fr 1.35fr;gap:10px;padding:12px 16px max(12px,env(safe-area-inset-bottom));border-top:1px solid #ececf0;background:#fff;box-shadow:0 -8px 22px rgba(0,0,0,.05);}
+.booking-confirm-footer .booking-confirm-back,.booking-confirm-footer .booking-confirm-submit{width:100%;min-height:48px;margin:0;border-radius:13px;font-family:inherit;font-size:14px;font-weight:850;cursor:pointer;}
+.booking-confirm-footer .booking-confirm-back{border:1px solid #dfdfe4;background:#f6f6f8;color:#55555c;}
+.booking-confirm-footer .booking-confirm-submit{border:0;background:linear-gradient(90deg,#ff3045,#f0001d);color:#fff;box-shadow:0 8px 18px rgba(242,13,39,.18);}
+.booking-confirm-footer .booking-confirm-submit:disabled{opacity:.58;box-shadow:none;}
+.errand-result-mode{padding:20px!important;overflow-y:auto!important;}
+.errand-result-mode .top-line-result-state{display:block;}
+@media(max-width:390px){.booking-confirm-footer{grid-template-columns:1fr 1.2fr;padding-left:12px;padding-right:12px}.booking-confirm-footer .booking-confirm-back,.booking-confirm-footer .booking-confirm-submit{font-size:13px}.booking-confirm-head{padding-left:17px}.errand-confirm-content{padding-left:17px;padding-right:17px}}
+
+#otherNeedsSheet .booking-bottom-sheet{width:min(100%,560px);max-height:min(86dvh,720px);padding:10px 18px max(18px,env(safe-area-inset-bottom));overflow-y:auto;}
+#otherNeedsSheet .booking-sheet-head{position:sticky;top:-10px;z-index:4;display:flex;align-items:center;justify-content:space-between;padding:8px 2px;background:#fff;}
+#otherNeedsSheet .booking-sheet-close{flex:0 0 36px;display:flex;align-items:center;justify-content:center;}
+#otherNeedsSheet .errand-sheet-grid{padding-bottom:4px;}
 </style>
 </head>
 <body>
@@ -2461,7 +2504,7 @@ body{
   <div class="hero-copy">
     <h1 class="brand"><span class="brand-red">TOP</span> Taxi</h1>
     <div class="system-name">24H 跑腿服務</div>
-    <div class="hero-description">代買・配送・排隊・寵物接送・其他</div>
+    <div class="hero-description">代買・配送・排隊・寵物接送・小型搬家・其他</div>
   </div>
 </header>
 
@@ -2492,6 +2535,7 @@ body{
           <button type="button" class="errand-choice" data-task="delivery">📦 配送</button>
           <button type="button" class="errand-choice" data-task="queue">🧾 排隊</button>
           <button type="button" class="errand-choice" data-task="pet">🐾 寵物接送</button>
+          <button type="button" class="errand-choice" data-task="move">🚚 小型搬家</button>
           <button type="button" class="errand-choice" data-task="other">✨ 其他</button>
         </div>
       </div>
@@ -2526,13 +2570,47 @@ body{
         <div class="errand-warning-note">為保障接送安全，如寵物有咬人、攻擊、容易逃脫或其他特殊狀況，請於預約時主動告知。<br>如未事先告知，或司機現場評估無法安全完成接送，TOP Taxi 得婉拒承接服務。</div>
       </div>
 
+      <div id="moveFields" class="input-group errand-hidden">
+        <label>🚚 搬運方式 <span class="field-tag required-tag">必填</span></label>
+        <div class="errand-move-plans">
+          <button type="button" class="errand-move-plan active" data-move-plan="self">
+            <span class="errand-move-plan-head"><strong>自行搬運</strong><em>+ NT$300</em></span>
+            <small>客人自行將物品搬至車旁，送達後也自行搬離；司機協助物品上下車、車內擺放固定。</small>
+          </button>
+          <button type="button" class="errand-move-plan" data-move-plan="driver">
+            <span class="errand-move-plan-head"><strong>司機協助搬運</strong><em>+ NT$600</em></span>
+            <small>司機協助將物品由取件位置搬上車，送達後再協助搬至指定位置。</small>
+          </button>
+        </div>
+
+        <div class="errand-move-photo-box">
+          <div class="errand-move-photo-head"><strong>搬家物品照片</strong><span class="field-tag required-tag">必填</span></div>
+          <div class="errand-section-note" style="margin-top:4px">送出前請先拍攝本次搬運物品，方便客服與司機確認車輛空間及搬運需求。</div>
+          <label for="movePhoto" class="errand-photo-upload-btn">📷 拍攝／選擇物品照片</label>
+          <input id="movePhoto" type="file" accept="image/*" capture="environment" hidden>
+          <div id="movePhotoStatus" class="errand-section-note">尚未選擇照片</div>
+          <div id="movePhotoPreviewWrap" class="errand-move-photo-preview errand-hidden"><img id="movePhotoPreview" alt="搬家物品照片預覽"><button type="button" id="clearMovePhoto" class="errand-text-btn">重新拍攝</button></div>
+        </div>
+
+        <div id="moveLiftWrap" class="errand-move-lift errand-hidden">
+          <label>有無電梯 <span class="field-tag required-tag">必填</span></label>
+          <div class="errand-row-toggle">
+            <button type="button" class="errand-pill active" data-move-lift="yes">有電梯</button>
+            <button type="button" class="errand-pill" data-move-lift="no">無電梯</button>
+          </div>
+          <div id="moveFloorWrap" class="errand-small-input errand-hidden">
+            <input id="moveFloor" type="number" min="1" max="99" step="1" inputmode="numeric" placeholder="請填樓層（每樓 +NT$50）">
+          </div>
+        </div>
+      </div>
+
       <div id="advanceGroup" class="input-group">
-        <label>💰 是否需要代墊</label>
+        <label>💰 需要代墊</label>
         <div class="errand-row-toggle">
           <button type="button" class="errand-pill active" data-advance="no">不需要</button>
-          <button type="button" class="errand-pill" data-advance="yes">需要代墊</button>
+          <button type="button" class="errand-pill" data-advance="yes">需要</button>
         </div>
-        <div id="advanceAmountWrap" class="errand-small-input errand-hidden"><input id="advanceAmount" type="number" min="0" step="1" inputmode="numeric" placeholder="請輸入預估代墊金額"></div>
+        <div id="advanceAmountWrap" class="errand-small-input errand-hidden"><input id="advanceAmount" type="number" min="0" step="1" inputmode="numeric" placeholder="代墊金額（選填）"></div>
         <div class="errand-inline-note">代墊金額超過 NT$2,000，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。</div>
       </div>
 
@@ -2541,9 +2619,12 @@ body{
       </div>
 
       <div class="input-group">
-        <button id="togglePhotoReturn" class="errand-summary-btn" type="button"><strong>📷 拍照回報</strong><span id="photoReturnSummary">不需要 ›</span></button>
-        <div id="photoRequirementWrap" class="errand-small-input errand-hidden"><input id="photoRequirement" type="text" placeholder="例如：拍店門口招牌、商品價格、繳費收據"></div>
-        <div class="errand-section-note">拍照回報不另外收費；非當面放置時系統會自動要求拍照回報。</div>
+        <label>📷 完成後拍照回報</label>
+        <div class="errand-row-toggle">
+          <button type="button" class="errand-pill active" data-photo-return="no">不需要</button>
+          <button type="button" class="errand-pill" data-photo-return="yes">需要</button>
+        </div>
+        <div id="photoForcedNote" class="errand-section-note">拍照回報不另外收費；選擇外送桌或管理室時，系統會自動設為需要。</div>
       </div>
 
       <div id="fareEstimate" class="fare-estimate" aria-live="polite">
@@ -2570,8 +2651,8 @@ body{
       </div>
 
       <details class="errand-policy">
-        <summary>跑腿收費說明 ›</summary>
-        <div class="errand-policy-copy">跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。
+        <summary id="policySummary">跑腿收費說明 ›</summary>
+        <div id="policyCopy" class="errand-policy-copy">跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。
 
 ・每增加 1 個停靠點 +NT$50
 ・有電梯需上樓 +NT$50
@@ -2597,9 +2678,9 @@ body{
     <div class="booking-sheet-handle"></div>
     <div class="booking-sheet-head"><div class="booking-sheet-title">其他需求</div><button type="button" class="booking-sheet-close" data-close-sheet="otherNeedsSheet">×</button></div>
     <div class="errand-sheet-grid">
-      <div><div class="errand-section-note" style="margin:0 0 7px">上樓方式</div><div class="errand-row-toggle"><button type="button" class="errand-pill active" data-floor-mode="none">不上樓</button><button type="button" class="errand-pill" data-floor-mode="elevator">有電梯 +$50</button><button type="button" class="errand-pill" data-floor-mode="stairs">爬樓梯</button></div></div>
+      <div id="floorModeGroup"><div class="errand-section-note" style="margin:0 0 7px">上樓方式</div><div class="errand-row-toggle"><button type="button" class="errand-pill active" data-floor-mode="none">不上樓</button><button type="button" class="errand-pill" data-floor-mode="elevator">有電梯 +$50</button><button type="button" class="errand-pill" data-floor-mode="stairs">爬樓梯</button></div></div>
       <div id="stairsFloorWrap" class="errand-hidden"><label for="stairsFloors">爬樓梯樓層數 <span class="field-tag required-tag">必填</span></label><input id="stairsFloors" type="number" min="1" max="99" step="1" inputmode="numeric" placeholder="每層 +$50"></div>
-      <label class="errand-sheet-option"><input id="heavyItem" type="checkbox"><span>搬運重物 +$100</span></label>
+      <label id="heavyItemRow" class="errand-sheet-option"><input id="heavyItem" type="checkbox"><span>搬運重物 +$100</span></label>
       <div><label for="otherNote">其他備註 <span class="field-tag optional-tag">選填</span></label><textarea id="otherNote" class="errand-textarea" style="min-height:76px" placeholder="其他需要司機注意的事項"></textarea></div>
       <button type="button" id="saveOtherNeeds" class="saved-address-save">完成</button>
     </div>
@@ -2614,6 +2695,7 @@ body{
       <div class="booking-confirm-section"><span>任務</span><strong id="confirmTaskType"></strong></div>
       <div class="booking-confirm-section"><span>時間</span><strong id="confirmTiming"></strong></div>
       <div id="confirmAddressList"></div>
+      <div id="confirmMoveRow" class="booking-confirm-section errand-hidden"><span>搬運方式</span><strong id="confirmMove"></strong></div>
       <div class="booking-confirm-section"><span>任務內容</span><div id="confirmTaskContent" class="errand-confirm-task"></div></div>
       <div id="confirmAdvanceRow" class="booking-confirm-section"><span>代墊</span><strong id="confirmAdvance"></strong></div>
       <div id="confirmNeedsRow" class="booking-confirm-section"><span>其他需求</span><strong id="confirmNeeds"></strong></div>
@@ -2634,24 +2716,23 @@ const LIFF_ID="2011008197-NjirAoUX";
 const WEBHOOK_URL="https://lakswitting.app.n8n.cloud/webhook/96798dda-c12a-4552-bcaa-e51a1166a1a8";
 const BROWSER_TEST_MODE=new URLSearchParams(location.search).get("test")==="1";
 const SEND_TEST_MODE=new URLSearchParams(location.search).get("sendtest")||"";
-const SHARED_ADDRESS_KEY="topTaxiAddresses";
 const CUSTOMER_PREFERENCE_KEY="topTaxiCustomerPreferences";
 const DEFAULT_PAYMENT="現金｜行程結束後付款";
 const POSTPAID_PAYMENT="車資後結";
-const TASKS={purchase:"代買",delivery:"配送",queue:"排隊",pet:"寵物接送",other:"其他"};
-const TASK_CODES={purchase:"purchase",delivery:"delivery",queue:"queue",pet:"pet_transport",other:"other"};
+const TASKS={purchase:"代買",delivery:"配送",queue:"排隊",pet:"寵物接送",move:"小型搬家",other:"其他"};
+const TASK_CODES={purchase:"purchase",delivery:"delivery",queue:"queue",pet:"pet_transport",move:"small_move",other:"other"};
 const $=s=>document.querySelector(s);
 const $$=s=>Array.from(document.querySelectorAll(s));
 
 let lineDisplayName="",lineUserId="",liffInitialized=false;
 let errandMode="now",taskType="purchase",petCarrier="yes",advanceNeeded=false,photoReturn=false;
+let movePlan="self",moveLift="yes",movePhotoDataUrl=null,movePhotoName="";
 let floorMode="none",routeMode="FAST",sendState="idle",sendInProgress=false,returnTimer=null;
 let RouteClass=null,AutocompleteSuggestion=null,AutocompleteSessionToken=null,PlaceClass=null;
 let currentEstimate=null,routeOptions={FAST:null,SURFACE:null},routeRequestNo=0;
 let pendingIdentity=null;
 let addressSlots={};
 let activeSlotKeys=[];
-let sharedAddresses=[];
 let savedPaymentPreference="";
 let searchCenter={lat:24.1477,lng:120.6736};
 
@@ -2704,11 +2785,7 @@ async function enrichAddress(data={}){
 function dispatchHeader(data,role){const a=orderAddress(data),area=a.areaLabel||"地址";return `📍 ${area}｜${role}`;}
 function dispatchText(data){const a=orderAddress(data);const name=a.displayName||a.name||"";let street=a.address||"";if(a.city)street=street.replace(a.city,"");if(a.district)street=street.replace(a.district,"");street=street.replace(/^[-－—\s]+/,"");return name&&street?`${name}｜${street}`:(name||street||"未提供");}
 
-const SHARED_ADDRESS_DEFAULT_NAMES=["住家","公司","常用地點 1","常用地點 2"];
-function emptySharedAddress(index){return normalizeAddress({name:SHARED_ADDRESS_DEFAULT_NAMES[index]||`常用地點 ${index+1}`,displayName:"",address:"",placeId:"",lat:null,lng:null,pickupNote:""});}
-function normalizeSharedAddressSlots(raw){const list=Array.isArray(raw)?raw:[];return SHARED_ADDRESS_DEFAULT_NAMES.map((name,i)=>{const src=list[i]||{};const item=normalizeAddress({...src,name:src.name||name});if(!item.address){item.displayName="";item.placeId="";item.lat=null;item.lng=null;}return item;});}
 function loadPreferences(){
- try{sharedAddresses=normalizeSharedAddressSlots(JSON.parse(localStorage.getItem(SHARED_ADDRESS_KEY)||"[]"));}catch(e){sharedAddresses=normalizeSharedAddressSlots([]);}
  try{const p=JSON.parse(localStorage.getItem(CUSTOMER_PREFERENCE_KEY)||"{}");savedPaymentPreference=p.paymentMode||p.payment||"";}catch(e){savedPaymentPreference="";}
 }
 function savePaymentPreference(value){
@@ -2724,17 +2801,18 @@ function selectedPayment(){return document.querySelector('input[name="errandPaym
 function isPostpaid(){return selectedPayment()===POSTPAID_PAYMENT;}
 
 function taskConfig(){
- if(taskType==='purchase')return{p1:'購買地點 1',p1Role:'購買點 1',p2:'購買地點 2',p2Role:'購買點 2',final:'送達地址',finalRequired:true,p2Max:1,content:'購買內容',placeholder:'例：大杯冰美式 2 杯、600ml 可樂 1 瓶'};
- if(taskType==='delivery')return{p1:'取件地點 1',p1Role:'取件點 1',p2:'取件地點 2',p2Role:'取件點 2',final:'送達地址',finalRequired:true,p2Max:1,content:'物品內容',placeholder:'例：文件一份、紙箱一箱、鑰匙一串'};
- if(taskType==='queue')return{p1:'排隊地點',p1Role:'排隊',p2:null,final:'送達地址',finalRequired:false,p2Max:0,content:'排隊事項',placeholder:'例：幫我排候位、領號碼牌，完成後電話通知'};
- if(taskType==='pet')return{p1:'接寵物地址',p1Role:'接寵物',p2:null,final:'送達地址',finalRequired:true,p2Max:0,content:'接送事項／備註',placeholder:'例：送到動物醫院櫃台交給王小姐'};
- return{p1:'任務地點 1',p1Role:'任務點 1',p2:'停靠點',p2Role:'停靠點',final:'最終送達地址',finalRequired:false,p2Max:2,content:'需求內容',placeholder:'例：到店門口拍照回報後，再前往下一個指定地點'};
+ if(taskType==='purchase')return{p1:'購買地點',p1Role:'購買點',p2:'停靠點',p2Role:'停靠點',final:'送達地址',finalRequired:true,p2Max:2,content:'購買內容',placeholder:'例：大杯冰美式 2 杯、600ml 可樂 1 瓶'};
+ if(taskType==='delivery')return{p1:'取件地點',p1Role:'取件點',p2:'停靠點',p2Role:'停靠點',final:'送達地址',finalRequired:true,p2Max:2,content:'物品內容',placeholder:'例：文件一份、紙箱一箱、鑰匙一串'};
+ if(taskType==='queue')return{p1:'排隊地點',p1Role:'排隊',p2:'停靠點',p2Role:'停靠點',final:'送達地址',finalRequired:false,p2Max:2,content:'排隊事項',placeholder:'例：幫我排候位、領號碼牌，完成後電話通知'};
+ if(taskType==='pet')return{p1:'接送地點',p1Role:'接寵物',p2:'停靠點',p2Role:'停靠點',final:'送達地址',finalRequired:true,p2Max:2,content:'接送事項／備註',placeholder:'例：送到動物醫院櫃台交給王小姐'};
+ if(taskType==='move')return{p1:'開始地點',p1Role:'開始',p2:'停靠點',p2Role:'停靠點',final:'送達地點',finalRequired:true,p2Max:2,content:'搬運物品／備註',placeholder:'例：2 個行李箱、3 箱衣物、1 張折疊桌'};
+ return{p1:'開始地點',p1Role:'開始',p2:'停靠點',p2Role:'停靠點',final:'送達地點',finalRequired:false,p2Max:2,content:'需求內容',placeholder:'例：到店門口拍照回報後，再前往下一個指定地點'};
 }
 function newSlot(key,label,required=true,role=label){return{key,label,required,role,place:null,data:null};}
 function rebuildSlots(){
  const cfg=taskConfig(),prev=addressSlots;addressSlots={};activeSlotKeys=[];
  addressSlots.p1=prev.p1||newSlot('p1',cfg.p1,true,cfg.p1.replace(/地點|地址/g,''));Object.assign(addressSlots.p1,{label:cfg.p1,required:true,role:cfg.p1Role});activeSlotKeys.push('p1');
- const wanted=[];if(cfg.p2Max>0){for(let i=1;i<=cfg.p2Max;i++)wanted.push('p2_'+i);}wanted.forEach((k,i)=>{if(prev[k])addressSlots[k]=prev[k];else addressSlots[k]=newSlot(k,cfg.p2Max===1?cfg.p2:`${cfg.p2} ${i+1}`,false,cfg.p2Role?`${cfg.p2Role}${cfg.p2Max>1?' '+(i+1):''}`:`停靠點 ${i+1}`);});
+ const wanted=[];if(cfg.p2Max>0){for(let i=1;i<=cfg.p2Max;i++)wanted.push('p2_'+i);}wanted.forEach((k,i)=>{if(prev[k])addressSlots[k]=prev[k];else addressSlots[k]=newSlot(k,`停靠點 ${i+1}`,false,`停靠點 ${i+1}`);});
  addressSlots.final=prev.final||newSlot('final',cfg.final,cfg.finalRequired,'送達');Object.assign(addressSlots.final,{label:cfg.final,required:cfg.finalRequired,role:'送達'});
  renderAddresses();
 }
@@ -2744,12 +2822,11 @@ function renderAddresses(){
  if(cfg.p2Max>0){
    const wrap=document.createElement('div');wrap.id='extraStopsWrap';root.appendChild(wrap);
    const add=document.createElement('button');add.type='button';add.className='booking-add-waypoint';add.id='addStopBtn';add.textContent='＋ 新增停靠點';add.addEventListener('click',addStop);root.appendChild(add);
-   const help=document.createElement('div');help.className='booking-waypoint-help';help.textContent=cfg.p2Max===1?'最多新增 1 個停靠點；新增後 +NT$50':'最多 2 個停靠點；每增加 1 個停靠點 +NT$50';root.appendChild(help);
+   const help=document.createElement('div');help.className='booking-waypoint-help';help.textContent='最多新增 2 個停靠點；每增加 1 個停靠點 +NT$50';root.appendChild(help);
    Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active).forEach(k=>activateStop(k,false));
  }
  const finalBlock=addressBlock(addressSlots.final,true);finalBlock.id='finalAddressBlock';root.appendChild(finalBlock);
  if(!cfg.finalRequired){const note=document.createElement('div');note.className='booking-compact-help';note.textContent=taskType==='queue'?'如不需要配送，可留空':'純任務型跑腿可不填送達地址';finalBlock.appendChild(note);}
- renderSavedChips();
  initAutocompleteForVisibleSlots();
  updateDeliveryModule();
  syncDeliveryVisibility();
@@ -2758,7 +2835,7 @@ function renderAddresses(){
 function addressBlock(slot,isFinal=false){
  const d=document.createElement('div');d.className='input-group errand-address-block';d.dataset.slot=slot.key;
  const initial=slot.data?displayAddress(slot.data):'';
- d.innerHTML=`<div class="errand-address-head"><label>${slot.key==='p1'?'📍':isFinal?'🏁':'🟡'} ${slot.label} <span class="field-tag ${slot.required?'required-tag':'optional-tag'}">${slot.required?'必填':'選填'}</span></label></div><div id="${slot.key}Box" class="address-autocomplete"><span class="address-search-icon">⌕</span><input type="search" id="${slot.key}Input" class="address-input" placeholder="請輸入${slot.label}地址或地標名稱" autocomplete="off" enterkeyhint="search" ${slot.required?'required':''} value="${escapeHtml(initial)}"><button type="button" class="address-clear-btn" id="${slot.key}Clear" ${initial?'':'hidden'}>×</button><div class="address-suggestions" id="${slot.key}Suggestions"></div></div><div id="${slot.key}Saved"></div>${isFinal?deliveryModuleHtml():''}`;
+ d.innerHTML=`<div class="errand-address-head"><label>${slot.key==='p1'?'📍':isFinal?'🏁':'🟡'} ${slot.label} <span class="field-tag ${slot.required?'required-tag':'optional-tag'}">${slot.required?'必填':'選填'}</span></label></div><div id="${slot.key}Box" class="address-autocomplete"><span class="address-search-icon">⌕</span><input type="search" id="${slot.key}Input" class="address-input" placeholder="請輸入${slot.label}地址或地標名稱" autocomplete="off" enterkeyhint="search" ${slot.required?'required':''} value="${escapeHtml(initial)}"><button type="button" class="address-clear-btn" id="${slot.key}Clear" ${initial?'':'hidden'}>×</button><div class="address-suggestions" id="${slot.key}Suggestions"></div></div>${isFinal?deliveryModuleHtml():''}`;
  const input=d.querySelector(`#${slot.key}Input`),clear=d.querySelector(`#${slot.key}Clear`);
  input.addEventListener('input',()=>{const q=input.value.trim();clear.hidden=!q;slot.place=null;slot.data=q?normalizeAddress({address:q}):null;syncDeliveryVisibility();renderPhoto();updateEstimate();});
  clear.addEventListener('click',()=>{input.value='';slot.place=null;slot.data=null;clear.hidden=true;const sug=d.querySelector(`#${slot.key}Suggestions`);if(sug){sug.classList.remove('show');sug.innerHTML='';}syncDeliveryVisibility();renderPhoto();updateEstimate();input.focus();});
@@ -2771,91 +2848,68 @@ function syncDeliveryVisibility(){
 }
 function updateDeliveryModule(){
  const module=$('#deliveryModule');if(!module)return;
- $$('[data-delivery]').forEach(b=>{b.addEventListener('click',()=>{deliveryMethod=b.dataset.delivery;$$('[data-delivery]').forEach(x=>x.classList.toggle('active',x===b));const forced=deliveryMethod!=='handoff';$('#deliveryLocationWrap').classList.toggle('errand-hidden',!forced);$('#deliveryPhotoNote').classList.toggle('errand-hidden',!forced);if(forced){photoReturn=true;renderPhoto();}updateEstimate();});});syncDeliveryVisibility();
+ $$('[data-delivery]').forEach(b=>{b.addEventListener('click',()=>{deliveryMethod=b.dataset.delivery;$$('[data-delivery]').forEach(x=>x.classList.toggle('active',x===b));const forced=deliveryMethod!=='handoff';$('#deliveryLocationWrap').classList.toggle('errand-hidden',!forced);$('#deliveryPhotoNote').classList.toggle('errand-hidden',!forced);renderPhoto();updateEstimate();});});syncDeliveryVisibility();
 }
 function addStop(){const cfg=taskConfig();const keys=Object.keys(addressSlots).filter(k=>k.startsWith('p2_'));const k=keys.find(x=>!addressSlots[x].active);if(!k)return;activateStop(k,true);if(keys.filter(x=>addressSlots[x].active).length>=cfg.p2Max)$('#addStopBtn')?.setAttribute('hidden','');updateEstimate();}
 function activateStop(key,focus){const s=addressSlots[key];if(!s)return;s.active=true;if(!activeSlotKeys.includes(key))activeSlotKeys.push(key);const wrap=$('#extraStopsWrap');if(!wrap)return;const node=addressBlock(s);node.querySelector('.errand-address-head').insertAdjacentHTML('beforeend',`<button type="button" class="errand-text-btn" data-remove-stop="${key}">移除</button>`);wrap.appendChild(node);node.querySelector(`[data-remove-stop="${key}"]`).addEventListener('click',()=>removeStop(key));initAutocompleteForSlot(s);if(focus)setTimeout(()=>{const input=document.getElementById(`${key}Input`);node.scrollIntoView({behavior:'smooth',block:'center'});input?.focus();},80);}
 function removeStop(key){const s=addressSlots[key];s.active=false;s.place=null;s.data=null;document.querySelector(`[data-slot="${key}"]`)?.remove();activeSlotKeys=activeSlotKeys.filter(x=>x!==key);$('#addStopBtn')?.removeAttribute('hidden');updateEstimate();}
-function renderSavedChips(){
- const box=$('#p1Saved');if(!box)return;box.className='saved-address-panel compact';box.innerHTML='';
- const line=document.createElement('div');line.className='errand-saved-line';
- const chips=document.createElement('div');chips.className='saved-address-chips';
- sharedAddresses.forEach((a,i)=>{
-   if(!a?.address)return;
-   const b=document.createElement('button');b.type='button';b.className='saved-address-chip';
-   b.textContent=(a.name||SHARED_ADDRESS_DEFAULT_NAMES[i]||`常用${i+1}`).trim();
-   b.onclick=(e)=>{e.preventDefault();e.stopPropagation();useSaved(i);};
-   chips.appendChild(b);
- });
- line.appendChild(chips);
- const toggle=document.createElement('button');toggle.type='button';toggle.id='toggleErrandSavedEditor';toggle.className='saved-address-edit compact';toggle.setAttribute('aria-label','設定常用地址');
- toggle.innerHTML=`<span id="errandSavedSettingsLabel">${chips.childElementCount?'設定':''}</span><svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z"></path><path d="M19.1 13.7a7.7 7.7 0 0 0 .05-1.7 7.7 7.7 0 0 0-.05-1.7l2-1.55-2-3.45-2.45.98a7.75 7.75 0 0 0-2.95-1.7L13.35 2h-4.7L8.3 4.58a7.75 7.75 0 0 0-2.95 1.7L2.9 5.3l-2 3.45 2 1.55A7.7 7.7 0 0 0 2.85 12c0 .58.02 1.15.05 1.7l-2 1.55 2 3.45 2.45-.98a7.75 7.75 0 0 0 2.95 1.7L8.65 22h4.7l.35-2.58a7.75 7.75 0 0 0 2.95-1.7l2.45.98 2-3.45-2-1.55Z"></path></svg>`;
- line.appendChild(toggle);box.appendChild(line);
- const editor=document.createElement('div');editor.id='errandSavedAddressEditor';editor.className='errand-saved-editor';editor.hidden=true;editor.innerHTML='<div id="errandSavedAddressRows"></div><button type="button" id="saveErrandSharedAddresses" class="saved-address-save">儲存常用地址</button>';box.appendChild(editor);
- const label=$('#errandSavedSettingsLabel');
- toggle.addEventListener('click',()=>{editor.hidden=!editor.hidden;if(label)label.textContent=editor.hidden?(chips.childElementCount?'設定':''):'收合';if(!editor.hidden)renderErrandSavedEditor();});
- $('#saveErrandSharedAddresses')?.addEventListener('click',saveErrandSharedAddresses);
-}
-function renderErrandSavedEditor(){
- const root=$('#errandSavedAddressRows');if(!root)return;root.innerHTML='';
- sharedAddresses.forEach((a,i)=>{const row=document.createElement('div');row.className='errand-saved-row';row.innerHTML=`<input class="errand-saved-name" id="errandSavedName${i}" type="text" value="${escapeHtml(a.name||SHARED_ADDRESS_DEFAULT_NAMES[i])}" aria-label="常用地點名稱"><div class="address-autocomplete"><input class="errand-saved-address" id="errandSavedAddress${i}" type="search" value="${escapeHtml(a.address?displayAddress(a):'')}" placeholder="請輸入地址或地標" autocomplete="off"><div id="errandSavedSuggestions${i}" class="address-suggestions"></div></div>`;root.appendChild(row);initErrandSavedAutocomplete(i);});
-}
-function initErrandSavedAutocomplete(index){
- const input=$(`#errandSavedAddress${index}`),sug=$(`#errandSavedSuggestions${index}`);if(!input||!sug||!AutocompleteSuggestion)return;let token=new AutocompleteSessionToken(),timer=null,req=0;
- function hide(){sug.classList.remove('show');sug.innerHTML='';}
- async function choose(pred){const fallback=pred.text?.toString?.()||'';input.value=fallback;hide();try{const place=pred.toPlace();await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});const name=$(`#errandSavedName${index}`)?.value.trim()||SHARED_ADDRESS_DEFAULT_NAMES[index];sharedAddresses[index]=normalizeAddress({...placeToData(place,{name}),name});input.value=displayAddress(sharedAddresses[index]);}catch(e){console.warn('SAVED PLACE DETAIL ERROR',e);}token=new AutocompleteSessionToken();}
- async function fetchSug(q){const n=++req;try{const res=await AutocompleteSuggestion.fetchAutocompleteSuggestions({input:q,includedRegionCodes:['tw'],language:'zh-TW',region:'TW',locationBias:{center:searchCenter,radius:50000},origin:searchCenter,sessionToken:token});if(n!==req)return;sug.innerHTML='';const preds=(res.suggestions||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);preds.forEach(pred=>{const b=document.createElement('button');b.type='button';b.className='address-suggestion';b.textContent=pred.text?.toString?.()||'';b.addEventListener('pointerdown',e=>{e.preventDefault();choose(pred);});sug.appendChild(b);});if(preds.length)sug.classList.add('show');else hide();}catch(e){hide();}}
- input.addEventListener('input',()=>{const q=input.value.trim();clearTimeout(timer);sharedAddresses[index]={...emptySharedAddress(index),name:$(`#errandSavedName${index}`)?.value.trim()||SHARED_ADDRESS_DEFAULT_NAMES[index],address:q};if(!q){req++;hide();return;}timer=setTimeout(()=>fetchSug(q),220);});input.addEventListener('focus',()=>{if(input.value.trim())fetchSug(input.value.trim());});document.addEventListener('pointerdown',e=>{if(!input.parentElement.contains(e.target))hide();});
-}
-async function resolveSharedAddressText(text,index,name){
- if(!text)return emptySharedAddress(index);if(AutocompleteSuggestion){const res=await AutocompleteSuggestion.fetchAutocompleteSuggestions({input:text,includedRegionCodes:['tw'],language:'zh-TW',region:'TW',locationBias:{center:searchCenter,radius:50000},origin:searchCenter,sessionToken:new AutocompleteSessionToken()});const pred=res.suggestions?.[0]?.placePrediction;if(pred){const place=pred.toPlace();await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});return normalizeAddress({...placeToData(place,{name}),name});}}
- return normalizeAddress({name,address:text});
-}
-async function saveErrandSharedAddresses(){
- const btn=$('#saveErrandSharedAddresses'),old=btn?.textContent||'儲存常用地址';if(btn){btn.disabled=true;btn.textContent='正在確認地址…';}
- try{const next=[];for(let i=0;i<4;i++){const name=$(`#errandSavedName${i}`)?.value.trim()||SHARED_ADDRESS_DEFAULT_NAMES[i],text=$(`#errandSavedAddress${i}`)?.value.trim()||'';if(!text){next.push(emptySharedAddress(i));continue;}const cur=sharedAddresses[i];if(cur?.placeId&&displayAddress(cur)===text){next.push(normalizeAddress({...cur,name}));}else next.push(await resolveSharedAddressText(text,i,name));}sharedAddresses=normalizeSharedAddressSlots(next);localStorage.setItem(SHARED_ADDRESS_KEY,JSON.stringify(sharedAddresses));renderSavedChips();}
- catch(e){console.warn('SAVE ERRAND SHARED ADDRESS ERROR',e);alert('有常用地址無法確認，請從 Google 建議中選擇後再儲存。');}
- finally{if(btn){btn.disabled=false;btn.textContent=old;}}
-}
-
-async function useSaved(i){
- const a=sharedAddresses[i];if(!a?.address)return;
- const s=addressSlots.p1,input=$('#p1Input'),clear=$('#p1Clear');
- s.place=null;s.data=normalizeAddress(a);
- if(input)input.value=displayAddress(s.data)||a.address;
- if(clear)clear.hidden=false;
- syncDeliveryVisibility();renderPhoto();updateEstimate();
- try{
-   if(a.placeId&&PlaceClass){
-     const place=new PlaceClass({id:a.placeId});
-     await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});
-     s.place=place;s.data=placeToData(place,{name:a.name,address:a.address,placeId:a.placeId});
-     if(input)input.value=displayAddress(s.data)||a.address;
-   }
- }catch(e){console.warn('SAVED ADDRESS RESOLVE ERROR:',e);}
- updateEstimate();
-}
-
-
 function renderTaskUi(){
  $$('#errandForm [data-task]').forEach(b=>b.classList.toggle('active',b.dataset.task===taskType));
  const cfg=taskConfig();$('#taskContentLabel').innerHTML=`${cfg.content} <span class="field-tag required-tag">必填</span>`;$('#taskContent').placeholder=cfg.placeholder;
- $('#purchaseSpecNote').classList.toggle('errand-hidden',taskType!=='purchase');$('#petFields').classList.toggle('errand-hidden',taskType!=='pet');
+ $('#purchaseSpecNote').classList.toggle('errand-hidden',taskType!=='purchase');
+ $('#petFields').classList.toggle('errand-hidden',taskType!=='pet');
+ $('#moveFields').classList.toggle('errand-hidden',taskType!=='move');
  $('#advanceGroup').classList.toggle('errand-hidden',!(taskType==='purchase'||taskType==='pet'||taskType==='other'));
+ const moveMode=taskType==='move';
+ const policySummary=$('#policySummary'),policyCopy=$('#policyCopy');
+ if(moveMode){
+   if(policySummary)policySummary.textContent='小型搬家收費說明 ›';
+   if(policyCopy)policyCopy.textContent='小型搬家依一般車資加搬運方案計費。\n\n・自行搬運：車資 +NT$300\n・司機協助搬運：車資 +NT$600\n・每增加 1 個停靠點 +NT$50\n・司機協助搬運且無電梯時，每樓 +NT$50\n\n送出前需提供本次搬運物品照片；預估金額僅供參考，實際仍依行程與現場狀況計費。';
+ }else{
+   if(policySummary)policySummary.textContent='跑腿收費說明 ›';
+   if(policyCopy)policyCopy.textContent='跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。\n\n・每增加 1 個停靠點 +NT$50\n・有電梯需上樓 +NT$50\n・無電梯爬樓梯，每層 +NT$50\n・搬運重物 +NT$100\n・拍照回報不另收費\n\n代墊金額超過 NT$2,000 時，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。\n\n司機接單並開始前往後，如因客人取消、店家未營業或商品缺貨而取消任務，酌收 NT$100 取消費。\n\n現場等待期間持續計時；符合包車申請條件時，將由調度確認並於變更計費方式前告知客人。';
+ }
+ $('#floorModeGroup')?.classList.toggle('errand-hidden',moveMode);
+ $('#heavyItemRow')?.classList.toggle('errand-hidden',moveMode);
+ if(moveMode){floorMode='none';$('#heavyItem').checked=false;$('#stairsFloors').value='';$('#stairsFloorWrap').classList.add('errand-hidden');$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode==='none'));}
  rebuildSlots();
+ cleanTaskWarnings();
  if(taskType==='delivery')ensureDeliveryWarning();
+ renderMoveUi();renderOtherNeeds();
 }
 function ensureDeliveryWarning(){const g=$('#taskContentGroup');if(!g||$('#deliverySafetyNote'))return;const n=document.createElement('div');n.id='deliverySafetyNote';n.className='errand-warning-note';n.innerHTML='為保障配送安全，無法確認內容物之不透明包裹，取件時需配合開封確認；如無法配合，恕無法承接配送。<br><br>菸彈、電子煙相關產品及其他違法、違禁物品，TOP Taxi 一律不提供配送服務。';g.appendChild(n);}
 function cleanTaskWarnings(){if(taskType!=='delivery')$('#deliverySafetyNote')?.remove();}
 
-function renderPhoto(){const forced=deliveryMethod!=='handoff'&&!!addressValue('final');$('#photoReturnSummary').textContent=(photoReturn||forced)?'需要拍照回報 ›':'不需要 ›';$('#photoRequirementWrap').classList.toggle('errand-hidden',!(photoReturn||forced));}
-function renderOtherNeeds(){const items=[];if(floorMode==='elevator')items.push('有電梯上樓 +$50');if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);items.push(`爬樓梯 ${n||'?'} 層`);}if($('#heavyItem')?.checked)items.push('搬運重物 +$100');if($('#otherNote')?.value.trim())items.push('其他備註');$('#otherNeedsSummary').textContent=(items.length?items.join('・'):'上樓／樓梯／搬重物／其他備註・選填')+' ›';updateEstimate();}
-function extraFees(){let amount=0,items=[];const activeStops=Object.values(addressSlots).filter(s=>s.key.startsWith('p2_')&&s.active&&addressValue(s.key)).length;if(activeStops){amount+=activeStops*50;items.push(`停靠點 ${activeStops} 個 +$${activeStops*50}`);}if(floorMode==='elevator'){amount+=50;items.push('有電梯上樓 +$50');}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`爬樓梯 ${n} 層 +$${n*50}`);}if($('#heavyItem')?.checked){amount+=100;items.push('搬運重物 +$100');}if(taskType==='pet'&&petCarrier==='no'){amount+=50;items.push('寵物無提籠／提袋 +$50');}return{amount,items};}
+function renderPhoto(){
+ const forced=deliveryMethod!=='handoff'&&!!addressValue('final');
+ $$('[data-photo-return]').forEach(b=>{const yes=b.dataset.photoReturn==='yes';b.classList.toggle('active',yes===(photoReturn||forced));b.disabled=forced&&!yes;});
+ $('#photoForcedNote').textContent=forced?'非當面交付需拍照回報，已自動設為「需要」。':'拍照回報不另外收費；選擇外送桌或管理室時，系統會自動設為需要。';
+}
+function renderMoveUi(){
+ const isMove=taskType==='move';if(!isMove)return;
+ $$('[data-move-plan]').forEach(b=>b.classList.toggle('active',b.dataset.movePlan===movePlan));
+ $('#moveLiftWrap').classList.toggle('errand-hidden',movePlan!=='driver');
+ $$('[data-move-lift]').forEach(b=>b.classList.toggle('active',b.dataset.moveLift===moveLift));
+ $('#moveFloorWrap').classList.toggle('errand-hidden',movePlan!=='driver'||moveLift!=='no');
+ updateEstimate();
+}
+async function compressMovePhoto(file){
+ return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const max=320,scale=Math.min(1,max/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height)),w=Math.max(1,Math.round((img.naturalWidth||img.width)*scale)),h=Math.max(1,Math.round((img.naturalHeight||img.height)*scale)),canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);resolve(canvas.toDataURL('image/jpeg',0.45));};img.src=reader.result;};reader.readAsDataURL(file);});
+}
+async function handleMovePhoto(file){
+ if(!file){movePhotoDataUrl=null;movePhotoName='';$('#movePhotoStatus').textContent='尚未選擇照片';$('#movePhotoPreviewWrap').classList.add('errand-hidden');return;}
+ if(!file.type.startsWith('image/')){alert('請選擇照片檔案。');$('#movePhoto').value='';return;}
+ $('#movePhotoStatus').textContent='正在處理照片…';
+ try{movePhotoDataUrl=await compressMovePhoto(file);movePhotoName=file.name||'moving-photo.jpg';$('#movePhotoPreview').src=movePhotoDataUrl;$('#movePhotoPreviewWrap').classList.remove('errand-hidden');$('#movePhotoStatus').textContent='已選擇 1 張搬家物品照片';}
+ catch(e){console.error('MOVE PHOTO ERROR',e);movePhotoDataUrl=null;movePhotoName='';$('#movePhoto').value='';$('#movePhotoStatus').textContent='照片處理失敗，請重新拍攝';alert('照片無法處理，請重新拍攝或改用 JPG／PNG 照片。');}
+}
+function renderOtherNeeds(){const items=[];if(taskType!=='move'){if(floorMode==='elevator')items.push('有電梯上樓 +$50');if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);items.push(`爬樓梯 ${n||'?'} 層`);}if($('#heavyItem')?.checked)items.push('搬運重物 +$100');}if($('#otherNote')?.value.trim())items.push('其他備註');$('#otherNeedsSummary').textContent=(items.length?items.join('・'):(taskType==='move'?'其他備註・選填':'上樓／樓梯／搬重物／其他備註・選填'))+' ›';updateEstimate();}
+function extraFees(){let amount=0,items=[];const activeStops=Object.values(addressSlots).filter(s=>s.key.startsWith('p2_')&&s.active&&addressValue(s.key)).length;if(activeStops){amount+=activeStops*50;items.push(`停靠點 ${activeStops} 個 +$${activeStops*50}`);}if(taskType==='move'){const service=movePlan==='driver'?600:300;amount+=service;items.push(`${movePlan==='driver'?'司機協助搬運':'自行搬運'} +$${service}`);if(movePlan==='driver'&&moveLift==='no'){const n=Math.max(0,parseInt($('#moveFloor')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`無電梯 ${n} 樓 +$${n*50}`);}return{amount,items};}if(floorMode==='elevator'){amount+=50;items.push('有電梯上樓 +$50');}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`爬樓梯 ${n} 層 +$${n*50}`);}if($('#heavyItem')?.checked){amount+=100;items.push('搬運重物 +$100');}if(taskType==='pet'&&petCarrier==='no'){amount+=50;items.push('寵物無提籠／提袋 +$50');}return{amount,items};}
 function addressValue(key){const s=addressSlots[key];if(!s)return'';const input=$(`#${key}Input`);return input?.value.trim()||displayAddress(s.data)||'';}
 function activeRouteSlots(){const arr=[addressSlots.p1];Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressValue(k)).sort().forEach(k=>arr.push(addressSlots[k]));if(addressValue('final'))arr.push(addressSlots.final);return arr;}
 function calculateMeterFare(distanceKm,minutes){const distanceFare=distanceKm<=20?distanceKm*15:20*15+(distanceKm-20)*25;return Math.floor((80+distanceFare+minutes*3)/10)*10;}
-function quote(){const extras=extraFees();const base=currentEstimate?Math.max(220,currentEstimate.meterFare):220;return{base,extras,total:base+extras.amount};}
-function renderEstimate(){const q=quote();$('#estimateFare').textContent=`$${q.total}`;$('#fareExtras').textContent=q.extras.items.length?'加價項目：'+q.extras.items.join('、'):'';if(currentEstimate){$('#estimateDistance').textContent=`距離 ${currentEstimate.distanceKm.toFixed(1)} km`;$('#estimateDuration').textContent=`${currentEstimate.minutes} 分鐘`;$('#fareStatus').textContent=currentEstimate.routeMode==='SURFACE'?'平面道路｜優先避開高速／收費道路':'推薦快速｜依 Google 即時交通';}else{$('#estimateDistance').textContent='未填完整路線時，以跑腿低消計';$('#estimateDuration').textContent='最低消費';$('#fareStatus').textContent='跑腿最低消費 NT$220';}}
+function quote(){const extras=extraFees();if(taskType==='move'){const base=currentEstimate?currentEstimate.meterFare:null;return{base,extras,total:base==null?null:base+extras.amount};}const base=currentEstimate?Math.max(220,currentEstimate.meterFare):220;return{base,extras,total:base+extras.amount};}
+function renderEstimate(){const q=quote();$('#estimateFare').textContent=q.total==null?'待試算':`$${q.total}`;$('#fareExtras').textContent=q.extras.items.length?'加價項目：'+q.extras.items.join('、'):'';if(currentEstimate){$('#estimateDistance').textContent=`距離 ${currentEstimate.distanceKm.toFixed(1)} km`;$('#estimateDuration').textContent=`${currentEstimate.minutes} 分鐘`;$('#fareStatus').textContent=currentEstimate.routeMode==='SURFACE'?'平面道路｜優先避開高速／收費道路':'推薦快速｜依 Google 即時交通';}else if(taskType==='move'){$('#estimateDistance').textContent='填寫開始與送達地點後試算車資';$('#estimateDuration').textContent='小型搬家';$('#fareStatus').textContent='搬家依車資加搬運方案計費';}else{$('#estimateDistance').textContent='未填完整路線時，以跑腿低消計';$('#estimateDuration').textContent='最低消費';$('#fareStatus').textContent='跑腿最低消費 NT$220';}}
 function summarizeRoute(route,legsExpected){const legs=Array.isArray(route?.legs)?route.legs:[];if(legs.length!==legsExpected)throw new Error('路線分段不符');const d=legs.reduce((s,l)=>s+Number(l?.distanceMeters||0),0),t=legs.reduce((s,l)=>s+Number(l?.durationMillis||0),0);if(!(d>0&&t>0))throw new Error('路線資料不完整');return{d,t};}
 async function updateEstimate(){
  routeRequestNo++;const id=routeRequestNo;currentEstimate=null;routeOptions={FAST:null,SURFACE:null};renderEstimate();if(!RouteClass)return;
@@ -2870,11 +2924,11 @@ function selectRoute(mode){routeMode=mode==='SURFACE'?'SURFACE':'FAST';$('#surfa
 function contactInfo(){const name=$('#globalContactName')?.value.trim()||'',phone=$('#globalContactPhone')?.value.trim()||'';return(name||phone)?{name:nullable(name),phone:nullable(phone)}:null;}
 function renderGlobalContactSummary(){const c=contactInfo();$('#globalContactSummary').textContent=c?`${c.name||''}${c.name&&c.phone?'・':''}${c.phone||''} ›`:'選填 ›';}
 function deliveryInfo(){if(!addressValue('final'))return null;const forced=deliveryMethod!=='handoff';return{method:deliveryMethod,label:deliveryMethod==='handoff'?'當面交付':deliveryMethod==='table'?'放置外送桌':'放置管理室',locationNote:forced?nullable($('#deliveryLocation')?.value):null,photoRequired:forced||photoReturn};}
-function photoInfo(){const forced=deliveryMethod!=='handoff'&&!!addressValue('final');return{required:photoReturn||forced,requirement:nullable($('#photoRequirement')?.value)};}
-function otherNeedsInfo(){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);return{floorMode,stairsFloors:floorMode==='stairs'?n:0,heavyItem:!!$('#heavyItem')?.checked,note:nullable($('#otherNote')?.value),items:extraFees().items};}
+function photoInfo(){const forced=deliveryMethod!=='handoff'&&!!addressValue('final');return{required:photoReturn||forced};}
+function otherNeedsInfo(){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);return{floorMode:taskType==='move'?'none':floorMode,stairsFloors:taskType==='move'?0:(floorMode==='stairs'?n:0),heavyItem:taskType==='move'?false:!!$('#heavyItem')?.checked,note:nullable($('#otherNote')?.value),items:taskType==='move'?[]:extraFees().items};}
 function pickupTimeIso(){if(errandMode!=='reserve')return null;const d=$('#errandDate').value,t=$('#errandTime').value;if(!d||!t)return null;return `${d}T${t}${t.length===5?':00':''}+08:00`;}
 function timingLabel(){return errandMode==='now'?'立即跑腿':`${$('#errandDate').value} ${$('#errandTime').value}`;}
-function taskSpecific(){const o={taskType:TASK_CODES[taskType],taskLabel:TASKS[taskType]};if(advanceNeeded)o.advanceAmount=Number($('#advanceAmount').value||0)||null;if(taskType==='pet'){o.petType=$('#petType').value;o.petName=nullable($('#petName').value);o.petCarrier=petCarrier;}return o;}
+function taskSpecific(){const o={taskType:TASK_CODES[taskType],taskLabel:TASKS[taskType]};if(advanceNeeded)o.advanceAmount=Number($('#advanceAmount').value||0)||null;if(taskType==='pet'){o.petType=$('#petType').value;o.petName=nullable($('#petName').value);o.petCarrier=petCarrier;}if(taskType==='move'){o.movePlan=movePlan;o.movePlanLabel=movePlan==='driver'?'司機協助搬運':'自行搬運';o.moveServiceFee=movePlan==='driver'?600:300;o.moveLift=movePlan==='driver'?moveLift:null;o.moveFloor=movePlan==='driver'&&moveLift==='no'?(Number($('#moveFloor').value)||null):null;o.movePhoto=movePhotoDataUrl?{name:movePhotoName||'moving-photo.jpg',dataUrl:movePhotoDataUrl}:null;}return o;}
 function orderPoint(s){if(!s)return null;const data=s.place?placeToData(s.place):normalizeAddress(s.data||{address:addressValue(s.key)});return orderAddress(data);}
 async function buildOrderData(){
  const id=ensureIdentity(),q=quote(),slots=activeRouteSlots();
@@ -2888,7 +2942,7 @@ async function buildOrderData(){
  const waypoints=midSlots.map((slot,i)=>orderAddress(waypointData[i]));
  const final=finalExists?orderAddress(finalData):null;
  const payment=selectedPayment();
- return{schemaVersion:1,orderId:id.orderId,createdAt:id.createdAt,orderStatus:'submitted',orderType:'errand',serviceType:TASK_CODES[taskType],sourceEntry:'errand',sourceOA:'TOP Taxi | 24H多元化平台',sourceOAId:null,tenantId:'top-taxi',customer:{lineUserId:nullable(lineUserId),lineDisplayName:nullable(lineDisplayName)},pickupTime:pickupTimeIso(),trip:{pickup,waypoints,dropoff:final},route:currentEstimate?{routeMode:currentEstimate.routeMode,routeStrategy:'WHOLE_TRIP',distanceKm:Math.round(currentEstimate.distanceKm*100)/100,minutes:currentEstimate.minutes}:null,pricing:{currency:'TWD',quotedAmount:q.total,finalAmount:null,pricingType:'normal',minimumFare:220,meterFare:currentEstimate?currentEstimate.meterFare:null,extraAmount:q.extras.amount},needs:{errand:taskSpecific(),taskContent:nullable($('#taskContent').value),contact:contactInfo(),other:otherNeedsInfo(),delivery:deliveryInfo(),photoReturn:photoInfo()},payment:{method:payment===POSTPAID_PAYMENT?'postpaid':'cash',label:payment,isPostpaid:payment===POSTPAID_PAYMENT,advanceRequired:advanceNeeded,advanceAmount:advanceNeeded?(Number($('#advanceAmount').value||0)||null):null,prepaymentRequired:advanceNeeded&&!isPostpaid()&&Number($('#advanceAmount').value||0)>2000},delivery:{lineStatus:'pending',backendStatus:'pending',lastUpdatedAt:taipeiIso()}};
+ return{schemaVersion:1,orderId:id.orderId,createdAt:id.createdAt,orderStatus:'submitted',orderType:'errand',serviceType:TASK_CODES[taskType],sourceEntry:'errand',sourceOA:'TOP Taxi | 24H多元化平台',sourceOAId:null,tenantId:'top-taxi',customer:{lineUserId:nullable(lineUserId),lineDisplayName:nullable(lineDisplayName)},pickupTime:pickupTimeIso(),trip:{pickup,waypoints,dropoff:final},route:currentEstimate?{routeMode:currentEstimate.routeMode,routeStrategy:'WHOLE_TRIP',distanceKm:Math.round(currentEstimate.distanceKm*100)/100,minutes:currentEstimate.minutes}:null,pricing:{currency:'TWD',quotedAmount:q.total,finalAmount:null,pricingType:'normal',minimumFare:taskType==='move'?null:220,meterFare:currentEstimate?currentEstimate.meterFare:null,extraAmount:q.extras.amount},needs:{errand:taskSpecific(),taskContent:nullable($('#taskContent').value),contact:contactInfo(),other:otherNeedsInfo(),delivery:deliveryInfo(),photoReturn:photoInfo()},payment:{method:payment===POSTPAID_PAYMENT?'postpaid':'cash',label:payment,isPostpaid:payment===POSTPAID_PAYMENT,advanceRequired:advanceNeeded,advanceAmount:advanceNeeded?(Number($('#advanceAmount').value||0)||null):null,prepaymentRequired:advanceNeeded&&!isPostpaid()&&Number($('#advanceAmount').value||0)>2000},delivery:{lineStatus:'pending',backendStatus:'pending',lastUpdatedAt:taipeiIso()}};
 }
 
 
@@ -2897,7 +2951,8 @@ function validate(){
  for(const key of ['p1',...Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active),'final']){const s=addressSlots[key];if(!s)continue;if(s.required&&!addressValue(key)){alert(`請填寫${s.label}。`);$(`#${key}Input`)?.focus();return false;}if(addressValue(key)&&!s.place&&!s.data?.lat){alert(`${s.label}請從 Google 地址建議中選擇。`);$(`#${key}Input`)?.focus();return false;}}
  if(!$('#taskContent').value.trim()){alert(`請填寫${cfg.content}。`);$('#taskContent').focus();return false;}
  if(taskType==='pet'&&!$('#petType').value){alert('請選擇寵物種類。');return false;}
- if(advanceNeeded&&!(Number($('#advanceAmount').value)>0)){alert('請填寫代墊金額。');$('#advanceAmount').focus();return false;}
+ if(taskType==='move'&&!movePhotoDataUrl){alert('請先拍攝搬家物品照片。');$('#movePhoto')?.click();return false;}
+ if(taskType==='move'&&movePlan==='driver'&&moveLift==='no'&&!(Number($('#moveFloor').value)>0)){alert('請填寫無電梯樓層。');$('#moveFloor').focus();return false;}
  if(floorMode==='stairs'&&!(Number($('#stairsFloors').value)>0)){alert('請填寫爬樓梯樓層數。');$('#stairsFloors').focus();return false;}
  if(addressValue('final')&&deliveryMethod!=='handoff'&&!$('#deliveryLocation')?.value.trim()){alert('請填寫外送桌／管理室的放置位置。');$('#deliveryLocation')?.focus();return false;}
  return true;
@@ -2905,22 +2960,39 @@ function validate(){
 function confirmAddressRows(){const rows=[];const all=[addressSlots.p1,...Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active).map(k=>addressSlots[k]),addressSlots.final];all.forEach(s=>{if(!s||!addressValue(s.key))return;rows.push(`<div class="booking-confirm-section"><span>${s.label}</span><strong>${escapeHtml(addressValue(s.key))}</strong></div>`);});const c=contactInfo();if(c)rows.push(`<div class="booking-confirm-section"><span>聯絡人</span><strong>${escapeHtml(c.name||'')}${c.name&&c.phone?'・':''}${escapeHtml(c.phone||'')}</strong></div>`);return rows.join('');}
 function needsLabel(){const x=otherNeedsInfo(),arr=[];if(x.floorMode==='elevator')arr.push('有電梯上樓');if(x.floorMode==='stairs')arr.push(`爬樓梯 ${x.stairsFloors} 層`);if(x.heavyItem)arr.push('搬運重物');if(x.note)arr.push(x.note);if(taskType==='pet'&&petCarrier==='no')arr.push('無提籠／提袋');return arr.join('、')||'無';}
 function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
-function openConfirm(){if(!validate())return;const q=quote();$('#confirmTaskType').textContent=TASKS[taskType];$('#confirmTiming').textContent=timingLabel();$('#confirmAddressList').innerHTML=confirmAddressRows();$('#confirmTaskContent').textContent=$('#taskContent').value.trim();$('#confirmAdvance').textContent=advanceNeeded?`NT$${Number($('#advanceAmount').value).toLocaleString('zh-TW')}${isPostpaid()?'・後結客戶':''}`:'不需要';$('#confirmNeeds').textContent=needsLabel();const p=photoInfo();$('#confirmPhoto').textContent=p.required?(p.requirement?`需要｜${p.requirement}`:'需要'):'不需要';$('#confirmPayment').textContent=selectedPayment();$('#confirmFare').textContent=`NT$${q.total.toLocaleString('zh-TW')}`;$('#confirmOverlay').hidden=false;document.body.style.overflow='hidden';}
+function openConfirm(){if(!validate())return;const q=quote();$('#confirmTaskType').textContent=TASKS[taskType];$('#confirmTiming').textContent=timingLabel();$('#confirmAddressList').innerHTML=confirmAddressRows();$('#confirmTaskContent').textContent=$('#taskContent').value.trim();const amount=Number($('#advanceAmount').value||0);$('#confirmAdvanceRow').classList.toggle('errand-hidden',!advanceNeeded);$('#confirmAdvance').textContent=advanceNeeded?(amount>0?`約 NT$${amount.toLocaleString('zh-TW')}${isPostpaid()?'・後結客戶':''}`:`需要${isPostpaid()?'・後結客戶':''}`):'';const need=needsLabel();$('#confirmNeedsRow').classList.toggle('errand-hidden',need==='無');$('#confirmNeeds').textContent=need;const p=photoInfo();$('#confirmPhoto').textContent=p.required?'需要':'不需要';$('#confirmPayment').textContent=selectedPayment();$('#confirmFare').textContent=q.total==null?'待客服確認':`NT$${q.total.toLocaleString('zh-TW')}`;$('#confirmMoveRow').classList.toggle('errand-hidden',taskType!=='move');if(taskType==='move'){$('#confirmMove').textContent=`${movePlan==='driver'?'司機協助搬運 +NT$600':'自行搬運 +NT$300'}${movePlan==='driver'?`・${moveLift==='yes'?'有電梯':`無電梯 ${Number($('#moveFloor').value)||0} 樓`}`:''}・物品照片已上傳`;}const card=$('.errand-confirm-card');card?.classList.remove('errand-result-mode');$('#resultState').hidden=true;$('#confirmOverlay').hidden=false;document.body.style.overflow='hidden';}
 function closeConfirm(){if(sendState!=='idle')return;$('#confirmOverlay').hidden=true;document.body.style.overflow='';}
 
 function dispatchMessage(orderData){
  const lines=[];lines.push(`🛵 TOP Taxi｜跑腿・${TASKS[taskType]}`);lines.push('');lines.push(`類型｜${errandMode==='now'?'立即跑腿':'預約跑腿'}`);if(errandMode==='reserve')lines.push(`時間｜${timingLabel()}`);if(lineDisplayName)lines.push(`客戶｜${lineDisplayName}`);lines.push(`付款｜${selectedPayment()}`);const globalContact=contactInfo();if(globalContact)lines.push(`聯絡人｜${globalContact.name||''}${globalContact.name&&globalContact.phone?'・':''}${globalContact.phone||''}`);lines.push('');
  const slotList=[addressSlots.p1,...Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active).map(k=>addressSlots[k]),addressSlots.final].filter(s=>s&&addressValue(s.key));
  let wi=0;slotList.forEach(s=>{let data;if(s.key==='p1')data=orderData.trip.pickup;else if(s.key==='final')data=orderData.trip.dropoff;else data=orderData.trip.waypoints[wi++];if(!data)return;lines.push(dispatchHeader(data,s.role));lines.push(dispatchText(data));if(s.key==='final'){const d=deliveryInfo();if(d){lines.push(`送達方式｜${d.label}`);if(d.locationNote)lines.push(`放置位置｜${d.locationNote}`);}}lines.push('');});
- lines.push('任務內容');lines.push($('#taskContent').value.trim());if(taskType==='pet'){lines.push(`寵物｜${$('#petType').value}${$('#petName').value.trim()?`・${$('#petName').value.trim()}`:''}`);lines.push(`提籠／提袋｜${petCarrier==='yes'?'有':'無 +$50'}`);}if(advanceNeeded)lines.push(`代墊｜需要・約 NT$${Number($('#advanceAmount').value).toLocaleString('zh-TW')}${isPostpaid()?'・後結客戶':''}`);const need=needsLabel();if(need!=='無')lines.push(`其他需求｜${need}`);const photo=photoInfo();if(photo.required)lines.push(`📷 拍照回報｜${photo.requirement||'需要'}`);lines.push('');if(currentEstimate)lines.push(`預估路程｜${currentEstimate.distanceKm.toFixed(1)} km・約 ${currentEstimate.minutes} 分鐘`);lines.push(`預估跑腿費｜NT$${quote().total.toLocaleString('zh-TW')}`);if(advanceNeeded)lines.push('※ 商品／代墊費另計');lines.push('');lines.push('📡 TOP Taxi｜跑腿服務');lines.push('━━━━━━━━━━━━━');lines.push('跑腿需求已送出！客服確認後會立刻幫您安排！');return lines.join('\n');
+ lines.push('任務內容');lines.push($('#taskContent').value.trim());if(taskType==='pet'){lines.push(`寵物｜${$('#petType').value}${$('#petName').value.trim()?`・${$('#petName').value.trim()}`:''}`);lines.push(`提籠／提袋｜${petCarrier==='yes'?'有':'無 +$50'}`);}if(taskType==='move'){lines.push(`搬運方式｜${movePlan==='driver'?'司機協助搬運 +$600':'自行搬運 +$300'}`);if(movePlan==='driver')lines.push(`電梯｜${moveLift==='yes'?'有':'無'+(moveLift==='no'&&Number($('#moveFloor').value)>0?`・${Number($('#moveFloor').value)} 樓`:'')}`);lines.push('搬家物品照片｜已上傳 1 張');}if(advanceNeeded){const av=Number($('#advanceAmount').value||0);lines.push(`代墊｜需要${av>0?`・約 NT$${av.toLocaleString('zh-TW')}`:''}${isPostpaid()?'・後結客戶':''}`);}const need=needsLabel();if(need!=='無')lines.push(`其他需求｜${need}`);const photo=photoInfo();if(photo.required)lines.push('📷 拍照回報｜需要');lines.push('');if(currentEstimate)lines.push(`預估路程｜${currentEstimate.distanceKm.toFixed(1)} km・約 ${currentEstimate.minutes} 分鐘`);const quoted=quote().total;lines.push(`${taskType==='move'?'預估搬家費':'預估跑腿費'}｜${quoted==null?'待客服確認':`NT$${quoted.toLocaleString('zh-TW')}`}`);if(advanceNeeded)lines.push('※ 商品／代墊費另計');lines.push('');lines.push('📡 TOP Taxi｜跑腿服務');lines.push('━━━━━━━━━━━━━');lines.push('跑腿需求已送出！客服確認後會立刻幫您安排！');return lines.join('\n');
 }
 
-function returnToLine(){if(typeof liff!=='undefined'&&liff.isInClient?.()){try{liff.closeWindow();return;}catch(e){}}alert('請返回 TOP Taxi LINE 聊天室。');}
+function returnToLine(){if(window.liff&&typeof liff.isInClient==='function'&&liff.isInClient()){try{liff.closeWindow();return;}catch(e){console.error('LIFF CLOSE ERROR:',e);}}alert('請返回 TOP Taxi LINE 聊天室。');}
 function showResult(mode){const card=$('.errand-confirm-card'),state=$('#resultState'),uncertain=mode==='uncertain',sync=mode==='sync-warning';$('#resultIcon').textContent=uncertain?'!':'✓';$('#resultTitle').textContent=uncertain?'訂單送出狀態待確認':sync?'訂單已傳送成功':'訂單已成功送出';$('#resultCopy').innerHTML=uncertain?'系統目前無法確認訂單是否成功送達，<strong>請勿重複送出</strong>。':sync?'客服已收到您的訂單，<strong>不需要重新送出</strong>。':'TOP Taxi 已收到您的跑腿需求，客服確認後將為您安排。';$('#resultSubcopy').textContent=uncertain?'請返回 LINE 聊天室聯繫客服，我們會協助您確認訂單狀態。':sync?'系統紀錄同步暫時異常；如需協助，可返回 LINE 聊天室聯繫客服。':'即將返回 TOP Taxi LINE 聊天室；如未自動返回，也可使用下方按鈕。';$('#resultReturnText').textContent=uncertain||sync?'返回聊天室聯繫客服':'返回 LINE 聊天室';state.className='top-line-result-state '+(uncertain?'warning':sync?'sync-warning':'success');state.hidden=false;card.classList.add('errand-result-mode');if(!uncertain&&SEND_TEST_MODE!=='success'&&SEND_TEST_MODE!=='backendfail'){clearTimeout(returnTimer);returnTimer=setTimeout(returnToLine,1800);}}
-async function sendErrand(){if(sendInProgress||sendState!=='idle')return;sendInProgress=true;const b=$('#confirmSend'),main=$('#submitBtn');b.disabled=true;b.textContent='正在送出…';main.disabled=true;main.textContent='正在送出…';let orderData;try{orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;}catch(e){console.error(e);sendInProgress=false;b.disabled=false;main.disabled=false;b.textContent='確認送出跑腿單 →';main.textContent='確認跑腿 →';alert('訂單資料建立失敗，請重新送出。');return;}
- if(BROWSER_TEST_MODE){window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState='success';showResult('success');return;}
- if(SEND_TEST_MODE==='uncertain'){sendInProgress=false;sendState='uncertain';showResult('uncertain');return;}if(SEND_TEST_MODE==='success'){sendInProgress=false;sendState='success';showResult('success');return;}if(SEND_TEST_MODE==='backendfail'){sendInProgress=false;sendState='sync-warning';showResult('sync-warning');return;}
- try{await liff.sendMessages([{type:'text',text:dispatchMessage(orderData)}]);orderData.delivery.lineStatus='success';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();let ok=true;try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok)ok=false;}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}orderData.delivery.backendStatus=ok?'success':'failed';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState=ok?'success':'sync-warning';b.textContent='✅ 已送出';main.textContent='✅ 跑腿已送出';showResult(sendState);}catch(e){console.error('ERRAND SEND STATUS UNCERTAIN:',e);sendInProgress=false;sendState='uncertain';b.textContent='⚠️ 狀態待確認';main.textContent='⚠️ 狀態待確認';showResult('uncertain');}
+async function sendErrand(){
+ if(sendInProgress||['sending','success','uncertain','sync-warning'].includes(sendState))return;
+ sendInProgress=true;sendState='sending';const b=$('#confirmSend'),main=$('#submitBtn'),original='確認送出跑腿單 →';b.disabled=true;b.textContent='正在送出…';main.disabled=true;main.textContent='正在送出…';let orderData=null,lineAttempted=false;
+ try{
+   if(SEND_TEST_MODE==='uncertain'){sendInProgress=false;sendState='uncertain';showResult('uncertain');return;}
+   if(SEND_TEST_MODE==='success'){sendInProgress=false;sendState='success';showResult('success');return;}
+   if(SEND_TEST_MODE==='backendfail'){sendInProgress=false;sendState='sync-warning';showResult('sync-warning');return;}
+   if(BROWSER_TEST_MODE){orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState='success';showResult('success');return;}
+   if(!(window.liff&&LIFF_ID))throw new Error('LIFF unavailable');
+   await liff.init({liffId:LIFF_ID});liffInitialized=true;
+   if(!liff.isLoggedIn()){sendInProgress=false;sendState='idle';b.disabled=false;b.textContent=original;main.disabled=false;main.textContent='確認跑腿 →';liff.login();return;}
+   if(!liff.isInClient()){sendInProgress=false;sendState='idle';b.disabled=false;b.textContent=original;main.disabled=false;main.textContent='確認跑腿 →';alert('請從 TOP Taxi LINE 聊天室開啟跑腿服務後再送出訂單。');return;}
+   try{const p=await liff.getProfile();lineDisplayName=p?.displayName||lineDisplayName||'';lineUserId=p?.userId||lineUserId||'';}catch(profileError){console.warn('ERRAND PROFILE READ FAILED:',profileError);}
+   orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;
+   const message=dispatchMessage(orderData);
+   lineAttempted=true;
+   await liff.sendMessages([{type:'text',text:message}]);
+   orderData.delivery.lineStatus='success';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;
+   let ok=true;try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok){ok=false;console.warn('ERRAND n8n HTTP:',r.status);}}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}
+   orderData.delivery.backendStatus=ok?'success':'failed';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState=ok?'success':'sync-warning';b.textContent='✅ 已送出';main.textContent='✅ 跑腿已送出';showResult(sendState);
+ }catch(e){console.error('ERRAND SEND ERROR:',e);sendInProgress=false;if(lineAttempted){sendState='uncertain';b.textContent='⚠️ 狀態待確認';main.textContent='⚠️ 狀態待確認';showResult('uncertain');}else{sendState='idle';b.disabled=false;b.textContent=original;main.disabled=false;main.textContent='確認跑腿 →';alert('跑腿訂單暫時無法送出，請返回 LINE 聊天室後重新開啟再試一次。');}}
 }
 
 async function initLiff(){
@@ -2950,14 +3022,19 @@ function initAutocompleteForSlot(slot){
 function setMinDate(){const now=new Date(),p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);$('#errandDate').min=p;}
 function bind(){
  $$('[data-mode]').forEach(b=>b.addEventListener('click',()=>{errandMode=b.dataset.mode;$$('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));$('#reserveFields').classList.toggle('errand-hidden',errandMode!=='reserve');}));
- $$('[data-task]').forEach(b=>b.addEventListener('click',()=>{taskType=b.dataset.task;cleanTaskWarnings();renderTaskUi();pendingIdentity=null;}));
+ $$('[data-task]').forEach(b=>b.addEventListener('click',()=>{taskType=b.dataset.task;renderTaskUi();pendingIdentity=null;}));
  $$('[data-pet-carrier]').forEach(b=>b.addEventListener('click',()=>{petCarrier=b.dataset.petCarrier;$$('[data-pet-carrier]').forEach(x=>x.classList.toggle('active',x===b));updateEstimate();}));
  $$('[data-advance]').forEach(b=>b.addEventListener('click',()=>{advanceNeeded=b.dataset.advance==='yes';$$('[data-advance]').forEach(x=>x.classList.toggle('active',x===b));$('#advanceAmountWrap').classList.toggle('errand-hidden',!advanceNeeded);}));
  $('#toggleGlobalContact').addEventListener('click',()=>{$('#globalContactFields').classList.toggle('errand-hidden');});$('#globalContactName').addEventListener('input',renderGlobalContactSummary);$('#globalContactPhone').addEventListener('input',renderGlobalContactSummary);
  $('#openOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=false;document.body.style.overflow='hidden';});$$('[data-close-sheet]').forEach(b=>b.addEventListener('click',()=>{document.getElementById(b.dataset.closeSheet).hidden=true;document.body.style.overflow='';}));
  $$('[data-floor-mode]').forEach(b=>b.addEventListener('click',()=>{floorMode=b.dataset.floorMode;$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x===b));$('#stairsFloorWrap').classList.toggle('errand-hidden',floorMode!=='stairs');renderOtherNeeds();}));
  $('#stairsFloors').addEventListener('input',renderOtherNeeds);$('#heavyItem').addEventListener('change',renderOtherNeeds);$('#otherNote').addEventListener('input',renderOtherNeeds);$('#saveOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=true;document.body.style.overflow='';renderOtherNeeds();});
- $('#togglePhotoReturn').addEventListener('click',()=>{const forced=deliveryMethod!=='handoff'&&!!addressValue('final');if(!forced)photoReturn=!photoReturn;renderPhoto();});
+ $$('[data-photo-return]').forEach(b=>b.addEventListener('click',()=>{const forced=deliveryMethod!=='handoff'&&!!addressValue('final');if(forced)return;photoReturn=b.dataset.photoReturn==='yes';renderPhoto();}));
+ $$('[data-move-plan]').forEach(b=>b.addEventListener('click',()=>{movePlan=b.dataset.movePlan;renderMoveUi();}));
+ $$('[data-move-lift]').forEach(b=>b.addEventListener('click',()=>{moveLift=b.dataset.moveLift;renderMoveUi();}));
+ $('#moveFloor').addEventListener('input',updateEstimate);
+ $('#movePhoto').addEventListener('change',e=>handleMovePhoto(e.target.files?.[0]||null));
+ $('#clearMovePhoto').addEventListener('click',()=>{$('#movePhoto').value='';handleMovePhoto(null);$('#movePhoto').click();});
  $('#surfaceBtn').addEventListener('click',()=>selectRoute('SURFACE'));$('#fastBtn').addEventListener('click',()=>selectRoute('FAST'));
  $$('[data-payment-set-default]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();savePaymentPreference(b.dataset.paymentSetDefault);}));
  $('#submitBtn').addEventListener('click',openConfirm);$('#closeConfirm').addEventListener('click',closeConfirm);$('#backToEdit').addEventListener('click',closeConfirm);$('#confirmSend').addEventListener('click',sendErrand);$('#resultReturn').addEventListener('click',returnToLine);$('#confirmOverlay').addEventListener('click',e=>{if(e.target===$('#confirmOverlay'))closeConfirm();});
