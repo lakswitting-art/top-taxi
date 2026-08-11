@@ -1895,7 +1895,7 @@ main{
         "东":"東", "势":"勢", "晋":"晉", "兴":"興", "丰":"豐", "华":"華",
         "学":"學", "国":"國", "龙":"龍", "凤":"鳳", "广":"廣", "长":"長",
         "万":"萬", "乐":"樂", "荣":"榮", "门":"門", "义":"義", "礼":"禮",
-        "庄":"莊", "后":"後", "发":"發", "头":"頭", "桥":"橋", "环":"環",
+        "发":"發", "头":"頭", "桥":"橋", "环":"環",
         "线":"線", "园":"園", "艺":"藝", "馆":"館", "医":"醫", "药":"藥"
       };
       const normalizedChars = String(raw || "").replace(
@@ -1964,7 +1964,7 @@ main{
         .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "");
 
       address = address
-        .replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)/gu, "")
+        .replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)(?!區|鄉|鎮|市)/gu, "")
         .replace(/\d+\s*鄰/gu, "");
 
       address = address
@@ -3109,6 +3109,9 @@ main{
         try{
           const orderData=buildOrderDataV1();
           showOrderDataTest(orderData);
+          // Test mode: the next generated sample is a new simulated order.
+          // Production retries will keep the same ID until the same send attempt is resolved.
+          pendingOrderIdentity=null;
         }finally{
           if(button){
             button.disabled=false;
