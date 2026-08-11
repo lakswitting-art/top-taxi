@@ -2096,15 +2096,32 @@ body{
     width: 100%;
     min-height: 50px;
     margin-top: 20px;
-    padding: 15px;
-    border: 1px solid #ef2435;
+    padding: 13px 15px;
+    border: 1px solid #e5e5e8;
     border-radius: 14px;
     background: #fff;
-    color: #ef2435;
+    color: #222;
     font-family: inherit;
     font-size: 15px;
-    font-weight: 800;
+    font-weight: 850;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+}
+.trip-result-line-badge {
+    width: 30px;
+    height: 30px;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 30px;
+    border-radius: 9px;
+    background: #06c755;
+    color: #fff;
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: -.3px;
 }
 .trip-result-primary:active {
     transform: scale(.98);
@@ -2668,7 +2685,8 @@ body{
                 class="trip-result-primary"
                 onclick="returnToLineChat()"
             >
-                返回 LINE 聊天室
+                <span class="trip-result-line-badge" aria-hidden="true">LINE</span>
+                <span id="tripResultReturnText">返回 LINE 聊天室</span>
             </button>
         </div>
 
@@ -3364,6 +3382,8 @@ let liffReady = false;
 let isSubmittingTrip = false;
 let fareTripSendState = "idle";
 let fareTripReturnTimer = null;
+const FARE_SEND_TEST_MODE =
+    new URLSearchParams(window.location.search).get("sendtest") || "";
 
 /*
    已拍板的全系統派車單規格：
@@ -5409,11 +5429,11 @@ function fareTripResultCopy(mode, serviceName) {
 
     return {
         icon: "!",
-        title: requestName + "送出異常",
+        title: requestName + "送出狀態待確認",
         copy:
-            "系統暫時無法確認是否成功送達，<strong>請勿重複送出</strong>。",
+            "系統目前無法確認" + requestName + "是否成功送達，<strong>請勿重複送出</strong>。",
         subcopy:
-            "請返回 TOP Taxi LINE 聊天室，洽客服協助確認狀態。",
+            "請返回 LINE 聊天室聯繫客服，我們會協助您確認" + requestName + "狀態。",
         className:
             "trip-result-state warning"
     };
@@ -5439,6 +5459,9 @@ function showFareTripResult(mode, serviceName) {
 
     const subcopy =
         document.getElementById("tripResultSubcopy");
+
+    const returnText =
+        document.getElementById("tripResultReturnText");
 
     if (
         !state ||
@@ -5475,6 +5498,17 @@ function showFareTripResult(mode, serviceName) {
 
     subcopy.textContent =
         result.subcopy;
+
+    if (returnText) {
+        returnText.textContent =
+            mode === "uncertain"
+                ? "返回聊天室聯繫客服"
+                : (
+                    mode === "sync-warning"
+                        ? "返回聊天室聯繫客服"
+                        : "返回 LINE 聊天室"
+                );
+    }
 }
 
 
@@ -5520,8 +5554,11 @@ async function confirmTrip() {
     */
 
     if (
-        !liffReady ||
-        typeof liff === "undefined"
+        !FARE_SEND_TEST_MODE &&
+        (
+            !liffReady ||
+            typeof liff === "undefined"
+        )
     ) {
 
         alert(
@@ -5531,7 +5568,10 @@ async function confirmTrip() {
         return;
     }
 
-    if (!liff.isInClient()) {
+    if (
+        !FARE_SEND_TEST_MODE &&
+        !liff.isInClient()
+    ) {
 
         alert(
             "請從 TOP Taxi LINE 官方帳號內開啟此頁，才能送出叫車需求。"
@@ -5721,6 +5761,25 @@ async function confirmTrip() {
         "正在送出叫車需求…";
 
     try {
+
+        /*
+           隱藏測試模式：不真的送 LINE。
+           ?sendtest=uncertain  模擬「送出狀態待確認」
+           ?sendtest=success    模擬成功畫面
+        */
+        if (FARE_SEND_TEST_MODE === "uncertain") {
+            isSubmittingTrip = false;
+            fareTripSendState = "uncertain";
+            showFareTripResult("uncertain", serviceName);
+            return;
+        }
+
+        if (FARE_SEND_TEST_MODE === "success") {
+            isSubmittingTrip = false;
+            fareTripSendState = "success";
+            showFareTripResult("success", serviceName);
+            return;
+        }
 
         /*
            #7 STEP 1
