@@ -3925,14 +3925,86 @@ function addressDisplayText(item = {}) {
       return hasRoute && hasNumber;
     }
 
-    async function ensureDispatchStreetAddress(data = {}) {
+    function bookingOrderCleanStructuredArea(data = {}) {
+      const city = normalizeBookingOrderTaiwanText(data.city || "").replace(/\s+/g, "");
+      let district = normalizeBookingOrderTaiwanText(data.district || "").replace(/\s+/g, "");
+
+      if (/(?:里|村|鄰)$/u.test(district)) district = "";
+
+      return {
+        city,
+        district,
+        areaLabel: [city, district].filter(Boolean).join("")
+      };
+    }
+
+    function bookingOrderAddressMatchesStructuredArea(address = "", data = {}) {
+      const structured = bookingOrderCleanStructuredArea(data);
+      const parsed = extractBookingOrderTaiwanArea(address);
+
+      if (structured.city && parsed.city && structured.city !== parsed.city) {
+        return false;
+      }
+
       if (
-        !data ||
-        dispatchHasStreetNumber(data.address || "") ||
-        data.lat == null ||
-        data.lng == null
+        structured.district &&
+        parsed.district &&
+        structured.district !== parsed.district
       ) {
+        return false;
+      }
+
+      return true;
+    }
+
+    function bookingOrderGeocoderCandidateDistanceMeters(candidate, data = {}) {
+      const point = candidate?.geometry?.location;
+      if (!point || data.lat == null || data.lng == null) return 0;
+
+      const lat2 = typeof point.lat === "function" ? point.lat() : Number(point.lat);
+      const lng2 = typeof point.lng === "function" ? point.lng() : Number(point.lng);
+      const lat1 = Number(data.lat);
+      const lng1 = Number(data.lng);
+
+      if (![lat1, lng1, lat2, lng2].every(Number.isFinite)) return 0;
+
+      const toRad = value => value * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) ** 2;
+
+      return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    async function ensureDispatchStreetAddress(data = {}) {
+      if (!data || data.lat == null || data.lng == null) {
         return data;
+      }
+
+      const originalAddress = normalizeBookingOrderTaiwanText(data.address || "");
+      const structured = bookingOrderCleanStructuredArea(data);
+      const existingAddressIsConsistent = bookingOrderAddressMatchesStructuredArea(
+        originalAddress,
+        data
+      );
+
+      // A complete address is only trusted when its administrative area agrees
+      // with the structured Google Place metadata. This prevents a stale/wrong
+      // street address from being paired with a different POI's coordinates.
+      if (
+        dispatchHasStreetNumber(originalAddress) &&
+        existingAddressIsConsistent
+      ) {
+        return {
+          ...data,
+          address: originalAddress,
+          city: structured.city || data.city || "",
+          district: structured.district || data.district || "",
+          areaLabel: structured.areaLabel || data.areaLabel || ""
+        };
       }
 
       try {
@@ -3948,36 +4020,74 @@ function addressDisplayText(item = {}) {
           ? response.results
           : [];
 
+        const acceptable = item => {
+          if (!item?.formatted_address || !dispatchGeocoderHasStreetNumber(item)) {
+            return false;
+          }
+
+          const normalizedAddress = normalizeBookingOrderTaiwanText(item.formatted_address);
+
+          if (!bookingOrderAddressMatchesStructuredArea(normalizedAddress, data)) {
+            return false;
+          }
+
+          const distance = bookingOrderGeocoderCandidateDistanceMeters(item, data);
+          if (distance > 3000) return false;
+
+          return true;
+        };
+
         const candidate =
           results.find(
             item =>
-              item?.formatted_address &&
               Array.isArray(item.types) &&
               item.types.includes("street_address") &&
-              dispatchGeocoderHasStreetNumber(item)
+              acceptable(item)
           ) ||
-          results.find(
-            item =>
-              item?.formatted_address &&
-              dispatchGeocoderHasStreetNumber(item)
-          );
+          results.find(acceptable);
 
         if (!candidate?.formatted_address) {
+          // Never keep a clearly conflicting street address. If Google cannot
+          // produce a trustworthy street-level result, preserve the correct
+          // structured area rather than storing a wrong road/door number.
+          if (!existingAddressIsConsistent && structured.areaLabel) {
+            return {
+              ...data,
+              address: structured.areaLabel,
+              city: structured.city,
+              district: structured.district,
+              areaLabel: structured.areaLabel
+            };
+          }
           return data;
         }
 
-        const address = normalizeDispatchTaiwanText(candidate.formatted_address);
-        const area = extractDispatchTaiwanArea(address);
+        const address = normalizeBookingOrderTaiwanText(candidate.formatted_address);
+        const candidateArea = extractBookingOrderTaiwanArea(address);
+
+        const city = structured.city || candidateArea.city || data.city || "";
+        const district = structured.district || candidateArea.district || data.district || "";
 
         return {
           ...data,
           address,
-          city: area.city || data.city || "",
-          district: area.district || data.district || "",
-          areaLabel: area.areaLabel || data.areaLabel || ""
+          city,
+          district,
+          areaLabel: [city, district].filter(Boolean).join("")
         };
       } catch (error) {
-        console.warn("Dispatch address enrichment skipped:", error);
+        console.warn("Order Data address enrichment skipped:", error);
+
+        if (!existingAddressIsConsistent && structured.areaLabel) {
+          return {
+            ...data,
+            address: structured.areaLabel,
+            city: structured.city,
+            district: structured.district,
+            areaLabel: structured.areaLabel
+          };
+        }
+
         return data;
       }
     }
