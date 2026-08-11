@@ -1423,8 +1423,11 @@ main{
       return String(raw || "")
         .trim()
         .replace(/臺/g, "台")
+        .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "")
         .replace(/^台灣省?/u, "")
-        .replace(/^中華民國/u, "");
+        .replace(/^中華民國/u, "")
+        .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "")
+        .replace(/^台灣省?/u, "");
     }
 
     function extractDispatchTaiwanArea(raw = "") {
@@ -1443,7 +1446,7 @@ main{
       const city = cityMatch[1];
       const rest = text.slice(cityMatch.index + city.length);
       const districtMatch = rest.match(
-        /^([^0-9路街大道段巷弄號]{1,8}(?:區|鄉|鎮|市))/u
+        /^([^0-9路街大道段巷弄號]{1,8}?(?:區|鄉|鎮|市))/u
       );
 
       const district = districtMatch ? districtMatch[1] : "";
