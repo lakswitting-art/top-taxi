@@ -3190,6 +3190,24 @@ function fareDispatchPickupDisplayText(data = {}) {
 }
 
 
+function fareDispatchNodeHeader(
+    icon,
+    role,
+    data = {},
+    index = null
+) {
+    const area = fareAreaLabel(data);
+    const suffix =
+        index == null
+            ? role
+            : role + " " + index;
+
+    return area
+        ? icon + " " + area + "｜" + suffix
+        : icon + " " + suffix;
+}
+
+
 function fareHasStreetNumber(raw = "") {
     const text =
         compactTaiwanAddress(raw);
@@ -5619,10 +5637,10 @@ async function confirmTrip() {
         "",
         "📋 服務類型：" + serviceName,
         "",
-        (
-            pickupArea
-                ? "📍 " + pickupArea + "｜上車"
-                : "📍 上車地點"
+        fareDispatchNodeHeader(
+            "📍",
+            "上車",
+            pickupData
         ),
         pickup
     ];
@@ -5643,20 +5661,37 @@ async function confirmTrip() {
     enrichedWaypoints.forEach((data, index) => {
         messageParts.push(
             "",
-            "🟡 停靠點 " + (index + 1),
-            fareAddressDisplayText(data)
+            fareDispatchNodeHeader(
+                "🟡",
+                "停靠",
+                data,
+                index + 1
+            ),
+            fareDispatchPickupDisplayText(data)
         );
     });
 
     messageParts.push(
         "",
-        "🏁 下車地點",
-        dropoff,
+        dropoffData
+            ? fareDispatchNodeHeader(
+                "🏁",
+                "下車",
+                dropoffData
+            )
+            : "🏁 下車｜未提供",
+        dropoffData
+            ? fareDispatchPickupDisplayText(
+                dropoffData
+            )
+            : "",
         "",
         "🛣️ 行車路線：" + routeText,
         "📏 行駛距離：" + distance,
         "⏱️ 預估時間：" + duration,
         "💰 預估車資：" + fare,
+        "",
+        "📡 TOP Taxi｜車資試算",
         "",
         "━━━━━━━━━━━━━",
         successText,
