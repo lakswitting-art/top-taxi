@@ -1459,8 +1459,240 @@ main{
     const POSTPAID_PAYMENT="車資後結";
     const RIDE_SEND_TEST_MODE=
       new URLSearchParams(window.location.search).get("sendtest")||"";
+    const ORDER_DATA_WEBHOOK_URL=
+      "https://lakswitting.app.n8n.cloud/webhook/96798dda-c12a-4552-bcaa-e51a1166a1a8";
     let rideSendState="idle";
     let rideReturnTimer=null;
+    let pendingOrderIdentity=null;
+    let rideLineUserId="";
+    let rideLineDisplayName="";
+
+    /* =========================================
+       TOP TAXI｜ORDER DATA V1 - PRODUCTION
+       Tested V1 schema merged into the formal ride page.
+    ========================================= */
+    function createOrderUuid(){
+      if(window.crypto&&typeof window.crypto.randomUUID==="function"){
+        return window.crypto.randomUUID();
+      }
+      return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{
+        const r=Math.random()*16|0;
+        const v=c==="x"?r:(r&0x3|0x8);
+        return v.toString(16);
+      });
+    }
+
+    function taipeiIso(date=new Date()){
+      try{
+        const parts=new Intl.DateTimeFormat("en-CA",{
+          timeZone:"Asia/Taipei",
+          year:"numeric",month:"2-digit",day:"2-digit",
+          hour:"2-digit",minute:"2-digit",second:"2-digit",
+          hourCycle:"h23"
+        }).formatToParts(date).reduce((acc,part)=>{acc[part.type]=part.value;return acc;},{});
+        return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}+08:00`;
+      }catch(e){
+        return date.toISOString();
+      }
+    }
+
+    function ensureOrderIdentity(){
+      if(!pendingOrderIdentity){
+        pendingOrderIdentity={
+          orderId:createOrderUuid(),
+          createdAt:taipeiIso()
+        };
+      }
+      return pendingOrderIdentity;
+    }
+
+    function nullableText(value){
+      const text=String(value??"").trim();
+      return text||null;
+    }
+
+    function orderCoordinate(value){
+      const number=Number(value);
+      if(!Number.isFinite(number))return null;
+      return Math.round(number*1e7)/1e7;
+    }
+
+    function orderAddressData(data={},options={}){
+      const normalized=normalizeAddress(data||{});
+      const rawAddress=normalized.address||"";
+      const parsedArea=extractDispatchTaiwanArea(rawAddress);
+
+      const city=(
+        parsedArea.city||
+        normalizeDispatchTaiwanText(normalized.city||"").replace(/\s+/g,"")
+      );
+
+      let district=(
+        parsedArea.district||
+        normalizeDispatchTaiwanText(normalized.district||"").replace(/\s+/g,"")
+      );
+
+      // Google Places in Taiwan may expose village-level components
+      // (e.g. 何德里 / 晉江里) as administrative_area_level_3.
+      // Order Data must keep dispatch-level district/town/township only.
+      if (/(?:里|村|鄰)$/u.test(district)) {
+        district="";
+      }
+
+      const areaLabel=[city,district].filter(Boolean).join("");
+      const result={
+        name:nullableText(normalized.name),
+        displayName:nullableText(normalized.displayName),
+        address:nullableText(compactDispatchTaiwanAddress(rawAddress)),
+        city:nullableText(city),
+        district:nullableText(district),
+        areaLabel:nullableText(areaLabel),
+        placeId:nullableText(normalized.placeId),
+        lat:orderCoordinate(normalized.lat),
+        lng:orderCoordinate(normalized.lng)
+      };
+      if(options.includePickupNote){
+        result.pickupNote=nullableText(options.pickupNote??normalized.pickupNote);
+      }
+      return result;
+    }
+
+    function orderLuggageCode(value){
+      return ({
+        "無行李":"none",
+        "1–2 件":"1-2",
+        "3–4 件":"3-4",
+        "5 件以上":"5+"
+      })[value]||null;
+    }
+
+    function orderSmokingCode(value){
+      return ({
+        "不限":"any",
+        "禁菸":"no-smoking",
+        "可電子煙":"e-cigarette",
+        "可加熱菸":"heated-tobacco"
+      })[value]||null;
+    }
+
+    function orderPaymentCode(value){
+      if(value===POSTPAID_PAYMENT)return "postpaid";
+      if(value===DEFAULT_PAYMENT)return "cash";
+      return null;
+    }
+
+    function hasStructuredNote(value){
+      return !!Array.from(document.querySelectorAll("[data-note].active"))
+        .find(button=>button.dataset.note===value);
+    }
+
+    async function buildOrderDataV1(){
+      const identity=ensureOrderIdentity();
+      const isDriver=rideService==="driver";
+      const passengerValue=$("#passengers").value;
+      const quoteRequired=!isDriver&&passengerValue==="9";
+      const pickupNote=$("#pickupNote").value.trim();
+
+      const pickupRaw=pickupPlace
+        ?await ensureDispatchStreetAddress(placeToAddressData(pickupPlace,{pickupNote}))
+        :emptyAddress();
+
+      const waypointData=[];
+      for(let i=0;i<MAX_RIDE_WAYPOINTS;i++){
+        if(!rideWaypointActive[i])continue;
+        const raw=rideWaypointAddressData[i]
+          ||(rideWaypointPlaces[i]?placeToAddressData(rideWaypointPlaces[i]):null);
+        if(raw){
+          const enriched=await ensureDispatchStreetAddress(raw);
+          waypointData.push(orderAddressData(enriched));
+        }
+      }
+
+      const dropoffRaw=dropoffPlace
+        ?await ensureDispatchStreetAddress(placeToAddressData(dropoffPlace))
+        :null;
+      const quotedAmount=routeData&&!quoteRequired
+        ?Number(routeData.baseFare+extras().amount)
+        :null;
+
+      let vehicleType=null;
+      if(!isDriver){
+        vehicleType=passengerValue==="7"
+          ?"seven_seater"
+          :(passengerValue==="9"?"nine_seater":"standard");
+      }
+
+      return{
+        schemaVersion:1,
+
+        orderId:identity.orderId,
+        createdAt:identity.createdAt,
+        orderStatus:"submitted",
+
+        orderType:"ride",
+        serviceType:isDriver?"driver":"taxi",
+
+        sourceEntry:"ride",
+        sourceOA:"TOP Taxi | 24H多元化平台",
+        sourceOAId:null,
+        tenantId:"top-taxi",
+
+        customer:{
+          lineUserId:nullableText(rideLineUserId),
+          lineDisplayName:nullableText(rideLineDisplayName),
+          phone:null,
+          email:null,
+          customerId:null
+        },
+
+        pickupTime:null,
+
+        trip:{
+          pickup:orderAddressData(pickupRaw,{includePickupNote:true,pickupNote}),
+          waypoints:waypointData,
+          dropoff:dropoffRaw?orderAddressData(dropoffRaw):null
+        },
+
+        route:{
+          routeMode:routeData?routeData.routeMode:null,
+          routeStrategy:routeData?(routeData.routeStrategy||"WHOLE_TRIP"):null,
+          distanceKm:routeData?Number(routeData.km.toFixed(3)):null,
+          durationMin:routeData?Number(routeData.min):null
+        },
+
+        pricing:{
+          quotedAmount,
+          finalAmount:null,
+          currency:"TWD"
+        },
+
+        needs:{
+          passengers:isDriver?null:Number(passengerValue),
+          luggage:isDriver?null:orderLuggageCode($("#luggage").value),
+          vehicleType,
+          smokingMode:orderSmokingCode(smokingMode),
+          petMode:petMode||null,
+          wheelchair:hasStructuredNote("輪椅"),
+          receipt:hasStructuredNote("需要收據"),
+          otherNote:nullableText($("#note").value)
+        },
+
+        payment:{
+          mode:orderPaymentCode(getSelectedPayment()),
+          status:null,
+          provider:null,
+          transactionId:null
+        },
+
+        delivery:{
+          lineStatus:"pending",
+          backendStatus:"pending",
+          lastUpdatedAt:null
+        }
+      };
+    }
+
+
 
     function loadCustomerPreferences(){
       try{
@@ -1589,9 +1821,20 @@ main{
     ========================================= */
 
     function normalizeDispatchTaiwanText(raw = "") {
-      return String(raw || "")
+      const taiwanAddressCharMap = {
+        "臺":"台", "区":"區", "县":"縣", "乡":"鄉", "镇":"鎮", "号":"號",
+        "东":"東", "势":"勢", "晋":"晉", "兴":"興", "丰":"豐", "华":"華",
+        "学":"學", "国":"國", "龙":"龍", "凤":"鳳", "广":"廣", "长":"長",
+        "万":"萬", "乐":"樂", "荣":"榮", "门":"門", "义":"義", "礼":"禮",
+        "发":"發", "头":"頭", "桥":"橋", "环":"環",
+        "线":"線", "园":"園", "艺":"藝", "馆":"館", "医":"醫", "药":"藥"
+      };
+      const normalizedChars = String(raw || "").replace(
+        /[臺区县乡镇号东势晋兴丰华学国龙凤广长万乐荣门义礼庄后发头桥环线园艺馆医药]/g,
+        ch => taiwanAddressCharMap[ch] || ch
+      );
+      return normalizedChars
         .trim()
-        .replace(/臺/g, "台")
         .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "")
         .replace(/^台灣省?/u, "")
         .replace(/^中華民國/u, "")
@@ -1652,7 +1895,8 @@ main{
         .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "");
 
       address = address
-        .replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)/gu, "")
+        .replace(/(區|鄉|鎮|市)([^0-9縣市區鄉鎮路街巷弄號]{1,12}(?:里|村))(?!區|鄉|鎮|市)(?=[^0-9]*(?:路|街|大道|段|巷|弄|號))/gu, "$1")
+        .replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)(?!區|鄉|鎮|市)/gu, "")
         .replace(/\d+\s*鄰/gu, "");
 
       address = address
@@ -1762,14 +2006,73 @@ main{
       return hasRoute && hasNumber;
     }
 
+    function rideOrderCleanStructuredArea(data = {}) {
+      const city = normalizeDispatchTaiwanText(data.city || "").replace(/\s+/g, "");
+      let district = normalizeDispatchTaiwanText(data.district || "").replace(/\s+/g, "");
+
+      if (/(?:里|村|鄰)$/u.test(district)) district = "";
+
+      return {
+        city,
+        district,
+        areaLabel: [city, district].filter(Boolean).join("")
+      };
+    }
+
+    function rideOrderAddressMatchesStructuredArea(address = "", data = {}) {
+      const structured = rideOrderCleanStructuredArea(data);
+      const parsed = extractDispatchTaiwanArea(address);
+
+      if (structured.city && parsed.city && structured.city !== parsed.city) {
+        return false;
+      }
+      if (structured.district && parsed.district && structured.district !== parsed.district) {
+        return false;
+      }
+      return true;
+    }
+
+    function rideOrderGeocoderCandidateDistanceMeters(candidate, data = {}) {
+      const point = candidate?.geometry?.location;
+      if (!point || data.lat == null || data.lng == null) return 0;
+
+      const lat2 = typeof point.lat === "function" ? point.lat() : Number(point.lat);
+      const lng2 = typeof point.lng === "function" ? point.lng() : Number(point.lng);
+      const lat1 = Number(data.lat);
+      const lng1 = Number(data.lng);
+      if (![lat1, lng1, lat2, lng2].every(Number.isFinite)) return 0;
+
+      const toRad = value => value * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLng / 2) ** 2;
+
+      return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
     async function ensureDispatchStreetAddress(data = {}) {
-      if (
-        !data ||
-        dispatchHasStreetNumber(data.address || "") ||
-        data.lat == null ||
-        data.lng == null
-      ) {
+      if (!data || data.lat == null || data.lng == null) {
         return data;
+      }
+
+      const originalAddress = normalizeDispatchTaiwanText(data.address || "");
+      const structured = rideOrderCleanStructuredArea(data);
+      const existingAddressIsConsistent = rideOrderAddressMatchesStructuredArea(
+        originalAddress,
+        data
+      );
+
+      if (dispatchHasStreetNumber(originalAddress) && existingAddressIsConsistent) {
+        return {
+          ...data,
+          address: originalAddress,
+          city: structured.city || data.city || "",
+          district: structured.district || data.district || "",
+          areaLabel: structured.areaLabel || data.areaLabel || ""
+        };
       }
 
       try {
@@ -1781,40 +2084,65 @@ main{
           }
         });
 
-        const results = Array.isArray(response.results)
-          ? response.results
-          : [];
+        const results = Array.isArray(response.results) ? response.results : [];
+        const acceptable = item => {
+          if (!item?.formatted_address || !dispatchGeocoderHasStreetNumber(item)) {
+            return false;
+          }
+
+          const normalizedAddress = normalizeDispatchTaiwanText(item.formatted_address);
+          if (!rideOrderAddressMatchesStructuredArea(normalizedAddress, data)) {
+            return false;
+          }
+
+          return rideOrderGeocoderCandidateDistanceMeters(item, data) <= 3000;
+        };
 
         const candidate =
-          results.find(
-            item =>
-              item?.formatted_address &&
-              Array.isArray(item.types) &&
-              item.types.includes("street_address") &&
-              dispatchGeocoderHasStreetNumber(item)
-          ) ||
-          results.find(
-            item =>
-              item?.formatted_address &&
-              dispatchGeocoderHasStreetNumber(item)
-          );
+          results.find(item =>
+            Array.isArray(item.types) &&
+            item.types.includes("street_address") &&
+            acceptable(item)
+          ) || results.find(acceptable);
 
         if (!candidate?.formatted_address) {
+          if (!existingAddressIsConsistent && structured.areaLabel) {
+            return {
+              ...data,
+              address: structured.areaLabel,
+              city: structured.city,
+              district: structured.district,
+              areaLabel: structured.areaLabel
+            };
+          }
           return data;
         }
 
         const address = normalizeDispatchTaiwanText(candidate.formatted_address);
-        const area = extractDispatchTaiwanArea(address);
+        const candidateArea = extractDispatchTaiwanArea(address);
+        const city = structured.city || candidateArea.city || data.city || "";
+        const district = structured.district || candidateArea.district || data.district || "";
 
         return {
           ...data,
           address,
-          city: area.city || data.city || "",
-          district: area.district || data.district || "",
-          areaLabel: area.areaLabel || data.areaLabel || ""
+          city,
+          district,
+          areaLabel: [city, district].filter(Boolean).join("")
         };
       } catch (error) {
-        console.warn("Dispatch address enrichment skipped:", error);
+        console.warn("Order Data address enrichment skipped:", error);
+
+        if (!existingAddressIsConsistent && structured.areaLabel) {
+          return {
+            ...data,
+            address: structured.areaLabel,
+            city: structured.city,
+            district: structured.district,
+            areaLabel: structured.areaLabel
+          };
+        }
+
         return data;
       }
     }
@@ -2639,34 +2967,39 @@ main{
       if(!card||!state)return;
 
       const isUncertain=mode==="uncertain";
+      const isSyncWarning=mode==="sync-warning";
 
       $("#rideResultIcon").textContent=isUncertain?"!":"✓";
       $("#rideResultTitle").textContent=
         isUncertain
           ?"訂單送出狀態待確認"
-          :"訂單已成功送出";
+          :(isSyncWarning?"訂單已傳送成功":"訂單已成功送出");
 
       $("#rideResultCopy").innerHTML=
         isUncertain
           ?"系統目前無法確認訂單是否成功送達，<strong>請勿重複送出</strong>。"
-          :"TOP Taxi 已收到您的訂單，客服確認後將為您安排。";
+          :(isSyncWarning
+              ?"客服已收到您的訂單，<strong>不需要重新送出</strong>。"
+              :"TOP Taxi 已收到您的訂單，客服確認後將為您安排。");
 
       $("#rideResultSubcopy").textContent=
         isUncertain
           ?"請返回 LINE 聊天室聯繫客服，我們會協助您確認訂單狀態。"
-          :"即將返回 TOP Taxi LINE 聊天室；如未自動返回，也可使用下方按鈕。";
+          :(isSyncWarning
+              ?"系統紀錄同步暫時異常；如需調整行程或其他協助，可返回 LINE 聊天室聯繫客服。"
+              :"即將返回 TOP Taxi LINE 聊天室；如未自動返回，也可使用下方按鈕。");
 
       $("#rideResultReturnText").textContent=
-        isUncertain
+        isUncertain||isSyncWarning
           ?"返回聊天室聯繫客服"
           :"返回 LINE 聊天室";
 
       state.className=
-        "top-line-result-state "+(isUncertain?"warning":"success");
+        "top-line-result-state "+(isUncertain?"warning":(isSyncWarning?"sync-warning":"success"));
       state.hidden=false;
       card.classList.add("ride-result-mode");
 
-      if(!isUncertain&&RIDE_SEND_TEST_MODE!=="success"){
+      if(!isUncertain&&!isSyncWarning&&RIDE_SEND_TEST_MODE!=="success"){
         if(rideReturnTimer)clearTimeout(rideReturnTimer);
         rideReturnTimer=setTimeout(rideReturnToLineChat,1100);
       }
@@ -2785,7 +3118,12 @@ main{
     }
 
     async function sendRide(){
-      if(rideSendState==="sending"||rideSendState==="success"||rideSendState==="uncertain")return;
+      if(
+        rideSendState==="sending"||
+        rideSendState==="success"||
+        rideSendState==="uncertain"||
+        rideSendState==="sync-warning"
+      )return;
 
       const message=await buildMessage();
       const button=$("#sendRide");
@@ -2797,6 +3135,8 @@ main{
         button.textContent="正在送出…";
       }
 
+      let orderData=null;
+
       try{
         if(RIDE_SEND_TEST_MODE==="uncertain"){
           rideSendState="uncertain";
@@ -2807,6 +3147,12 @@ main{
         if(RIDE_SEND_TEST_MODE==="success"){
           rideSendState="success";
           showRideSendResult("success");
+          return;
+        }
+
+        if(RIDE_SEND_TEST_MODE==="backendfail"){
+          rideSendState="sync-warning";
+          showRideSendResult("sync-warning");
           return;
         }
 
@@ -2830,18 +3176,67 @@ main{
           throw new Error("Not inside LINE LIFF client");
         }
 
+        try{
+          const profile=await liff.getProfile();
+          rideLineUserId=profile?.userId||"";
+          rideLineDisplayName=profile?.displayName||"";
+        }catch(profileError){
+          console.warn("RIDE LINE PROFILE READ FAILED:",profileError);
+        }
+
+        orderData=await buildOrderDataV1();
+        window.TOP_TAXI_LAST_ORDER_DATA=orderData;
+
         await liff.sendMessages([{type:"text",text:message}]);
 
-        rideSendState="success";
+        orderData.delivery.lineStatus="success";
+        orderData.delivery.backendStatus="pending";
+        orderData.delivery.lastUpdatedAt=taipeiIso();
+        window.TOP_TAXI_LAST_ORDER_DATA=orderData;
+
+        let backendSyncOk=true;
+        try{
+          const response=await fetch(ORDER_DATA_WEBHOOK_URL,{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify(orderData)
+          });
+          if(!response.ok){
+            backendSyncOk=false;
+            console.warn("RIDE n8n HTTP:",response.status);
+          }
+        }catch(n8nError){
+          backendSyncOk=false;
+          console.error("RIDE N8N ERROR:",n8nError);
+        }
+
+        orderData.delivery.backendStatus=backendSyncOk?"success":"failed";
+        orderData.delivery.lastUpdatedAt=taipeiIso();
+        window.TOP_TAXI_LAST_ORDER_DATA=orderData;
+
         $("#pageStatus").textContent=
           rideService==="driver"
             ?"✓ 代駕需求已送出給客服"
             :"✓ 叫車需求已送出給客服";
         $("#pageStatus").className="status ok";
-        showRideSendResult("success");
+
+        if(backendSyncOk){
+          rideSendState="success";
+          showRideSendResult("success");
+        }else{
+          rideSendState="sync-warning";
+          showRideSendResult("sync-warning");
+        }
 
       }catch(error){
         console.error("RIDE SEND STATUS UNCERTAIN:",error);
+
+        if(orderData){
+          orderData.delivery.lineStatus="uncertain";
+          orderData.delivery.backendStatus="pending";
+          orderData.delivery.lastUpdatedAt=taipeiIso();
+          window.TOP_TAXI_LAST_ORDER_DATA=orderData;
+        }
 
         rideSendState="uncertain";
         $("#pageStatus").textContent="送出狀態待確認，請返回 LINE 聊天室聯繫客服";
