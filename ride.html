@@ -656,6 +656,9 @@ main{
     animation:rideConfirmPop .22s ease-out;
 }
 .ride-confirm-card::-webkit-scrollbar{display:none}
+.ride-confirm-card.ride-result-mode > :not(.top-line-result-state){
+    display:none!important;
+}
 
 .ride-confirm-handle{
     width:42px;
@@ -924,6 +927,98 @@ main{
     .ride-confirm-header{gap:12px}
     .ride-confirm-icon{width:104px;height:48px}
     .ride-confirm-title{font-size:20px}
+}
+
+
+/* =========================================
+   TOP TAXI｜UNIFIED LINE RETURN RESULT
+   成功：自動返回 + 手動返回備援
+   待確認：不自動返回 + 聯繫客服
+========================================= */
+.top-line-result-state{
+    padding:8px 0 2px;
+    text-align:center;
+}
+.top-line-result-state[hidden]{display:none!important}
+.top-line-result-icon{
+    width:64px;
+    height:64px;
+    margin:4px auto 16px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    font-size:34px;
+    font-weight:900;
+}
+.top-line-result-state.success .top-line-result-icon{
+    background:#edf9f0;
+    color:#16a34a;
+}
+.top-line-result-state.warning .top-line-result-icon{
+    background:#fff7e8;
+    color:#e79a00;
+}
+.top-line-result-state.sync-warning .top-line-result-icon{
+    background:#eef7ff;
+    color:#2f7fd8;
+}
+.top-line-result-title{
+    color:#17171a;
+    font-size:21px;
+    font-weight:900;
+    line-height:1.3;
+}
+.top-line-result-state.success .top-line-result-title{color:#16893c}
+.top-line-result-state.warning .top-line-result-title{color:#c87700}
+.top-line-result-copy{
+    margin:12px auto 0;
+    max-width:340px;
+    color:#66666c;
+    font-size:13px;
+    font-weight:600;
+    line-height:1.7;
+}
+.top-line-result-copy strong{
+    color:#333338;
+    font-weight:850;
+}
+.top-line-result-subcopy{
+    margin-top:10px;
+    color:#99999f;
+    font-size:11.5px;
+    line-height:1.55;
+}
+.top-line-result-primary{
+    width:100%;
+    min-height:50px;
+    margin-top:20px;
+    padding:13px 15px;
+    border:1px solid #e5e5e8;
+    border-radius:14px;
+    background:#fff;
+    color:#222;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:850;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+}
+.top-line-result-primary:active{transform:scale(.98)}
+.top-line-badge{
+    width:30px;
+    height:30px;
+    display:inline-grid;
+    place-items:center;
+    flex:0 0 30px;
+    border-radius:9px;
+    background:#06c755;
+    color:#fff;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:-.3px;
 }
 
 </style>
@@ -1274,6 +1369,17 @@ main{
         返回修改
       </button>
 
+      <div id="rideResultState" class="top-line-result-state" hidden>
+        <div id="rideResultIcon" class="top-line-result-icon">✓</div>
+        <div id="rideResultTitle" class="top-line-result-title"></div>
+        <div id="rideResultCopy" class="top-line-result-copy"></div>
+        <div id="rideResultSubcopy" class="top-line-result-subcopy"></div>
+        <button id="rideResultReturn" type="button" class="top-line-result-primary">
+          <span class="top-line-badge" aria-hidden="true">LINE</span>
+          <span id="rideResultReturnText">返回 LINE 聊天室</span>
+        </button>
+      </div>
+
     </section>
   </div>
 
@@ -1292,6 +1398,10 @@ main{
     const CUSTOMER_PREFERENCE_KEY="topTaxiCustomerPreferences";
     const DEFAULT_PAYMENT="現金｜行程結束後付款";
     const POSTPAID_PAYMENT="車資後結";
+    const RIDE_SEND_TEST_MODE=
+      new URLSearchParams(window.location.search).get("sendtest")||"";
+    let rideSendState="idle";
+    let rideReturnTimer=null;
 
     function loadCustomerPreferences(){
       try{
@@ -2220,9 +2330,70 @@ main{
           ? "長途40公里以上另有優惠，請洽客服"
           : "";
 
+      const rideCard=$("#confirmOverlay .ride-confirm-card");
+      if(rideReturnTimer){
+        clearTimeout(rideReturnTimer);
+        rideReturnTimer=null;
+      }
+      rideSendState="idle";
+      if(rideCard)rideCard.classList.remove("ride-result-mode");
+      const rideState=$("#rideResultState");
+      if(rideState)rideState.hidden=true;
       $("#confirmOverlay").hidden=false;
       document.body.style.overflow="hidden";
     }
+
+    function rideReturnToLineChat(){
+      if(window.liff&&typeof liff.isInClient==="function"&&liff.isInClient()){
+        try{
+          liff.closeWindow();
+          return;
+        }catch(error){
+          console.error("LIFF 關閉失敗：",error);
+        }
+      }
+      alert("請返回 TOP Taxi LINE 聊天室。");
+    }
+
+    function showRideSendResult(mode){
+      const card=$("#confirmOverlay .ride-confirm-card");
+      const state=$("#rideResultState");
+      if(!card||!state)return;
+
+      const isUncertain=mode==="uncertain";
+
+      $("#rideResultIcon").textContent=isUncertain?"!":"✓";
+      $("#rideResultTitle").textContent=
+        isUncertain
+          ?"訂單送出狀態待確認"
+          :"訂單已成功送出";
+
+      $("#rideResultCopy").innerHTML=
+        isUncertain
+          ?"系統目前無法確認訂單是否成功送達，<strong>請勿重複送出</strong>。"
+          :"TOP Taxi 已收到您的訂單，客服確認後將為您安排。";
+
+      $("#rideResultSubcopy").textContent=
+        isUncertain
+          ?"請返回 LINE 聊天室聯繫客服，我們會協助您確認訂單狀態。"
+          :"即將返回 TOP Taxi LINE 聊天室；如未自動返回，也可使用下方按鈕。";
+
+      $("#rideResultReturnText").textContent=
+        isUncertain
+          ?"返回聊天室聯繫客服"
+          :"返回 LINE 聊天室";
+
+      state.className=
+        "top-line-result-state "+(isUncertain?"warning":"success");
+      state.hidden=false;
+      card.classList.add("ride-result-mode");
+
+      if(!isUncertain&&RIDE_SEND_TEST_MODE!=="success"){
+        if(rideReturnTimer)clearTimeout(rideReturnTimer);
+        rideReturnTimer=setTimeout(rideReturnToLineChat,1100);
+      }
+    }
+
     async function buildMessage(){
       const pickupNote=$("#pickupNote").value.trim();
       const passenger=$("#passengers").selectedOptions[0].textContent;
@@ -2325,7 +2496,68 @@ main{
       return items.join("\n");
     }
 
-    async function sendRide(){const message=await buildMessage();try{if(window.liff&&CONFIG.liffId){await liff.init({liffId:CONFIG.liffId});if(!liff.isLoggedIn()){liff.login();return}await liff.sendMessages([{type:"text",text:message}]);$("#pageStatus").textContent="✓ 叫車需求已送出給客服"}else{await navigator.clipboard.writeText(message);$("#pageStatus").textContent="✓ 叫車內容已複製，請回到 LINE 對話貼上傳送給客服"}$("#pageStatus").className="status ok";$("#confirmOverlay").hidden=true;document.body.style.overflow=""}catch(e){$("#pageStatus").textContent="送出失敗，請返回 LINE 對話聯絡客服";$("#pageStatus").className="status error"}}
+    async function sendRide(){
+      if(rideSendState==="sending"||rideSendState==="success"||rideSendState==="uncertain")return;
+
+      const message=await buildMessage();
+      const button=$("#sendRide");
+      const originalText="確認送出叫車單 →";
+
+      rideSendState="sending";
+      if(button){
+        button.disabled=true;
+        button.textContent="正在送出…";
+      }
+
+      try{
+        if(RIDE_SEND_TEST_MODE==="uncertain"){
+          rideSendState="uncertain";
+          showRideSendResult("uncertain");
+          return;
+        }
+
+        if(RIDE_SEND_TEST_MODE==="success"){
+          rideSendState="success";
+          showRideSendResult("success");
+          return;
+        }
+
+        if(!(window.liff&&CONFIG.liffId)){
+          throw new Error("LIFF unavailable");
+        }
+
+        await liff.init({liffId:CONFIG.liffId});
+
+        if(!liff.isLoggedIn()){
+          rideSendState="idle";
+          if(button){
+            button.disabled=false;
+            button.textContent=originalText;
+          }
+          liff.login();
+          return;
+        }
+
+        if(!liff.isInClient()){
+          throw new Error("Not inside LINE LIFF client");
+        }
+
+        await liff.sendMessages([{type:"text",text:message}]);
+
+        rideSendState="success";
+        $("#pageStatus").textContent="✓ 叫車需求已送出給客服";
+        $("#pageStatus").className="status ok";
+        showRideSendResult("success");
+
+      }catch(error){
+        console.error("RIDE SEND STATUS UNCERTAIN:",error);
+
+        rideSendState="uncertain";
+        $("#pageStatus").textContent="送出狀態待確認，請返回 LINE 聊天室聯繫客服";
+        $("#pageStatus").className="status error";
+        showRideSendResult("uncertain");
+      }
+    }
     async function init(){
       renderSaved();
       setupAutocomplete("pickup","pickupSuggestions",p=>{pickupPlace=p;setStatus("pickupStatus","地址已確認","ok");recalculate()},()=>{pickupPlace=null;hideEstimate()});
@@ -2535,7 +2767,12 @@ main{
     });
 
     $("#openConfirm").onclick=openConfirmation;
-    $("#backEdit").onclick=()=>{$("#confirmOverlay").hidden=true;document.body.style.overflow=""};
+    $("#rideResultReturn").onclick=rideReturnToLineChat;
+    $("#backEdit").onclick=()=>{
+      if(rideSendState==="sending"||rideSendState==="success"||rideSendState==="uncertain")return;
+      $("#confirmOverlay").hidden=true;
+      document.body.style.overflow="";
+    };
     $("#sendRide").onclick=sendRide;
 
     updatePickupNoteUi(false);
