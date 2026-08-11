@@ -1890,14 +1890,20 @@ main{
     ========================================= */
 
     function normalizeDispatchTaiwanText(raw = "") {
-      return String(raw || "")
+      const taiwanAddressCharMap = {
+        "臺":"台", "区":"區", "县":"縣", "乡":"鄉", "镇":"鎮", "号":"號",
+        "东":"東", "势":"勢", "晋":"晉", "兴":"興", "丰":"豐", "华":"華",
+        "学":"學", "国":"國", "龙":"龍", "凤":"鳳", "广":"廣", "长":"長",
+        "万":"萬", "乐":"樂", "荣":"榮", "门":"門", "义":"義", "礼":"禮",
+        "庄":"莊", "后":"後", "发":"發", "头":"頭", "桥":"橋", "环":"環",
+        "线":"線", "园":"園", "艺":"藝", "馆":"館", "医":"醫", "药":"藥"
+      };
+      const normalizedChars = String(raw || "").replace(
+        /[臺区县乡镇号东势晋兴丰华学国龙凤广长万乐荣门义礼庄后发头桥环线园艺馆医药]/g,
+        ch => taiwanAddressCharMap[ch] || ch
+      );
+      return normalizedChars
         .trim()
-        .replace(/臺/g, "台")
-        .replace(/区/g, "區")
-        .replace(/县/g, "縣")
-        .replace(/乡/g, "鄉")
-        .replace(/镇/g, "鎮")
-        .replace(/号/g, "號")
         .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "")
         .replace(/^台灣省?/u, "")
         .replace(/^中華民國/u, "")
