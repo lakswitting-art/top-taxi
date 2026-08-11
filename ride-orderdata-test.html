@@ -1510,18 +1510,45 @@ main{
       return text||null;
     }
 
+    function orderCoordinate(value){
+      const number=Number(value);
+      if(!Number.isFinite(number))return null;
+      return Math.round(number*1e7)/1e7;
+    }
+
     function orderAddressData(data={},options={}){
       const normalized=normalizeAddress(data||{});
+      const rawAddress=normalized.address||"";
+      const parsedArea=extractDispatchTaiwanArea(rawAddress);
+
+      const city=(
+        parsedArea.city||
+        normalizeDispatchTaiwanText(normalized.city||"").replace(/\s+/g,"")
+      );
+
+      let district=(
+        parsedArea.district||
+        normalizeDispatchTaiwanText(normalized.district||"").replace(/\s+/g,"")
+      );
+
+      // Google Places in Taiwan may expose village-level components
+      // (e.g. 何德里 / 晉江里) as administrative_area_level_3.
+      // Order Data must keep dispatch-level district/town/township only.
+      if (/(?:里|村|鄰)$/u.test(district)) {
+        district="";
+      }
+
+      const areaLabel=[city,district].filter(Boolean).join("");
       const result={
         name:nullableText(normalized.name),
         displayName:nullableText(normalized.displayName),
-        address:nullableText(normalized.address),
-        city:nullableText(normalized.city),
-        district:nullableText(normalized.district),
-        areaLabel:nullableText(normalized.areaLabel),
+        address:nullableText(compactDispatchTaiwanAddress(rawAddress)),
+        city:nullableText(city),
+        district:nullableText(district),
+        areaLabel:nullableText(areaLabel),
         placeId:nullableText(normalized.placeId),
-        lat:Number.isFinite(Number(normalized.lat))?Number(normalized.lat):null,
-        lng:Number.isFinite(Number(normalized.lng))?Number(normalized.lng):null
+        lat:orderCoordinate(normalized.lat),
+        lng:orderCoordinate(normalized.lng)
       };
       if(options.includePickupNote){
         result.pickupNote=nullableText(options.pickupNote??normalized.pickupNote);
@@ -1866,6 +1893,11 @@ main{
       return String(raw || "")
         .trim()
         .replace(/臺/g, "台")
+        .replace(/区/g, "區")
+        .replace(/县/g, "縣")
+        .replace(/乡/g, "鄉")
+        .replace(/镇/g, "鎮")
+        .replace(/号/g, "號")
         .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "")
         .replace(/^台灣省?/u, "")
         .replace(/^中華民國/u, "")
