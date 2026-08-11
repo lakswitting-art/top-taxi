@@ -2737,18 +2737,161 @@ function farePlaceDisplayName(place) {
     return place.displayName.toString?.() || "";
 }
 
+function normalizeTaiwanDisplayText(raw = "") {
+    return String(raw || "")
+        .trim()
+        .replace(/臺/g, "台")
+        .replace(/^台灣省?/u, "")
+        .replace(/^中華民國/u, "");
+}
+
+
+function extractTaiwanAreaFromText(raw = "") {
+    const text =
+        normalizeTaiwanDisplayText(raw)
+            .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "")
+            .replace(/\s+/g, "");
+
+    let city = "";
+    let district = "";
+
+    /*
+       Taiwan county/city level.
+       Keep this display-oriented and independent from Google's varying
+       administrative_area_level mappings.
+    */
+    const cityMatch =
+        text.match(
+            /(新北市|台北市|桃園市|台中市|台南市|高雄市|基隆市|新竹市|嘉義市|宜蘭縣|新竹縣|苗栗縣|彰化縣|南投縣|雲林縣|嘉義縣|屏東縣|台東縣|花蓮縣|澎湖縣|金門縣|連江縣)/u
+        );
+
+    if (cityMatch) {
+        city = cityMatch[1];
+
+        const rest =
+            text.slice(
+                cityMatch.index +
+                cityMatch[1].length
+            );
+
+        const districtMatch =
+            rest.match(
+                /^([^0-9路街大道段巷弄號]{1,8}(?:區|鄉|鎮|市))/u
+            );
+
+        if (districtMatch) {
+            district =
+                districtMatch[1];
+        }
+    }
+
+    return {
+        city,
+        district,
+        areaLabel:
+            [city, district]
+                .filter(Boolean)
+                .join("")
+    };
+}
+
+
+function normalizeTaiwanAreaPart(raw = "") {
+    return normalizeTaiwanDisplayText(raw)
+        .replace(/\s+/g, "");
+}
+
+
+function fareResolveArea(place, rawAddress = "") {
+    const parsed =
+        extractTaiwanAreaFromText(
+            rawAddress
+        );
+
+    let city =
+        parsed.city ||
+        normalizeTaiwanAreaPart(
+            fareAddressComponent(place, [
+                "administrative_area_level_1"
+            ])
+        );
+
+    /*
+       Google Taiwan hierarchy is not consistent:
+       administrative_area_level_3 may be a 里.
+       Only accept a real district/township/city suffix.
+    */
+    const componentCandidates = [
+        fareAddressComponent(place, [
+            "administrative_area_level_2"
+        ]),
+        fareAddressComponent(place, [
+            "locality"
+        ]),
+        fareAddressComponent(place, [
+            "sublocality_level_1"
+        ]),
+        fareAddressComponent(place, [
+            "administrative_area_level_3"
+        ])
+    ]
+        .map(normalizeTaiwanAreaPart)
+        .filter(Boolean);
+
+    let district =
+        parsed.district || "";
+
+    if (!district) {
+        district =
+            componentCandidates.find(
+                value =>
+                    /(?:區|鄉|鎮|市)$/u.test(value) &&
+                    !/(?:里|村|鄰)$/u.test(value) &&
+                    value !== city
+            ) || "";
+    }
+
+    /*
+       Last-resort parsing from the full address after normalizing "臺" → "台".
+       Never surface 里/村/鄰 as the dispatch area label.
+    */
+    if (
+        district &&
+        /(?:里|村|鄰)$/u.test(district)
+    ) {
+        district = "";
+    }
+
+    city =
+        normalizeTaiwanAreaPart(city);
+
+    district =
+        normalizeTaiwanAreaPart(district);
+
+    return {
+        city,
+        district,
+        areaLabel:
+            [city, district]
+                .filter(Boolean)
+                .join("")
+    };
+}
+
+
 function farePlaceToAddressData(place, extra = {}) {
     if (!place) return null;
 
-    const city = fareAddressComponent(place, [
-        "administrative_area_level_1"
-    ]);
+    const rawAddress =
+        place.formattedAddress ||
+        extra.address ||
+        "";
 
-    const district = fareAddressComponent(place, [
-        "administrative_area_level_3",
-        "administrative_area_level_2",
-        "locality"
-    ]);
+    const area =
+        fareResolveArea(
+            place,
+            rawAddress
+        );
 
     const lat = place.location
         ? (typeof place.location.lat === "function"
@@ -2764,11 +2907,17 @@ function farePlaceToAddressData(place, extra = {}) {
 
     return {
         name: extra.name || "",
-        displayName: farePlaceDisplayName(place),
-        address: place.formattedAddress || extra.address || "",
-        city: city,
-        district: district,
-        areaLabel: [city, district].filter(Boolean).join(""),
+        displayName:
+            normalizeTaiwanDisplayText(
+                farePlaceDisplayName(place)
+            ),
+        address:
+            normalizeTaiwanDisplayText(
+                rawAddress
+            ),
+        city: area.city,
+        district: area.district,
+        areaLabel: area.areaLabel,
         placeId: place.id || extra.placeId || "",
         lat: lat,
         lng: lng,
@@ -2778,20 +2927,25 @@ function farePlaceToAddressData(place, extra = {}) {
 
 
 function compactTaiwanAddress(raw = "") {
-    let address = String(raw || "").trim();
+    let address =
+        normalizeTaiwanDisplayText(raw);
 
-    // Remove common Taiwan postal codes at the beginning (3, 5, or 6 digits).
-    address = address.replace(/^\s*\d{3}(?:\d{2,3})?\s*/, "");
-
-    // Remove village / neighborhood level text that is not useful for riders.
-    address = address.replace(/[^縣市區鄉鎮路街段巷弄號\d\s]{1,12}(?:里|村)/g, "");
-    address = address.replace(/\d+\s*鄰/g, "");
+    // Remove Taiwan/country prefix and common postal codes.
+    address = address
+        .replace(/^台灣/u, "")
+        .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "");
 
     /*
-       Customer / dispatch-facing address must stay compact.
-       Google reverse-geocoding can occasionally return floor, room,
-       subpremise or B1/F style suffixes. Keep them internally for routing
-       if Google provides them, but never show them in the compact label.
+       Village / neighborhood level is too fine for dispatch-area display.
+       Remove 里 / 村 / 鄰 when Google inserts them into a street address.
+    */
+    address = address
+        .replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)/gu, "")
+        .replace(/\d+\s*鄰/gu, "");
+
+    /*
+       Remove floor / room / subpremise noise from display.
+       Routing data remains untouched in Google Place / coordinates.
     */
     address = address.replace(
         /[，,、\s-]*(?:地下\s*)?(?:B?\d+|\d+\s*F)\s*(?:樓|F)?(?:之\d+)?(?:\s*\d+\s*室)?(?=$|[，,、])/giu,
@@ -2814,20 +2968,17 @@ function compactTaiwanAddress(raw = "") {
         ""
     );
 
-    // Normalize punctuation and spaces left by removed subpremise data.
-    address = address
+    return address
         .replace(/[，,、]{2,}/g, "，")
         .replace(/^[，,、\s-]+|[，,、\s-]+$/g, "")
         .replace(/\s+/g, "");
-
-    return address;
 }
 
 
 function compactFarePlaceName(raw = "") {
-    let name = String(raw || "").trim();
+    let name =
+        normalizeTaiwanDisplayText(raw);
 
-    // Remove floor / room suffixes from a Google place display name too.
     name = name.replace(
         /[，,、\s-]*(?:地下)?\d+\s*樓(?:之\d+)?(?:\s*\d+\s*室)?$/u,
         ""
@@ -2849,7 +3000,7 @@ function compactFarePlaceName(raw = "") {
 }
 
 
-function fareAddressDisplayText(data = {}) {
+function fareMeaningfulPlaceName(data = {}) {
     const address =
         compactTaiwanAddress(
             data.address || ""
@@ -2860,12 +3011,6 @@ function fareAddressDisplayText(data = {}) {
             data.displayName || ""
         );
 
-    /*
-       A reverse-geocoded "displayName" is sometimes merely another
-       spelling of the street address. Do not render:
-       地址名稱｜同一個地址
-       Only keep a genuine POI / building / landmark name.
-    */
     const normalizedName =
         name.replace(/\s+/g, "");
 
@@ -2880,16 +3025,118 @@ function fareAddressDisplayText(data = {}) {
     const nameAlreadyInAddress =
         !!normalizedName &&
         (
-            normalizedAddress.includes(normalizedName) ||
-            normalizedName.includes(normalizedAddress)
+            normalizedAddress.includes(
+                normalizedName
+            ) ||
+            normalizedName.includes(
+                normalizedAddress
+            )
         );
 
-    const meaningfulName =
+    return (
         normalizedName &&
         !looksLikeStreetAddress &&
         !nameAlreadyInAddress
-            ? name
-            : "";
+    )
+        ? name
+        : "";
+}
+
+
+function fareAreaLabel(data = {}) {
+    const parsed =
+        extractTaiwanAreaFromText(
+            data.address || ""
+        );
+
+    const city =
+        parsed.city ||
+        normalizeTaiwanAreaPart(
+            data.city || ""
+        );
+
+    let district =
+        parsed.district ||
+        normalizeTaiwanAreaPart(
+            data.district || ""
+        );
+
+    if (
+        /(?:里|村|鄰)$/u.test(district)
+    ) {
+        district = "";
+    }
+
+    return (
+        [city, district]
+            .filter(Boolean)
+            .join("")
+    );
+}
+
+
+function fareLocalStreetAddress(data = {}) {
+    const full =
+        compactTaiwanAddress(
+            data.address || ""
+        );
+
+    const area =
+        fareAreaLabel(data);
+
+    let local = full;
+
+    if (
+        area &&
+        local.startsWith(area)
+    ) {
+        local =
+            local.slice(area.length);
+    } else {
+        const parsed =
+            extractTaiwanAreaFromText(
+                full
+            );
+
+        if (
+            parsed.city &&
+            local.startsWith(
+                parsed.city
+            )
+        ) {
+            local =
+                local.slice(
+                    parsed.city.length
+                );
+        }
+
+        if (
+            parsed.district &&
+            local.startsWith(
+                parsed.district
+            )
+        ) {
+            local =
+                local.slice(
+                    parsed.district.length
+                );
+        }
+    }
+
+    return local
+        .replace(/^[，,、\s-]+/g, "")
+        .trim();
+}
+
+
+function fareAddressDisplayText(data = {}) {
+    const address =
+        compactTaiwanAddress(
+            data.address || ""
+        );
+
+    const meaningfulName =
+        fareMeaningfulPlaceName(data);
 
     if (
         meaningfulName &&
@@ -2905,6 +3152,186 @@ function fareAddressDisplayText(data = {}) {
     return meaningfulName || address;
 }
 
+
+/*
+   全系統派車單正式顯示規格（Ride / Booking / Fare / 未來跑腿）：
+   第一行：縣市＋行政區＋角色
+       📍 台中市北屯區｜上車
+   第二行：地標＋精簡路名門牌，不重複第一行縣市行政區
+       超級巨星自助式KTV 洲際崇德店｜崇德十路一段430號
+
+   完整地址仍保留於結構化 Order Data，不因顯示精簡而丟失。
+*/
+function fareDispatchPickupDisplayText(data = {}) {
+    const meaningfulName =
+        fareMeaningfulPlaceName(data);
+
+    const localAddress =
+        fareLocalStreetAddress(data);
+
+    if (
+        meaningfulName &&
+        localAddress
+    ) {
+        return (
+            meaningfulName +
+            "｜" +
+            localAddress
+        );
+    }
+
+    return (
+        meaningfulName ||
+        localAddress ||
+        compactTaiwanAddress(
+            data.address || ""
+        )
+    );
+}
+
+
+function fareHasStreetNumber(raw = "") {
+    const text =
+        compactTaiwanAddress(raw);
+
+    return (
+        /(?:路|街|大道|段|巷|弄|村路|鄉道|縣道).*\d+(?:-\d+)?號/u.test(text)
+    );
+}
+
+
+function geocoderResultHasStreetNumber(result) {
+    const components =
+        Array.isArray(
+            result?.address_components
+        )
+            ? result.address_components
+            : [];
+
+    const hasRoute =
+        components.some(
+            item =>
+                Array.isArray(item.types) &&
+                item.types.includes("route")
+        );
+
+    const hasStreetNumber =
+        components.some(
+            item =>
+                Array.isArray(item.types) &&
+                item.types.includes("street_number")
+        );
+
+    return (
+        hasRoute &&
+        hasStreetNumber
+    );
+}
+
+
+async function fareEnsureStreetAddress(data = {}) {
+    if (
+        !data ||
+        fareHasStreetNumber(
+            data.address || ""
+        ) ||
+        data.lat == null ||
+        data.lng == null
+    ) {
+        return data;
+    }
+
+    try {
+        const {
+            Geocoder
+        } =
+        await google.maps.importLibrary(
+            "geocoding"
+        );
+
+        const response =
+            await new Geocoder().geocode({
+                location: {
+                    lat: Number(data.lat),
+                    lng: Number(data.lng)
+                }
+            });
+
+        const results =
+            Array.isArray(response.results)
+                ? response.results
+                : [];
+
+        /*
+           For large POIs Google Places sometimes returns only:
+           "台中市烏日區".
+           Use reverse geocoding only as a display enrichment layer and
+           prefer a real route + street number result.
+        */
+        const candidate =
+            results.find(
+                item =>
+                    item?.formatted_address &&
+                    Array.isArray(item.types) &&
+                    item.types.includes(
+                        "street_address"
+                    ) &&
+                    geocoderResultHasStreetNumber(
+                        item
+                    )
+            )
+            ||
+            results.find(
+                item =>
+                    item?.formatted_address &&
+                    geocoderResultHasStreetNumber(
+                        item
+                    )
+            );
+
+        if (
+            !candidate?.formatted_address
+        ) {
+            return data;
+        }
+
+        const enrichedAddress =
+            normalizeTaiwanDisplayText(
+                candidate.formatted_address
+            );
+
+        const area =
+            extractTaiwanAreaFromText(
+                enrichedAddress
+            );
+
+        return {
+            ...data,
+            address: enrichedAddress,
+            city:
+                area.city ||
+                data.city ||
+                "",
+            district:
+                area.district ||
+                data.district ||
+                "",
+            areaLabel:
+                area.areaLabel ||
+                data.areaLabel ||
+                ""
+        };
+
+    } catch (error) {
+        console.warn(
+            "Fare address enrichment skipped:",
+            error
+        );
+
+        return data;
+    }
+}
+
 let RouteClass = null;
 
 let serviceMode = "taxi";
@@ -2918,14 +3345,24 @@ let fareTripSendState = "idle";
 let fareTripReturnTimer = null;
 
 /*
-   已拍板的調度來源顯示規格：
-   📡 TOP Taxi｜車資試算
+   已拍板的全系統派車單規格：
+   1) 上車第一行顯示「縣市＋行政區｜上車」
+      例：📍 台中市北屯區｜上車
+   2) 第二行顯示「地標｜精簡路名門牌」，不重複縣市行政區
+      例：超級巨星自助式KTV 洲際崇德店｜崇德十路一段430號
+   3) 顯示文字統一「臺」→「台」
+   4) 里／村／鄰／樓層／室號不作為派車區域標籤
+   5) 1 人不顯示、無行李不顯示（調度 formatter 階段）
+   6) 上車補充緊接在上車點下面（調度 formatter 階段）
+   7) 來源短標籤：
+      📡 TOP Taxi｜即時叫車
+      📡 TOP Taxi｜預約叫車
+      📡 TOP Taxi｜車資試算
 
-   注意：
-   這是給調度派車單看的短版標籤；
-   未來自動派單不靠這段文字判斷來源，
-   #8 會使用 sourceOA / sourceOAId / sourceEntry /
-   orderType / tenantId 等結構化 Order Data。
+   此規格套用 Ride / Booking / Fare / 未來跑腿。
+   完整原始地址與 sourceOA / sourceOAId / sourceEntry /
+   orderType / tenantId 仍由結構化 Order Data 保存。
+   自動派單為非常後期選配，不是目前開發目標。
 */
 const FARE_DISPATCH_SOURCE_LABEL =
     "TOP Taxi｜車資試算";
@@ -5096,13 +5533,18 @@ async function confirmTrip() {
                 ""
             );
 
-    const pickupData =
+    const rawPickupData =
         selectedRouteData?.pickup ||
         pickupAddressData ||
         {};
 
+    const pickupData =
+        await fareEnsureStreetAddress(
+            rawPickupData
+        );
+
     const pickup =
-        fareAddressDisplayText(
+        fareDispatchPickupDisplayText(
             pickupData
         )
         ||
@@ -5111,21 +5553,27 @@ async function confirmTrip() {
             .textContent;
 
     const pickupArea =
-        String(
-            pickupData.areaLabel ||
-            [
-                pickupData.city,
-                pickupData.district
-            ]
-                .filter(Boolean)
-                .join("")
-        ).trim();
+        fareAreaLabel(
+            pickupData
+        );
+
+    const rawDropoffData =
+        selectedRouteData?.dropoff ||
+        dropoffAddressData ||
+        null;
+
+    const dropoffData =
+        rawDropoffData
+            ? await fareEnsureStreetAddress(
+                rawDropoffData
+            )
+            : null;
 
     const dropoff =
-        selectedRouteData?.dropoff
+        dropoffData
             ? (
                 fareAddressDisplayText(
-                    selectedRouteData.dropoff
+                    dropoffData
                 )
                 ||
                 document
@@ -5182,7 +5630,17 @@ async function confirmTrip() {
     const selectedWaypoints =
         selectedRouteData?.waypoints || [];
 
-    selectedWaypoints.forEach((data, index) => {
+    const enrichedWaypoints =
+        await Promise.all(
+            selectedWaypoints.map(
+                data =>
+                    fareEnsureStreetAddress(
+                        data
+                    )
+            )
+        );
+
+    enrichedWaypoints.forEach((data, index) => {
         messageParts.push(
             "",
             "🟡 停靠點 " + (index + 1),
