@@ -2115,6 +2115,61 @@ body{
     box-shadow: none;
 }
 
+
+
+/* =========================================
+   FARE CURRENT LOCATION
+   與 Booking / Ride 共用相同視覺語言
+========================================= */
+.fare-location-status {
+    margin-top: 5px;
+    color: #8e8e94;
+    font-size: 11px;
+    line-height: 1.45;
+}
+.fare-location-status:empty {
+    display: none;
+}
+.fare-location-status.ok {
+    color: #4d8c63;
+}
+.fare-location-status.error {
+    color: #bb2632;
+}
+.location-inline-btn {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 35px;
+    margin-top: 5px;
+    padding: 0 11px;
+    border: 1px solid var(--gray-border);
+    border-radius: 10px;
+    background: #f7f7f9;
+    color: #6f6f75;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 850;
+    cursor: pointer;
+    text-align: center;
+}
+.location-inline-btn:active {
+    opacity: .72;
+    transform: scale(.99);
+}
+.location-inline-btn:disabled {
+    opacity: .62;
+    cursor: wait;
+}
+.location-inline-icon {
+    font-size: 15px;
+    line-height: 1;
+    color: #77777d;
+}
+
 </style>
 
 </head>
@@ -2206,6 +2261,21 @@ body{
             id="pickupBox"
             class="place-box"
         ></div>
+
+        <div
+            id="farePickupStatus"
+            class="fare-location-status"
+        ></div>
+
+        <button
+            id="useFareLocation"
+            class="location-inline-btn"
+            type="button"
+            onclick="useFareCurrentLocation()"
+        >
+            <span class="location-inline-icon">⌖</span>
+            <span id="useFareLocationText">使用目前位置</span>
+        </button>
 
     </div>
 
@@ -2634,6 +2704,7 @@ let waypointPlaces = [null, null];
 let waypointAddressData = [null, null];
 let waypointActive = [false, false];
 let waypointControllers = [null, null];
+let pickupController = null;
 
 let routeResults = {
     FAST: null,
@@ -2749,6 +2820,21 @@ let liffReady = false;
 let isSubmittingTrip = false;
 let fareTripSendState = "idle";
 let fareTripReturnTimer = null;
+
+/*
+   已拍板的調度來源顯示規格：
+   📡 TOP Taxi｜車資試算
+
+   注意：
+   這是給調度派車單看的短版標籤；
+   未來自動派單不靠這段文字判斷來源，
+   #8 會使用 sourceOA / sourceOAId / sourceEntry /
+   orderType / tenantId 等結構化 Order Data。
+*/
+const FARE_DISPATCH_SOURCE_LABEL =
+    "TOP Taxi｜車資試算";
+const FARE_SOURCE_ENTRY =
+    "fare";
 
 
 /* =========================================
@@ -3495,7 +3581,7 @@ async function initGoogle() {
             };
         };
 
-        createAddressAutocomplete({
+        pickupController = createAddressAutocomplete({
             containerId: "pickupBox",
             placeholder:
                 "請輸入上車地址或地標",
@@ -3504,10 +3590,12 @@ async function initGoogle() {
             onReset: () => {
                 pickupPlace = null;
                 pickupAddressData = null;
+                setFarePickupStatus("");
             },
             onSelect: (place) => {
                 pickupPlace = place;
                 pickupAddressData = farePlaceToAddressData(place);
+                setFarePickupStatus("地址已確認", "ok");
                 hideResults();
             }
         });
@@ -3584,6 +3672,220 @@ async function initGoogle() {
 
     }
 
+}
+
+
+/* =========================================
+   FARE CURRENT LOCATION
+========================================= */
+
+function setFarePickupStatus(message = "", type = "") {
+
+    const el =
+        document.getElementById(
+            "farePickupStatus"
+        );
+
+    if (!el) return;
+
+    el.textContent =
+        message || "";
+
+    el.className =
+        "fare-location-status"
+        + (type ? " " + type : "");
+}
+
+
+async function useFareCurrentLocation() {
+
+    const button =
+        document.getElementById(
+            "useFareLocation"
+        );
+
+    const text =
+        document.getElementById(
+            "useFareLocationText"
+        );
+
+    if (
+        !navigator.geolocation
+    ) {
+        setFarePickupStatus(
+            "此裝置無法取得目前位置。",
+            "error"
+        );
+        return;
+    }
+
+    if (!pickupController) {
+        setFarePickupStatus(
+            "地址系統尚未載入完成，請稍候再試。",
+            "error"
+        );
+        return;
+    }
+
+    if (button) {
+        button.disabled = true;
+    }
+
+    if (text) {
+        text.textContent =
+            "定位中…";
+    }
+
+    setFarePickupStatus("");
+
+    try {
+
+        const position =
+            await new Promise(
+                (resolve, reject) => {
+
+                    navigator
+                        .geolocation
+                        .getCurrentPosition(
+                            resolve,
+                            reject,
+                            {
+                                enableHighAccuracy: true,
+                                timeout: 10000,
+                                maximumAge: 60000
+                            }
+                        );
+                }
+            );
+
+        /*
+           與 Ride / Booking 相同：
+           GPS -> Geocoder -> place_id -> Google Place
+           保留 displayName / formattedAddress /
+           placeId / lat / lng / city / district。
+        */
+        const {
+            Geocoder
+        } =
+        await google.maps.importLibrary(
+            "geocoding"
+        );
+
+        const geocodeResult =
+            await new Geocoder().geocode({
+                location: {
+                    lat:
+                        position.coords.latitude,
+                    lng:
+                        position.coords.longitude
+                }
+            });
+
+        const first =
+            geocodeResult.results?.[0];
+
+        if (!first?.place_id) {
+            throw new Error(
+                "目前位置無法轉換成 Google Place"
+            );
+        }
+
+        const {
+            Place
+        } =
+        await google.maps.importLibrary(
+            "places"
+        );
+
+        const place =
+            new Place({
+                id: first.place_id
+            });
+
+        await place.fetchFields({
+            fields: [
+                "id",
+                "displayName",
+                "formattedAddress",
+                "location",
+                "addressComponents"
+            ]
+        });
+
+        pickupPlace =
+            place;
+
+        pickupAddressData =
+            farePlaceToAddressData(
+                place,
+                {
+                    address:
+                        first.formatted_address
+                        || ""
+                }
+            );
+
+        pickupController.setValue(
+            fareAddressDisplayText(
+                pickupAddressData
+            )
+            ||
+            place.formattedAddress
+            ||
+            first.formatted_address
+            ||
+            ""
+        );
+
+        /*
+           上車點變更後，舊的試算結果不再有效。
+           不自動送單、不自動開始試算。
+        */
+        hideResults();
+
+        setFarePickupStatus(
+            "已帶入目前位置",
+            "ok"
+        );
+
+        if (text) {
+            text.textContent =
+                "已取得目前位置";
+
+            window.setTimeout(
+                () => {
+                    if (text) {
+                        text.textContent =
+                            "使用目前位置";
+                    }
+                },
+                1800
+            );
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "FARE GEOLOCATION ERROR:",
+            error
+        );
+
+        setFarePickupStatus(
+            "未取得定位或地址，請手動輸入上車地點。",
+            "error"
+        );
+
+        if (text) {
+            text.textContent =
+                "使用目前位置";
+        }
+
+    } finally {
+
+        if (button) {
+            button.disabled = false;
+        }
+    }
 }
 
 
@@ -4667,8 +4969,8 @@ async function confirmTrip() {
 
     const serviceTitle =
         serviceMode === "driver"
-            ? "24H 代駕服務"
-            : "24H 車資試算轉叫車";
+            ? "代駕需求"
+            : "叫車需求";
 
     const successText =
         serviceMode === "driver"
