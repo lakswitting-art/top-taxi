@@ -1,0 +1,2921 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
+
+<title>TOP Taxi｜24H 跑腿服務</title>
+
+<!-- LINE LIFF SDK -->
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<style>
+
+/* =========================================
+   TOP Taxi Design System
+========================================= */
+
+:root {
+
+    --red: #ff1f2d;
+    --red-dark: #c90012;
+    --red-deep: #8e0010;
+
+    --black: #08080a;
+    --black-2: #101014;
+    --black-3: #18181d;
+
+    --white: #ffffff;
+
+    --gray-1: #f4f5f7;
+    --gray-2: #e5e5e8;
+    --gray-3: #a4a4aa;
+    --gray-4: #6d6d73;
+
+    --green: #06C755;
+
+}
+
+
+/* =========================================
+   RESET
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--black);
+}
+
+body {
+
+    margin: 0;
+
+    min-height: 100vh;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Noto Sans TC",
+        "PingFang TC",
+        Arial,
+        sans-serif;
+
+    color: #222;
+
+    background:
+
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255, 31, 45, 0.22),
+            transparent 33%
+        ),
+
+        linear-gradient(
+            180deg,
+            #070709 0%,
+            #101014 40%,
+            #f2f3f5 40%,
+            #f2f3f5 100%
+        );
+
+}
+
+
+/* =========================================
+   HERO
+========================================= */
+
+.hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    max-width: 560px;
+    margin: 0 auto;
+    padding:
+        max(14px, env(safe-area-inset-top))
+        18px
+        16px;
+    color: white;
+    overflow: hidden;
+}
+
+.hero-copy {
+    min-width: 0;
+    flex: 1;
+    text-align: center;
+}
+
+.hero::after {
+    content: "";
+    flex: 0 0 70px;
+    width: 70px;
+}
+
+
+
+
+/* =========================================
+   LOGO
+========================================= */
+
+.logo-wrap {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+
+.logo-glow {
+    position: absolute;
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: rgba(255, 20, 35, .18);
+    filter: blur(18px);
+}
+
+
+.logo {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: #050506;
+    box-shadow:
+        0 0 0 1px rgba(255, 30, 45, .35),
+        0 8px 24px rgba(255, 0, 25, .22);
+}
+
+
+/* =========================================
+   BRAND
+========================================= */
+
+.brand {
+    margin: 0;
+    font-size: 25px;
+    line-height: 1.08;
+    font-weight: 900;
+    letter-spacing: .4px;
+}
+
+
+.brand-red {
+    color: var(--red);
+}
+
+
+.system-name {
+    margin-top: 5px;
+    color: #f3f3f4;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+
+.hero-description {
+    margin-top: 7px;
+    color: #a8a8ae;
+    font-size: 11px;
+    line-height: 1.45;
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.page {
+
+    width: 100%;
+
+    max-width: 560px;
+
+    margin: 0 auto;
+
+    padding:
+
+        0 14px
+
+        max(
+            34px,
+            env(safe-area-inset-bottom)
+        );
+
+}
+
+
+/* =========================================
+   CARD
+========================================= */
+
+.booking-card {
+
+    background:
+        rgba(255,255,255,.98);
+
+    border-radius: 22px;
+
+    padding: 22px 18px;
+
+    box-shadow:
+
+        0 18px 50px
+        rgba(0,0,0,.18);
+
+    border:
+        1px solid rgba(255,255,255,.7);
+
+}
+
+
+/* =========================================
+   LOGIN STATUS
+========================================= */
+
+.line-user {
+
+    display: none;
+
+    margin-bottom: 14px;
+
+    padding: 11px 13px;
+
+    border-radius: 11px;
+
+    background: #effff4;
+
+    border: 1px solid #ccefd8;
+
+    color: #087e3b;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+}
+
+
+.connection-status {
+
+    margin-bottom: 12px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color: #8d8d94;
+
+    font-size: 12px;
+
+}
+
+
+.status-dot {
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #aaa;
+
+}
+
+
+.connection-status.ready
+.status-dot {
+
+    background: var(--green);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(6,199,85,.10);
+
+}
+
+
+.connection-status.ready {
+
+    color: #4d8c63;
+
+}
+
+
+/* =========================================
+   SECTION
+========================================= */
+
+.form-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 15px;
+
+}
+
+
+.form-title {
+
+    font-size: 16px;
+
+    font-weight: 900;
+
+    color: #1d1d20;
+
+}
+
+
+.form-label-small {
+
+    color: #aaa;
+
+    font-size: 11px;
+
+    letter-spacing: 1px;
+
+}
+
+.service-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 18px;
+    padding: 6px;
+    border: 1px solid var(--gray-2);
+    border-radius: 15px;
+    background: #f5f5f7;
+}
+
+.service-option {
+    min-height: 48px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: #77777d;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: background .18s, color .18s, box-shadow .18s;
+}
+
+.service-option.active {
+    background: linear-gradient(135deg, #ff3142, #f40020);
+    color: #ffffff;
+    box-shadow: 0 7px 18px rgba(244, 0, 32, .22);
+}
+
+.passenger-options.is-hidden {
+    display: none;
+}
+
+.fare-estimate {
+    display: grid;
+    gap: 12px;
+    margin: 2px 0 16px;
+    padding: 15px;
+    border: 1px solid var(--gray-2);
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(0,0,0,.05);
+}
+.fare-estimate[hidden] { display: none; }
+.fare-estimate-money-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+/* Same result-row geometry as ride.html */
+.fare-estimate-top {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    gap: 10px;
+    align-items: center;
+}
+.fare-estimate-duration-badge {
+    flex: 0 0 auto;
+    align-self: center;
+    border-radius: 999px;
+    background: #f1f1f3;
+    padding: 6px 9px;
+    color: #55555b;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.fare-estimate-distance {
+    min-width: 0;
+    color: #74747c;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.fare-estimate-money {
+    flex: 0 0 auto;
+    color: var(--red);
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1.05;
+    white-space: nowrap;
+}
+.fare-estimate-status,
+.fare-estimate-note {
+    color: #8f8f95;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.fare-estimate-note { color: #74747c; }
+.fare-estimate-long-distance[hidden] { display: none !important; }
+.fare-estimate-long-distance {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f6f6f8;
+    color: #66666c;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.fare-estimate-long-distance.active {
+    border: 1px solid #ffd3d7;
+    background: #fff0f1;
+    color: #a31320;
+    font-weight: 800;
+}
+.fare-estimate.loading .fare-estimate-status { color: #8f8f95; }
+@media (max-width: 390px) {
+    .fare-estimate { padding: 14px; }
+    .fare-estimate-money { font-size: 28px; }
+}
+
+
+/* =========================================
+   FORM
+========================================= */
+
+.row {
+
+    display: flex;
+
+    gap: 18px;
+
+}
+
+
+.input-group {
+
+    flex: 1;
+
+    margin-bottom: 15px;
+
+}
+
+
+label {
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 15px;
+
+    color: #26262a;
+
+    font-weight: 800;
+
+}
+
+
+input,
+select {
+
+    width: 100%;
+
+    min-height: 46px;
+
+    padding: 0 11px;
+
+    border:
+        1px solid var(--gray-2);
+
+    border-radius: 12px;
+
+    background: #fafafa;
+
+    color: #222;
+
+    font-size: 16px;
+
+    outline: none;
+
+    appearance: auto;
+
+    transition:
+
+        border .15s,
+
+        background .15s,
+
+        box-shadow .15s;
+
+}
+
+
+input:focus,
+select:focus {
+
+    border-color:
+        var(--red);
+
+    background:
+        white;
+
+    box-shadow:
+
+        0 0 0 3px
+        rgba(255,31,45,.08),
+        0 6px 18px rgba(255,31,45,.06);
+
+}
+
+
+input::placeholder {
+
+    color: #b1b1b6;
+
+}
+
+.address-autocomplete {
+    position: relative;
+    width: 100%;
+}
+
+.address-input {
+    padding: 0 44px 0 42px;
+    color: #222222;
+    -webkit-text-fill-color: #222222;
+    caret-color: var(--red);
+    font-weight: 700;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.address-input::placeholder {
+    color: #8d8d93;
+    -webkit-text-fill-color: #8d8d93;
+    font-weight: 500;
+    opacity: 1;
+}
+
+.address-search-icon {
+    position: absolute;
+    top: 23px;
+    left: 15px;
+    z-index: 2;
+    transform: translateY(-50%);
+    color: #75757b;
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.address-clear-btn {
+    position: absolute;
+    top: 23px;
+    right: 8px;
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+    padding: 0;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #85858b;
+    font-size: 19px;
+    cursor: pointer;
+}
+
+.address-suggestions {
+    position: absolute;
+    top: calc(100% + 7px);
+    left: 0;
+    right: 0;
+    z-index: 5000;
+    display: none;
+    max-height: min(330px, 46vh);
+    overflow-y: auto;
+    border: 1px solid #e1e1e4;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, .18);
+    -webkit-overflow-scrolling: touch;
+    pointer-events: auto;
+    touch-action: pan-y;
+    isolation: isolate;
+}
+
+.address-suggestions.show {
+    display: block;
+}
+
+.address-suggestion {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid #ededf0;
+    background: #ffffff;
+    color: #222222;
+    text-align: center;
+    cursor: pointer;
+}
+
+.address-suggestion:active {
+    background: #f5f5f7;
+}
+
+.address-suggestion-icon {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #f0f0f2;
+    font-size: 16px;
+}
+
+.address-suggestion-main,
+.address-suggestion-secondary {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.address-suggestion-main {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.address-suggestion-secondary {
+    margin-top: 3px;
+    color: #77777d;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.address-google-attribution {
+    padding: 9px 14px;
+    color: #66666c;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.address-no-results {
+    padding: 15px;
+    color: #77777d;
+    font-size: 13px;
+    text-align: center;
+}
+
+
+
+/* 日期 / 時間欄位：手機上更精緻，並保留清楚間距 */
+#bookDate,
+#bookTime {
+    min-height: 42px;
+    height: 42px;
+    font-size: 14px;
+    padding: 0 9px;
+}
+
+.row .input-group {
+    min-width: 0;
+}
+
+/* =========================================
+   SUBMIT
+========================================= */
+
+.submit-btn {
+
+    width: 100%;
+
+    min-height: 54px;
+
+    margin-top: 6px;
+
+    border: none;
+
+    border-radius: 15px;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            #ff3341,
+            #e10019
+        );
+
+    color: white;
+
+    font-size: 17px;
+
+    font-weight: 900;
+
+    letter-spacing: .3px;
+
+    cursor: pointer;
+
+    position: relative;
+    overflow: hidden;
+
+    box-shadow:
+
+        0 11px 27px
+        rgba(210, 0, 22, .24);
+
+    transition:
+        transform .12s,
+        opacity .12s,
+        filter .16s,
+        box-shadow .16s;
+
+}
+
+
+.submit-btn:active {
+
+    transform:
+        scale(.985);
+
+}
+
+
+
+.submit-btn:hover {
+    filter: brightness(1.04);
+    box-shadow: 0 13px 30px rgba(210, 0, 22, .30);
+    transform: translateY(-1px);
+}
+
+.submit-btn::after {
+    content: "";
+    position: absolute;
+    top: -45%;
+    left: -28%;
+    width: 28%;
+    height: 190%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+    transform: rotate(18deg);
+    transition: left .45s ease;
+}
+
+.submit-btn:hover::after {
+    left: 116%;
+}
+
+.submit-btn:disabled {
+
+    opacity: .55;
+
+    cursor:
+        not-allowed;
+
+}
+
+
+/* =========================================
+   NOTES
+========================================= */
+
+.notice {
+
+    margin-top: 18px;
+
+    padding-top: 16px;
+
+    border-top:
+        1px solid #eee;
+
+    text-align: center;
+
+    color: #8e8e94;
+
+    font-size: 12px;
+
+    line-height: 1.8;
+
+}
+
+
+/* =========================================
+   STATUS MESSAGE
+========================================= */
+
+.message-box {
+
+    display: none;
+
+    margin-top: 18px;
+
+    border-radius: 13px;
+
+    padding: 14px;
+
+    text-align: center;
+
+    font-size: 14px;
+
+    line-height: 1.65;
+
+}
+
+
+.message-box.success {
+
+    display: block;
+
+    color: #087c39;
+
+    background: #effff4;
+
+    border: 1px solid #caefd6;
+
+}
+
+
+.message-box.error {
+
+    display: block;
+
+    color: #bb2632;
+
+    background: #fff0f1;
+
+    border: 1px solid #ffd2d5;
+
+}
+
+
+/* =========================================
+   SPINNER
+========================================= */
+
+.spinner {
+
+    display: inline-block;
+
+    width: 17px;
+    height: 17px;
+
+    margin-right: 8px;
+
+    vertical-align: -3px;
+
+    border-radius: 50%;
+
+    border:
+        2px solid rgba(255,255,255,.35);
+
+    border-top-color:
+        white;
+
+    animation:
+        spin .7s linear infinite;
+
+}
+
+
+@keyframes spin {
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.footer {
+
+    text-align: center;
+
+    margin-top: 19px;
+
+    color: #999;
+
+    font-size: 10px;
+
+    line-height: 1.7;
+
+}
+
+
+
+@keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardUp {
+    from { opacity: 0; transform: translateY(14px) scale(.99); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes successPop {
+    0%   { opacity: 0; transform: scale(.96); }
+    70%  { opacity: 1; transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+@keyframes logoFloat {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-3px); }
+}
+
+.logo-wrap { animation: logoFloat 3.2s ease-in-out infinite; }
+.brand,
+.system-name,
+.hero-description { animation: fadeDown .55s ease both; }
+.booking-card { animation: cardUp .5s cubic-bezier(.2,.8,.2,1); }
+.message-box.success { animation: successPop .42s cubic-bezier(.2,.8,.2,1) both; }
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 520px) {
+
+    .hero {
+        justify-content: flex-start;
+        gap: 18px;
+        padding:
+            max(10px, env(safe-area-inset-top))
+            24px
+            12px;
+    }
+
+    .logo {
+        width: 58px;
+        height: 58px;
+        border-radius: 14px;
+    }
+
+    .logo-glow {
+        width: 66px;
+        height: 66px;
+        filter: blur(16px);
+    }
+
+    .hero::after {
+        flex-basis: 58px;
+        width: 58px;
+    }
+
+    .brand {
+        font-size: 23px;
+    }
+
+    .system-name {
+        margin-top: 3px;
+        font-size: 13px;
+        letter-spacing: 1.25px;
+    }
+
+    .hero-description {
+        margin-top: 5px;
+        max-width: calc(100vw - 125px);
+        overflow: hidden;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: .2px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .booking-card {
+        padding:
+            17px 15px;
+        border-radius:
+            20px;
+    }
+
+    .form-header {
+        margin-bottom: 10px;
+    }
+
+    .service-switch {
+        margin-bottom: 15px;
+    }
+
+    .row {
+        gap: 14px;
+    }
+
+    input,
+    select {
+        font-size: 15px;
+    }
+
+    #bookDate,
+    #bookTime {
+        height: 40px;
+        min-height: 40px;
+        font-size: 13px;
+        padding: 0 7px;
+    }
+}
+
+
+/* 小手機 */
+@media (max-width: 370px) {
+    .row { gap: 10px; }
+
+    #bookDate,
+    #bookTime {
+        font-size: 12px;
+    }
+    .hero { gap: 13px; padding-left: 18px; padding-right: 18px; }
+    .logo { width: 54px; height: 54px; border-radius: 13px; }
+    .hero::after { flex-basis: 54px; width: 54px; }
+    .hero-description { max-width: calc(100vw - 112px); font-size: 9.5px; }
+}
+
+
+
+/* =========================================
+   SHARED SAVED ADDRESSES - TEST VERSION
+========================================= */
+.saved-address-panel {
+    margin-bottom: 15px;
+    padding: 13px;
+    border: 1px solid var(--gray-2);
+    border-radius: 15px;
+    background: #fafafa;
+}
+.saved-address-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.saved-address-title {
+    font-size: 14px;
+    font-weight: 900;
+    color: #26262a;
+}
+.saved-address-edit {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+.saved-address-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.saved-address-chip {
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--gray-2);
+    border-radius: 11px;
+    background: #ffffff;
+    color: #333338;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.saved-address-chip:active,
+.saved-address-chip.active {
+    border-color: var(--red);
+    background: #fff1f2;
+    color: var(--red);
+}
+.saved-address-empty {
+    color: #99999f;
+    font-size: 12px;
+}
+.saved-address-editor {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-2);
+}
+.saved-address-editor[hidden] { display: none; }
+.saved-address-row {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 8px;
+}
+.saved-address-row input {
+    min-height: 42px;
+    font-size: 13px;
+}
+.saved-address-note {
+    grid-column: 2;
+}
+.saved-address-save {
+    width: 100%;
+    min-height: 44px;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--red), var(--red-dark));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+.pickup-note-helper {
+    margin-top: 8px;
+}
+@media (max-width: 390px) {
+    .saved-address-row { grid-template-columns: 82px 1fr; }
+}
+
+
+
+/* =========================================
+   ULTIMATE COMPACT CUSTOMER UX
+   Ported from approved ride.html UX baseline
+========================================= */
+.field-tag {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    font-size: 10.5px;
+    line-height: 1;
+    font-weight: 850;
+    vertical-align: middle;
+}
+.field-tag.required-tag { color: var(--red); }
+.field-tag.optional-tag { color: #9a9aa0; }
+
+.booking-saved-place-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    overflow-x: auto;
+    padding: 2px 1px 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+.booking-saved-place-line::-webkit-scrollbar { display: none; }
+.booking-saved-place-line .saved-address-chips {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 7px;
+    min-width: max-content;
+}
+.booking-saved-place-line .saved-address-chips:empty { display: none; }
+.booking-saved-place-line .saved-address-chip {
+    flex: 0 0 auto;
+    min-height: 38px;
+    white-space: nowrap;
+}
+.saved-address-panel.compact {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    margin: 5px 0 0;
+}
+.saved-address-edit.compact {
+    flex: 0 0 auto;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 11px;
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    background: #fff;
+    color: #5d5d63;
+    font-size: 12px;
+    font-weight: 850;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.settings-gear-icon {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.55;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: 0 0 auto;
+}
+.saved-address-editor.compact-editor {
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid var(--gray-2);
+    border-radius: 14px;
+    background: #fafafa;
+}
+.saved-setting-name {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.saved-setting-name input {
+    min-width: 0;
+    flex: 1;
+}
+.saved-clear-btn {
+    flex: 0 0 auto;
+    border: 0;
+    background: transparent;
+    color: #a0a0a6;
+    padding: 3px 2px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.2;
+    cursor: pointer;
+}
+.saved-clear-btn:active { opacity: .6; }
+
+.booking-location-status {
+    min-height: 18px;
+    margin-top: 5px;
+    color: #8e8e94;
+    font-size: 11px;
+    line-height: 1.45;
+}
+.booking-location-status:empty { display: none; }
+.booking-location-status.ok { color: #4d8c63; }
+.booking-location-status.error { color: #bb2632; }
+.location-inline-btn {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 35px;
+    margin-top: 5px;
+    padding: 0 11px;
+    border: 1px solid var(--gray-2);
+    border-radius: 10px;
+    background: #f7f7f9;
+    color: #6f6f75;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 850;
+    cursor: pointer;
+    text-align: left;
+}
+.location-inline-btn:active {
+    opacity: .72;
+    transform: scale(.99);
+}
+.location-inline-btn:disabled {
+    opacity: .62;
+    cursor: wait;
+}
+.location-inline-icon {
+    font-size: 15px;
+    line-height: 1;
+    color: #77777d;
+}
+
+.pickup-note-compact {
+    display: grid;
+    gap: 8px;
+    margin-top: 8px;
+}
+.pickup-note-toggle {
+    width: 100%;
+    min-height: 42px;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    color: #5d5d63;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.pickup-note-toggle-main {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    font-weight: 800;
+}
+#bookingPickupNoteToggleText {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.pickup-note-toggle-arrow {
+    color: #a0a0a6;
+    font-size: 18px;
+    line-height: 1;
+}
+.pickup-note-field {
+    display: grid;
+    gap: 8px;
+}
+.pickup-note-field[hidden] { display: none !important; }
+.pickup-note-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.pickup-note-head label { margin: 0; }
+.pickup-note-collapse {
+    border: 0;
+    background: transparent;
+    color: #99999f;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.booking-compact-choice {
+    width: 100%;
+    min-height: 50px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    border: 1px solid var(--gray-2);
+    border-radius: 14px;
+    background: #fff;
+    color: #1f1f22;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+}
+.booking-compact-choice:active { transform: scale(.997); }
+.booking-compact-choice-label {
+    font-size: 14px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+.booking-compact-choice-value {
+    min-width: 0;
+    color: #55555b;
+    font-size: 13px;
+    font-weight: 750;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+}
+.booking-compact-choice-arrow {
+    color: #9a9aa0;
+    font-size: 20px;
+    line-height: 1;
+}
+.booking-compact-help {
+    margin-top: 6px;
+    padding-left: 2px;
+    color: #9b9ba1;
+    font-size: 11px;
+    line-height: 1.45;
+}
+.booking-hidden-control { display: none !important; }
+
+.booking-sheet-overlay {
+    position: fixed;
+    z-index: 12000;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-top: max(8px, env(safe-area-inset-top));
+    background: rgba(0,0,0,.45);
+    overscroll-behavior: contain;
+}
+.booking-sheet-overlay[hidden] { display: none !important; }
+.booking-bottom-sheet {
+    width: min(100%,560px);
+    max-height: 84vh;
+    max-height: min(88dvh, calc(100dvh - max(8px, env(safe-area-inset-top))));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    padding: 10px 18px max(18px,env(safe-area-inset-bottom));
+    box-shadow: 0 -18px 55px rgba(0,0,0,.24);
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+.booking-sheet-handle {
+    width: 42px;
+    height: 5px;
+    border-radius: 999px;
+    background: #d8d8dd;
+    margin: 2px auto 14px;
+}
+.booking-sheet-head {
+    position: sticky;
+    top: -10px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 -2px 14px;
+    padding: 8px 2px 7px;
+    background: rgba(255,255,255,.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.booking-sheet-title {
+    font-size: 19px;
+    font-weight: 950;
+}
+.booking-sheet-close {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: #f4f4f6;
+    color: #555;
+    font-size: 19px;
+    cursor: pointer;
+}
+.booking-sheet-section {
+    display: grid;
+    gap: 9px;
+    margin-top: 16px;
+}
+.booking-sheet-label {
+    font-size: 14px;
+    font-weight: 900;
+}
+.booking-option-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.booking-option-pill {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    background: #f7f7f9;
+    color: #404046;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+}
+.booking-option-pill.active {
+    border-color: var(--red);
+    background: var(--red);
+    color: #fff;
+}
+.booking-sheet-note {
+    color: #8d8d93;
+    font-size: 11px;
+    line-height: 1.55;
+}
+.booking-preference-card {
+    display: grid;
+    gap: 7px;
+    margin-top: 2px;
+    padding: 11px 12px;
+    border: 1px solid #ececef;
+    border-radius: 12px;
+    background: #fafafa;
+}
+.booking-preference-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #55555b;
+    font-size: 12px;
+    font-weight: 850;
+    cursor: pointer;
+}
+.booking-preference-check input {
+    width: 16px;
+    height: 16px;
+    min-height: 16px;
+    margin: 0;
+    padding: 0;
+    accent-color: var(--red);
+    flex: 0 0 auto;
+}
+.booking-preference-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+    color: #99999f;
+    font-size: 10.8px;
+    line-height: 1.4;
+}
+#bookingSmokingPreferenceHint { min-width: 0; }
+.booking-preference-clear {
+    flex: 0 0 auto;
+    padding: 2px 0;
+    border: 0;
+    background: transparent;
+    color: #9a9aa0;
+    font-family: inherit;
+    font-size: 10.8px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.booking-preference-clear:active { opacity: .6; }
+.booking-sheet-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 10px;
+    margin: 20px -2px 0;
+    padding: 12px 2px max(18px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(255,255,255,.82) 0%, #fff 24%, #fff 100%);
+}
+.booking-sheet-secondary,
+.booking-sheet-primary {
+    min-height: 48px;
+    border: 0;
+    border-radius: 13px;
+    font-family: inherit;
+    font-weight: 900;
+    cursor: pointer;
+}
+.booking-sheet-secondary {
+    background: #f0f0f2;
+    color: #666;
+}
+.booking-sheet-primary {
+    background: var(--red);
+    color: #fff;
+}
+.booking-other-textarea {
+    width: 100%;
+    min-height: 92px;
+    resize: vertical;
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    padding: 12px;
+    background: #fafafa;
+    color: #222;
+    font: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+}
+.booking-other-textarea:focus {
+    border-color: var(--red);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(255,31,45,.08);
+}
+.booking-luggage-notice,
+.booking-fare-surcharge {
+    margin-top: 8px;
+    padding: 9px 11px;
+    border-radius: 11px;
+    background: #fff4f4;
+    color: #9f1422;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.booking-luggage-notice[hidden],
+.booking-fare-surcharge[hidden] { display: none !important; }
+.booking-payment-list {
+    display: grid;
+    gap: 10px;
+}
+.booking-payment-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 11px 12px;
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    background: #fafafa;
+    cursor: pointer;
+}
+.booking-payment-option input {
+    width: 17px;
+    height: 17px;
+    min-height: 17px;
+    margin: 2px 0 0;
+    padding: 0;
+    accent-color: var(--red);
+    flex: 0 0 auto;
+}
+.booking-payment-copy {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    color: #333338;
+    font-size: 13px;
+    font-weight: 850;
+}
+.booking-payment-copy small {
+    color: #909096;
+    font-size: 10.8px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.booking-payment-option {
+    position: relative;
+}
+
+.booking-payment-default-badge {
+    display: none;
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f1f1f3;
+    color: #66666c;
+    font-size: 10.5px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.booking-payment-default-badge.show {
+    display: inline-flex;
+}
+
+.booking-payment-set-default {
+    display: none;
+    flex: 0 0 auto;
+    margin-left: auto;
+    min-height: 30px;
+    padding: 0 9px;
+    border: 1px solid #d8d8dc;
+    border-radius: 9px;
+    background: #fff;
+    color: #44444a;
+    font-size: 10.8px;
+    font-weight: 850;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.booking-payment-set-default.show {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.booking-payment-set-default:active {
+    transform: scale(.98);
+}
+
+.booking-payment-toast {
+    display: none;
+    margin-top: 8px;
+    color: #168447;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.booking-payment-toast.show {
+    display: block;
+}
+
+@media (max-width: 390px) {
+    .booking-payment-option {
+        align-items: flex-start;
+    }
+    .booking-payment-set-default {
+        padding: 0 8px;
+        font-size: 10.3px;
+    }
+    .booking-payment-default-badge {
+        font-size: 10px;
+    }
+}
+
+
+/* ===== STEP 3：MULTI-STOP + ROUTE MODE ===== */
+.booking-waypoints {
+    display: grid;
+    gap: 10px;
+    margin: -2px 0 15px;
+}
+.booking-waypoint {
+    display: grid;
+    gap: 8px;
+    padding-left: 14px;
+    border-left: 2px dashed #dedee2;
+}
+.booking-waypoint[hidden] { display: none !important; }
+.booking-waypoint-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.booking-waypoint-head label { margin: 0; }
+.booking-waypoint-remove {
+    border: 1px solid var(--gray-2);
+    border-radius: 10px;
+    background: #fff;
+    color: #818187;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 800;
+}
+.booking-add-waypoint {
+    width: 100%;
+    min-height: 44px;
+    border: 1px dashed #d4d4d8;
+    border-radius: 13px;
+    background: #fff;
+    color: #56565c;
+    font-weight: 850;
+}
+.booking-add-waypoint[hidden] { display: none !important; }
+.booking-waypoint-help {
+    color: #99999f;
+    font-size: 11px;
+    line-height: 1.5;
+    text-align: center;
+}
+.booking-route-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 7px;
+    padding: 5px;
+    border: 1px solid var(--gray-2);
+    border-radius: 14px;
+    background: #f5f5f7;
+}
+.booking-route-option {
+    min-height: 43px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #77777d;
+    font-size: 13px;
+    font-weight: 900;
+}
+.booking-route-option.active {
+    background: #fff;
+    color: #222226;
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+.booking-route-option.fast.active {
+    background: #17171b;
+    color: #fff;
+}
+.booking-route-help {
+    color: #96969c;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.booking-route-switch-result {
+    margin: 0;
+}
+.booking-route-switch-result .booking-route-option {
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 12px;
+}
+
+
+/* ===== #5 WHOLE-SYSTEM VISUAL CONSISTENCY FINAL ===== */
+/* Fixed shell height: no longer depends on total document height */
+body{
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255,31,45,.22) 0,
+            rgba(255,31,45,.12) 72px,
+            transparent 300px
+        ),
+        linear-gradient(
+            180deg,
+            #070709 0,
+            #101014 220px,
+            #f2f3f5 220px,
+            #f2f3f5 100%
+        ) !important;
+}
+
+.hero{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:18px !important;
+    width:min(100%,560px) !important;
+    max-width:560px !important;
+    margin:0 auto !important;
+    padding:max(10px,env(safe-area-inset-top)) 24px 12px !important;
+    text-align:left !important;
+}
+.hero-copy{
+    min-width:0 !important;
+    flex:1 !important;
+    text-align:center !important;
+}
+.hero::after{
+    content:"";
+    flex:0 0 58px !important;
+    width:58px !important;
+}
+.hero .logo-wrap{
+    margin:0 !important;
+    flex:0 0 auto !important;
+}
+.hero .logo{
+    width:58px !important;
+    height:58px !important;
+    border-radius:14px !important;
+}
+.hero .logo-glow{
+    width:66px !important;
+    height:66px !important;
+    filter:blur(16px) !important;
+}
+.hero .brand{
+    font-size:23px !important;
+    line-height:1.08 !important;
+}
+.hero .system-name{
+    margin-top:3px !important;
+    font-size:13px !important;
+    font-weight:800 !important;
+    letter-spacing:1.25px !important;
+}
+.hero .hero-description{
+    margin-top:5px !important;
+    max-width:calc(100vw - 125px) !important;
+    overflow:hidden !important;
+    color:#a8a8ae !important;
+    font-size:10.5px !important;
+    font-weight:600 !important;
+    letter-spacing:.2px !important;
+    line-height:1.4 !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+}
+@media(max-width:370px){
+    .hero{
+        gap:13px !important;
+        padding-left:18px !important;
+        padding-right:18px !important;
+    }
+    .hero .logo{
+        width:54px !important;
+        height:54px !important;
+        border-radius:13px !important;
+    }
+    .hero::after{
+        flex-basis:54px !important;
+        width:54px !important;
+    }
+    .hero .hero-description{
+        max-width:calc(100vw - 112px) !important;
+        font-size:9.5px !important;
+    }
+}
+
+.page{
+    margin:-6px auto 0 !important;
+}
+
+/* Fare page is the typography standard for +新增停靠點 */
+.booking-add-waypoint{
+    min-height:44px !important;
+    border:1px dashed #d7d7dc !important;
+    border-radius:12px !important;
+    color:#4f4f55 !important;
+    font-size:14px !important;
+    font-weight:850 !important;
+}
+
+
+
+/* =========================================
+   #6 BOOKING CONFIRMATION｜FARE EXACT SCALE
+   Same modal scale/position as fare.html.
+========================================= */
+.booking-confirm-overlay {
+    z-index: 12600;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0,0,0,.58);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.booking-confirm-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 460px;
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    background: #fff;
+    border-radius: 24px;
+    padding: 18px 22px 22px;
+    box-shadow: 0 25px 60px rgba(0,0,0,.28);
+    animation: bookingConfirmPop .22s ease-out;
+}
+.booking-confirm-card::-webkit-scrollbar { display: none; }
+.booking-confirm-card.booking-result-mode > :not(.top-line-result-state){
+    display:none!important;
+}
+
+.booking-confirm-handle {
+    width: 42px;
+    height: 5px;
+    margin: 0 auto 20px;
+    border-radius: 99px;
+    background: #ddd;
+}
+
+.booking-confirm-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+.booking-confirm-icon {
+    width: 120px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: transparent;
+    border-radius: 0;
+}
+.booking-confirm-icon img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+}
+.booking-confirm-title {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.25;
+    color: #111;
+}
+.booking-confirm-subtitle {
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #999;
+}
+
+.booking-confirm-meta,
+.booking-confirm-details {
+    padding: 4px 14px;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    background: #fff;
+}
+.booking-confirm-meta {
+    margin-bottom: 14px;
+}
+.booking-confirm-details {
+    margin-top: 14px;
+}
+
+.booking-confirm-detail-row {
+    display: grid;
+    grid-template-columns: 82px minmax(0,1fr);
+    gap: 10px;
+    align-items: start;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+.booking-confirm-detail-row:last-child { border-bottom: 0; }
+.booking-confirm-detail-row > span {
+    color: #999;
+    font-size: 12px;
+    font-weight: 600;
+}
+.booking-confirm-detail-row > strong {
+    min-width: 0;
+    color: #222;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.booking-confirm-location {
+    padding: 18px;
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 16px;
+}
+.booking-confirm-location-row {
+    display: grid;
+    grid-template-columns: 18px minmax(0,1fr);
+    gap: 10px;
+    align-items: start;
+}
+.booking-confirm-dot {
+    width: 10px;
+    height: 10px;
+    margin-top: 6px;
+    border-radius: 50%;
+}
+.booking-confirm-pickup-dot { background: #20ad51; }
+.booking-confirm-pickup-dot::before { content: ""; }
+.booking-confirm-waypoint-dot { background: #f2aa1b; }
+.booking-confirm-waypoint-dot::before { content: ""; }
+.booking-confirm-dropoff-dot { background: #ff1f2d; }
+.booking-confirm-dropoff-dot::before { content: ""; }
+
+.booking-confirm-line {
+    width: 1px;
+    height: 22px;
+    margin: 4px 0 4px 4px;
+    border: 0;
+    background: #ddd;
+}
+.booking-confirm-location-label {
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+}
+.booking-confirm-address {
+    color: #222;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.5;
+    word-break: break-word;
+}
+.booking-confirm-pickup-note {
+    margin-top: 6px;
+    padding: 6px 8px;
+    border-radius: 9px;
+    background: #fff2f3;
+    color: #971e29;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.45;
+}
+.booking-confirm-pickup-note[hidden],
+.booking-confirm-waypoint-wrap[hidden] {
+    display: none !important;
+}
+
+.booking-confirm-route-box {
+    margin-top: 14px;
+    padding: 17px 18px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 16px;
+}
+.booking-confirm-route-box {
+    display: block;
+}
+.booking-confirm-route-icon {
+    display: none;
+}
+.booking-confirm-route-name {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #777;
+}
+.booking-confirm-route-name span {
+    display: block;
+    margin: 0;
+    color: #777;
+    font-size: 14px;
+    font-weight: 500;
+}
+.booking-confirm-route-name strong {
+    color: #222;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+.booking-confirm-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding-top: 14px;
+}
+.booking-confirm-stats div {
+    min-width: 0;
+    display: block;
+}
+.booking-confirm-stats span {
+    display: block;
+    width: auto;
+    margin-bottom: 4px;
+    overflow: visible;
+    white-space: normal;
+    color: #999;
+    font-size: 11px;
+    font-weight: 600;
+}
+.booking-confirm-stats strong {
+    display: block;
+    color: #222;
+    font-size: 14px;
+    font-weight: 800;
+    white-space: normal;
+}
+
+.booking-confirm-price {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 18px;
+    border-radius: 16px;
+    background: linear-gradient(135deg,#fff4f5,#fffafa);
+}
+.booking-confirm-price span {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: block;
+    color: #555;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.booking-confirm-price span::after {
+    content: attr(data-note);
+    display: block;
+    max-width: 220px;
+    margin-top: 3px;
+    color: #8e8e94;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.35;
+    white-space: normal;
+}
+.booking-confirm-price span[data-note=""]::after { display: none; }
+.booking-confirm-price strong {
+    flex: 0 0 auto;
+    color: #f20d27;
+    font-size: 30px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.booking-confirm-note {
+    margin-top: 12px;
+    color: #999;
+    font-size: 10.5px;
+    line-height: 1.55;
+}
+
+.booking-confirm-send {
+    width: 100%;
+    min-height: 50px;
+    margin-top: 16px;
+    padding: 15px;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(90deg,#ff3045,#f0001d);
+    color: #fff;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(242,13,39,.22);
+}
+.booking-confirm-send:active { transform: scale(.98); }
+.booking-confirm-send:disabled {
+    opacity: .58;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.booking-confirm-back {
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px;
+    border: 0;
+    background: transparent;
+    color: #888;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+@keyframes bookingConfirmPop {
+    from { opacity: 0; transform: translateY(16px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Only protect very narrow screens; do not enlarge the modal. */
+@media (max-width: 360px) {
+    .booking-confirm-overlay { padding: 12px; }
+    .booking-confirm-card {
+        max-height: calc(100dvh - 24px);
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+    .booking-confirm-header { gap: 12px; }
+    .booking-confirm-icon { width: 104px; height: 48px; }
+    .booking-confirm-title { font-size: 20px; }
+}
+
+
+/* =========================================
+   TOP TAXI｜UNIFIED LINE RETURN RESULT
+   成功：自動返回 + 手動返回備援
+   待確認：不自動返回 + 聯繫客服
+========================================= */
+.top-line-result-state{
+    padding:8px 0 2px;
+    text-align:center;
+}
+.top-line-result-state[hidden]{display:none!important}
+.top-line-result-icon{
+    width:64px;
+    height:64px;
+    margin:4px auto 16px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    font-size:34px;
+    font-weight:900;
+}
+.top-line-result-state.success .top-line-result-icon{
+    background:#edf9f0;
+    color:#16a34a;
+}
+.top-line-result-state.warning .top-line-result-icon{
+    background:#fff7e8;
+    color:#e79a00;
+}
+.top-line-result-state.sync-warning .top-line-result-icon{
+    background:#eef7ff;
+    color:#2f7fd8;
+}
+.top-line-result-title{
+    color:#17171a;
+    font-size:21px;
+    font-weight:900;
+    line-height:1.3;
+}
+.top-line-result-state.success .top-line-result-title{color:#16893c}
+.top-line-result-state.warning .top-line-result-title{color:#c87700}
+.top-line-result-copy{
+    margin:12px auto 0;
+    max-width:340px;
+    color:#66666c;
+    font-size:13px;
+    font-weight:600;
+    line-height:1.7;
+}
+.top-line-result-copy strong{
+    color:#333338;
+    font-weight:850;
+}
+.top-line-result-subcopy{
+    margin-top:10px;
+    color:#99999f;
+    font-size:11.5px;
+    line-height:1.55;
+}
+.top-line-result-primary{
+    width:100%;
+    min-height:50px;
+    margin-top:20px;
+    padding:13px 15px;
+    border:1px solid #e5e5e8;
+    border-radius:14px;
+    background:#fff;
+    color:#222;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:850;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+}
+.top-line-result-primary:active{transform:scale(.98)}
+.top-line-badge{
+    width:30px;
+    height:30px;
+    display:inline-grid;
+    place-items:center;
+    flex:0 0 30px;
+    border-radius:9px;
+    background:#06c755;
+    color:#fff;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:-.3px;
+}
+
+
+
+/* =========================================
+   TOP Taxi Errand V1 additions
+========================================= */
+.errand-mode-switch,
+.errand-task-grid{
+    display:grid;
+    gap:10px;
+}
+.errand-mode-switch{grid-template-columns:1fr 1fr;margin-bottom:16px;}
+.errand-task-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+.errand-choice{
+    appearance:none;border:1px solid #e6e6ea;background:#fff;border-radius:14px;
+    min-height:48px;padding:11px 12px;font-size:14px;font-weight:800;color:#242428;
+    box-shadow:0 4px 14px rgba(0,0,0,.04);cursor:pointer;
+}
+.errand-choice.active{border-color:#ff1f2d;background:#fff4f5;color:#c90012;box-shadow:0 7px 18px rgba(255,31,45,.10);}
+.errand-task-grid .errand-choice:last-child:nth-child(odd){grid-column:1/-1;}
+.errand-section-note{font-size:12px;line-height:1.7;color:#787880;margin-top:7px;}
+.errand-inline-note{font-size:12px;line-height:1.6;color:#777780;margin-top:7px;padding:9px 11px;background:#f7f7f9;border-radius:10px;}
+.errand-warning-note{font-size:12px;line-height:1.7;color:#6b4144;margin-top:10px;padding:11px 12px;background:#fff6f6;border:1px solid #f3d7d9;border-radius:12px;}
+.errand-address-block{margin-top:14px;}
+.errand-address-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.errand-address-head label{margin:0;}
+.errand-text-btn{border:0;background:transparent;color:#c90012;font-weight:800;font-size:12px;padding:5px 0;cursor:pointer;}
+.errand-contact-box{margin-top:8px;padding:10px 11px;background:#f8f8fa;border:1px solid #ececef;border-radius:12px;}
+.errand-contact-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;background:transparent;padding:0;color:#55555d;font-size:13px;font-weight:800;cursor:pointer;}
+.errand-contact-fields{display:grid;grid-template-columns:1fr 1.2fr;gap:8px;margin-top:10px;}
+.errand-contact-fields input{margin:0;}
+.errand-textarea{width:100%;min-height:94px;resize:vertical;border:1px solid #ddddE3;border-radius:14px;padding:13px 14px;font:inherit;line-height:1.6;background:#fff;outline:none;}
+.errand-textarea:focus{border-color:#ff1f2d;box-shadow:0 0 0 3px rgba(255,31,45,.09);}
+.errand-small-input{margin-top:8px;}
+.errand-row-toggle{display:flex;gap:8px;flex-wrap:wrap;}
+.errand-pill{border:1px solid #dedee3;background:#fff;border-radius:999px;padding:9px 13px;font-size:13px;font-weight:800;color:#4a4a50;cursor:pointer;}
+.errand-pill.active{border-color:#ff1f2d;background:#fff2f3;color:#c90012;}
+.errand-hidden{display:none!important;}
+.errand-delivery-box{margin-top:14px;padding:12px;border:1px solid #ececf0;background:#fafafa;border-radius:14px;}
+.errand-delivery-title{font-size:13px;font-weight:900;color:#333;margin-bottom:9px;}
+.errand-summary-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #e4e4e8;background:#fff;border-radius:14px;padding:13px 14px;cursor:pointer;text-align:left;}
+.errand-summary-btn strong{font-size:14px;color:#29292e;}.errand-summary-btn span{font-size:12px;color:#777780;}
+.errand-fee-list{margin-top:7px;font-size:12px;color:#777780;line-height:1.7;}
+.errand-price-main{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;}
+.errand-price-main strong{font-size:28px;line-height:1;color:#c90012;}
+.errand-price-main span{font-size:13px;color:#777780;}
+.errand-policy{margin-top:16px;border:1px solid #e5e5e9;border-radius:14px;overflow:hidden;background:#fff;}
+.errand-policy summary{cursor:pointer;padding:13px 14px;font-weight:900;font-size:13px;list-style:none;}
+.errand-policy summary::-webkit-details-marker{display:none;}
+.errand-policy-copy{padding:0 14px 14px;font-size:12px;color:#66666e;line-height:1.8;white-space:pre-line;}
+.errand-sheet-grid{display:grid;gap:10px;}
+.errand-sheet-option{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e4e4e8;border-radius:12px;background:#fff;}
+.errand-sheet-option input{width:auto;margin:0;}
+.errand-sheet-option span{font-size:13px;font-weight:800;color:#3d3d42;}
+.errand-confirm-task{font-size:13px;line-height:1.7;white-space:pre-wrap;color:#333;}
+.errand-confirm-note{font-size:12px;color:#777780;line-height:1.7;}
+.errand-result-mode .errand-confirm-content,.errand-result-mode .errand-confirm-footer,.errand-result-mode .booking-confirm-head{display:none;}
+.errand-empty-estimate{padding:13px 14px;background:#fafafa;border:1px dashed #dddde2;border-radius:14px;color:#777780;font-size:12px;line-height:1.7;}
+@media(max-width:430px){
+  .errand-contact-fields{grid-template-columns:1fr;}
+  .errand-task-grid{grid-template-columns:1fr 1fr;}
+  .errand-choice{font-size:13px;padding:10px 8px;}
+}
+
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="logo-wrap"><div class="logo-glow"></div><img src="logo.png" alt="TOP Taxi Logo" class="logo"></div>
+  <div class="hero-copy">
+    <h1 class="brand"><span class="brand-red">TOP</span> Taxi</h1>
+    <div class="system-name">24H 跑腿服務</div>
+    <div class="hero-description">代買・取件配送・代排隊・寵物接送・其他跑腿</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="booking-card">
+    <div id="connectionStatus" class="connection-status" style="display:none"><span class="status-dot"></span><span id="connectionText">LINE 系統連線中...</span></div>
+    <div id="lineUser" class="line-user" style="display:none"></div>
+
+    <div class="form-header"><div class="form-title">🛵 跑腿服務</div><div class="form-label-small">TOP TAXI ERRAND</div></div>
+    <form id="errandForm" novalidate>
+      <div class="input-group">
+        <label>服務時間</label>
+        <div class="errand-mode-switch">
+          <button type="button" class="errand-choice active" data-mode="now">⚡ 立即跑腿</button>
+          <button type="button" class="errand-choice" data-mode="reserve">📅 預約跑腿</button>
+        </div>
+      </div>
+
+      <div id="reserveFields" class="row errand-hidden">
+        <div class="input-group"><label for="errandDate">📅 預約日期 <span class="field-tag required-tag">必填</span></label><input id="errandDate" type="date"></div>
+        <div class="input-group"><label for="errandTime">⏰ 預約時間 <span class="field-tag required-tag">必填</span></label><input id="errandTime" type="time"></div>
+      </div>
+
+      <div class="input-group">
+        <label>任務類型 <span class="field-tag required-tag">必填</span></label>
+        <div class="errand-task-grid">
+          <button type="button" class="errand-choice active" data-task="purchase">🛍️ 代買</button>
+          <button type="button" class="errand-choice" data-task="delivery">📦 取件／配送</button>
+          <button type="button" class="errand-choice" data-task="queue">🧾 代排隊</button>
+          <button type="button" class="errand-choice" data-task="pet">🐾 寵物接送</button>
+          <button type="button" class="errand-choice" data-task="other">✨ 其他跑腿</button>
+        </div>
+      </div>
+
+      <section id="addressSection"></section>
+
+      <div id="taskContentGroup" class="input-group">
+        <label id="taskContentLabel" for="taskContent">購買內容 <span class="field-tag required-tag">必填</span></label>
+        <textarea id="taskContent" class="errand-textarea" placeholder="例：大杯冰美式 2 杯、600ml 可樂 1 瓶"></textarea>
+        <div id="purchaseSpecNote" class="errand-inline-note">商品如有尺寸、容量、口味、冰量、甜度等規格，請務必填寫完整，以免購買錯誤。</div>
+      </div>
+
+      <div id="petFields" class="input-group errand-hidden">
+        <label>🐾 寵物資料</label>
+        <div class="row">
+          <div class="input-group"><label for="petType">寵物種類 <span class="field-tag required-tag">必填</span></label><select id="petType"><option value="貓">貓</option><option value="狗">狗</option><option value="其他">其他</option></select></div>
+          <div class="input-group"><label for="petName">寵物名字 <span class="field-tag optional-tag">選填</span></label><input id="petName" type="text" placeholder="例如：奶茶"></div>
+        </div>
+        <div class="errand-row-toggle" style="margin-top:8px">
+          <button type="button" class="errand-pill active" data-pet-carrier="yes">有提籠／提袋</button>
+          <button type="button" class="errand-pill" data-pet-carrier="no">無提籠／提袋 +$50</button>
+        </div>
+        <div class="errand-warning-note">為保障接送安全，如寵物有咬人、攻擊、容易逃脫或其他特殊狀況，請於預約時主動告知。<br>如未事先告知，或司機現場評估無法安全完成接送，TOP Taxi 得婉拒承接服務。</div>
+      </div>
+
+      <div id="advanceGroup" class="input-group">
+        <label>💰 是否需要代墊</label>
+        <div class="errand-row-toggle">
+          <button type="button" class="errand-pill active" data-advance="no">不需要</button>
+          <button type="button" class="errand-pill" data-advance="yes">需要代墊</button>
+        </div>
+        <div id="advanceAmountWrap" class="errand-small-input errand-hidden"><input id="advanceAmount" type="number" min="0" step="1" inputmode="numeric" placeholder="請輸入預估代墊金額"></div>
+        <div class="errand-inline-note">代墊金額超過 NT$2,000，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。</div>
+      </div>
+
+      <div class="input-group">
+        <button id="openOtherNeeds" class="errand-summary-btn" type="button"><strong>其他需求</strong><span id="otherNeedsSummary">上樓／樓梯／搬重物／其他備註・選填 ›</span></button>
+      </div>
+
+      <div class="input-group">
+        <button id="togglePhotoReturn" class="errand-summary-btn" type="button"><strong>📷 拍照回報</strong><span id="photoReturnSummary">不需要 ›</span></button>
+        <div id="photoRequirementWrap" class="errand-small-input errand-hidden"><input id="photoRequirement" type="text" placeholder="例如：拍店門口招牌、商品價格、繳費收據"></div>
+        <div class="errand-section-note">拍照回報不另外收費；非當面放置時系統會自動要求拍照回報。</div>
+      </div>
+
+      <div id="fareEstimate" class="fare-estimate" aria-live="polite">
+        <div class="fare-estimate-top">
+          <div class="booking-route-switch booking-route-switch-result" role="group" aria-label="行車路線">
+            <button type="button" id="surfaceBtn" class="booking-route-option">🚕 平面道路</button>
+            <button type="button" id="fastBtn" class="booking-route-option fast active">🛣️ 推薦快速</button>
+          </div>
+          <span id="estimateDuration" class="fare-estimate-duration-badge">最低消費</span>
+        </div>
+        <div class="errand-price-main"><span id="estimateDistance">未填完整路線時，以跑腿低消計</span><strong id="estimateFare">$220</strong></div>
+        <div id="fareExtras" class="errand-fee-list"></div>
+        <div id="fareStatus" class="fare-estimate-status">跑腿最低消費 NT$220</div>
+        <div class="fare-estimate-note">預估金額僅供參考，實際依里程、時間、等待與加價項目計費</div>
+      </div>
+
+      <div class="input-group">
+        <label>💳 付款方式</label>
+        <div class="booking-payment-list">
+          <label class="booking-payment-option" data-payment-option="現金｜行程結束後付款"><input type="radio" name="errandPayment" value="現金｜行程結束後付款" checked><span class="booking-payment-copy">現金 <small>任務完成後付款</small></span><span class="booking-payment-default-badge" data-payment-default-badge="現金｜行程結束後付款">預設</span><button class="booking-payment-set-default" type="button" data-payment-set-default="現金｜行程結束後付款">設為預設</button></label>
+          <label class="booking-payment-option" data-payment-option="車資後結"><input type="radio" name="errandPayment" value="車資後結"><span class="booking-payment-copy">後結 <small>限已與 TOP Taxi 約定的後結客戶使用</small></span><span class="booking-payment-default-badge" data-payment-default-badge="車資後結">預設</span><button class="booking-payment-set-default" type="button" data-payment-set-default="車資後結">設為預設</button></label>
+        </div>
+        <div id="paymentToast" class="booking-payment-toast" aria-live="polite"></div>
+      </div>
+
+      <details class="errand-policy">
+        <summary>跑腿收費說明 ›</summary>
+        <div class="errand-policy-copy">跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。
+
+・每增加 1 個停靠點 +NT$50
+・有電梯需上樓 +NT$50
+・無電梯爬樓梯，每層 +NT$50
+・搬運重物 +NT$100
+・拍照回報不另收費
+
+代墊金額超過 NT$2,000 時，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。
+
+司機接單並開始前往後，如因客人取消、店家未營業或商品缺貨而取消任務，酌收 NT$100 取消費。
+
+現場等待期間持續計時；符合包車申請條件時，將由調度確認並於變更計費方式前告知客人。</div>
+      </details>
+
+      <button type="button" id="submitBtn" class="submit-btn" style="margin-top:16px">確認跑腿 →</button>
+      <div id="pageStatus" class="status" style="text-align:center">送出後由客服確認並安排跑腿服務</div>
+    </form>
+  </div>
+</main>
+
+<div id="otherNeedsSheet" class="booking-sheet-overlay" hidden>
+  <div class="booking-sheet-card">
+    <div class="booking-sheet-handle"></div>
+    <div class="booking-sheet-head"><div class="booking-sheet-title">其他需求</div><button type="button" class="booking-sheet-close" data-close-sheet="otherNeedsSheet">×</button></div>
+    <div class="errand-sheet-grid">
+      <div><div class="errand-section-note" style="margin:0 0 7px">上樓方式</div><div class="errand-row-toggle"><button type="button" class="errand-pill active" data-floor-mode="none">不上樓</button><button type="button" class="errand-pill" data-floor-mode="elevator">有電梯 +$50</button><button type="button" class="errand-pill" data-floor-mode="stairs">爬樓梯</button></div></div>
+      <div id="stairsFloorWrap" class="errand-hidden"><label for="stairsFloors">爬樓梯樓層數 <span class="field-tag required-tag">必填</span></label><input id="stairsFloors" type="number" min="1" max="99" step="1" inputmode="numeric" placeholder="每層 +$50"></div>
+      <label class="errand-sheet-option"><input id="heavyItem" type="checkbox"><span>搬運重物 +$100</span></label>
+      <div><label for="otherNote">其他備註 <span class="field-tag optional-tag">選填</span></label><textarea id="otherNote" class="errand-textarea" style="min-height:76px" placeholder="其他需要司機注意的事項"></textarea></div>
+      <button type="button" id="saveOtherNeeds" class="saved-address-save">完成</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirmOverlay" class="booking-sheet-overlay booking-confirm-overlay" hidden>
+  <div class="booking-confirm-card errand-confirm-card">
+    <div class="booking-sheet-handle"></div>
+    <div class="booking-confirm-head"><div><div class="booking-confirm-title">確認您的跑腿</div><div class="booking-confirm-subtitle">請確認以下任務資訊</div></div><button type="button" class="booking-sheet-close" id="closeConfirm">×</button></div>
+    <div class="errand-confirm-content">
+      <div class="booking-confirm-section"><span>任務</span><strong id="confirmTaskType"></strong></div>
+      <div class="booking-confirm-section"><span>時間</span><strong id="confirmTiming"></strong></div>
+      <div id="confirmAddressList"></div>
+      <div class="booking-confirm-section"><span>任務內容</span><div id="confirmTaskContent" class="errand-confirm-task"></div></div>
+      <div id="confirmAdvanceRow" class="booking-confirm-section"><span>代墊</span><strong id="confirmAdvance"></strong></div>
+      <div id="confirmNeedsRow" class="booking-confirm-section"><span>其他需求</span><strong id="confirmNeeds"></strong></div>
+      <div id="confirmPhotoRow" class="booking-confirm-section"><span>拍照回報</span><strong id="confirmPhoto"></strong></div>
+      <div class="booking-confirm-section"><span>付款</span><strong id="confirmPayment"></strong></div>
+      <div class="booking-confirm-price"><span>預估跑腿費</span><strong id="confirmFare"></strong></div>
+      <div class="errand-confirm-note">預估路線、時間與金額僅供參考，實際內容仍以執行狀況與客服最終確認為準。</div>
+    </div>
+    <div class="booking-confirm-footer errand-confirm-footer"><button type="button" id="backToEdit" class="booking-confirm-back">返回修改</button><button type="button" id="confirmSend" class="booking-confirm-submit">確認送出跑腿單 →</button></div>
+    <div id="resultState" class="top-line-result-state" hidden><div id="resultIcon" class="top-line-result-icon">✓</div><div id="resultTitle" class="top-line-result-title"></div><div id="resultCopy" class="top-line-result-copy"></div><div id="resultSubcopy" class="top-line-result-subcopy"></div><button id="resultReturn" type="button" class="top-line-result-primary"><span class="top-line-badge" aria-hidden="true">LINE</span><span id="resultReturnText">返回 LINE 聊天室</span></button></div>
+  </div>
+</div>
+
+<div id="messageBox" class="message-box" style="display:none"></div>
+
+<script>
+const LIFF_ID="2011008197-NjirAoUX";
+const WEBHOOK_URL="https://lakswitting.app.n8n.cloud/webhook/96798dda-c12a-4552-bcaa-e51a1166a1a8";
+const BROWSER_TEST_MODE=new URLSearchParams(location.search).get("test")==="1";
+const SEND_TEST_MODE=new URLSearchParams(location.search).get("sendtest")||"";
+const SHARED_ADDRESS_KEY="topTaxiAddresses";
+const CUSTOMER_PREFERENCE_KEY="topTaxiCustomerPreferences";
+const DEFAULT_PAYMENT="現金｜行程結束後付款";
+const POSTPAID_PAYMENT="車資後結";
+const TASKS={purchase:"代買",delivery:"取件／配送",queue:"代排隊",pet:"寵物接送",other:"其他跑腿"};
+const TASK_CODES={purchase:"purchase",delivery:"delivery",queue:"queue",pet:"pet_transport",other:"other"};
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+
+let lineDisplayName="",lineUserId="",liffInitialized=false;
+let errandMode="now",taskType="purchase",petCarrier="yes",advanceNeeded=false,photoReturn=false;
+let floorMode="none",routeMode="FAST",sendState="idle",sendInProgress=false,returnTimer=null;
+let RouteClass=null,AutocompleteSuggestion=null,AutocompleteSessionToken=null,PlaceClass=null;
+let currentEstimate=null,routeOptions={FAST:null,SURFACE:null},routeRequestNo=0;
+let pendingIdentity=null;
+let addressSlots={};
+let activeSlotKeys=[];
+let sharedAddresses=[];
+let savedPaymentPreference="";
+let searchCenter={lat:24.1477,lng:120.6736};
+
+function taipeiIso(date=new Date()){
+  try{const p=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(date).reduce((a,x)=>(a[x.type]=x.value,a),{});return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}+08:00`;}catch(e){return date.toISOString();}
+}
+function uuid(){if(crypto&&crypto.randomUUID)return crypto.randomUUID();return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==="x"?r:(r&3|8);return v.toString(16);});}
+function ensureIdentity(){if(!pendingIdentity)pendingIdentity={orderId:uuid(),createdAt:taipeiIso()};return pendingIdentity;}
+function nullable(v){v=String(v??"").trim();return v||null;}
+function coord(v){v=Number(v);return Number.isFinite(v)?Math.round(v*1e7)/1e7:null;}
+function normalizeTW(raw=""){
+ const map={"臺":"台","区":"區","县":"縣","乡":"鄉","镇":"鎮","号":"號","东":"東","势":"勢","晋":"晉","兴":"興","丰":"豐","华":"華","学":"學","国":"國","龙":"龍","凤":"鳳","广":"廣","长":"長","万":"萬","乐":"樂","荣":"榮","门":"門","义":"義","礼":"禮","发":"發","头":"頭","桥":"橋","环":"環","线":"線","园":"園","艺":"藝","馆":"館","医":"醫","药":"藥"};
+ return String(raw||"").replace(/[臺区县乡镇号东势晋兴丰华学国龙凤广长万乐荣门义礼发头桥环线园艺馆医药]/g,c=>map[c]||c).trim().replace(/^\s*\d{3}(?:\d{2,3})?\s*/u,"").replace(/^台灣省?/u,"").replace(/^中華民國/u,"");
+}
+function extractArea(raw=""){
+ const text=normalizeTW(raw).replace(/\s+/g,"");
+ const m=text.match(/(新北市|台北市|桃園市|台中市|台南市|高雄市|基隆市|新竹市|嘉義市|宜蘭縣|新竹縣|苗栗縣|彰化縣|南投縣|雲林縣|嘉義縣|屏東縣|台東縣|花蓮縣|澎湖縣|金門縣|連江縣)/u);
+ if(!m)return{city:"",district:"",areaLabel:""};
+ const city=m[1],rest=text.slice(m.index+city.length),d=rest.match(/^([^0-9路街大道段巷弄號]{1,8}?(?:區|鄉|鎮|市))/u),district=d?d[1]:"";
+ return{city,district,areaLabel:[city,district].filter(Boolean).join("")};
+}
+function compactAddress(raw=""){
+ let a=normalizeTW(raw).replace(/^台灣/u,"").replace(/^\s*\d{3}(?:\d{2,3})?\s*/u,"");
+ a=a.replace(/(區|鄉|鎮|市)([^0-9縣市區鄉鎮路街巷弄號]{1,12}(?:里|村))(?!區|鄉|鎮|市)(?=[^0-9]*(?:路|街|大道|段|巷|弄|號))/gu,"$1").replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)(?!區|鄉|鎮|市)/gu,"").replace(/\d+\s*鄰/gu,"");
+ return a.replace(/[，,、\s-]*(?:地下)?\d+\s*樓(?:之\d+)?(?:\s*\d+\s*室)?/gu,"").replace(/[，,、\s-]*B\d+\s*(?:樓)?/giu,"").replace(/[，,、\s-]*\d+\s*F(?:-\d+)?/giu,"").replace(/[，,、\s-]*\d+\s*室/gu,"").replace(/[，,、]{2,}/g,"，").replace(/^[，,、\s-]+|[，,、\s-]+$/g,"").replace(/\s+/g,"");
+}
+function placeName(place){const d=place?.displayName;return d&&typeof d.toString==="function"?d.toString():String(d||"");}
+function addressComponent(place,types){const c=Array.isArray(place?.addressComponents)?place.addressComponents:[];for(const t of types){const m=c.find(x=>Array.isArray(x.types)&&x.types.includes(t));if(m)return m.longText||m.shortText||'';}return'';}
+function placeToData(place,extra={}){
+ const address=normalizeTW(place?.formattedAddress||extra.address||"");const parsed=extractArea(address);const loc=place?.location;
+ const city=normalizeTW(addressComponent(place,['administrative_area_level_1']))||parsed.city;
+ let district=normalizeTW(addressComponent(place,['administrative_area_level_3','administrative_area_level_2','locality']))||parsed.district;
+ if(/(?:里|村|鄰)$/u.test(district))district=parsed.district||'';
+ return{name:extra.name||"",displayName:placeName(place)||extra.name||"",address,city,district,areaLabel:[city,district].filter(Boolean).join(''),placeId:place?.id||extra.placeId||"",lat:loc?coord(typeof loc.lat==="function"?loc.lat():loc.lat):coord(extra.lat),lng:loc?coord(typeof loc.lng==="function"?loc.lng():loc.lng):coord(extra.lng)};
+}
+function normalizeAddress(item={}){const address=normalizeTW(item.address||"");const area=extractArea(address);return{name:item.name||"",displayName:item.displayName||item.name||"",address,city:item.city||area.city,district:item.district||area.district,areaLabel:item.areaLabel||area.areaLabel,placeId:item.placeId||"",lat:coord(item.lat),lng:coord(item.lng),pickupNote:item.pickupNote||""};}
+function displayAddress(data){if(!data)return"";const n=data.displayName||data.name||"",a=data.address||"";return n&&a&&!a.includes(n)?`${n}｜${a}`:(n||a);}
+function orderAddress(data){data=normalizeAddress(data||{});const area=extractArea(data.address);const city=area.city||data.city||"",district=area.district||data.district||"";return{name:nullable(data.name),displayName:nullable(normalizeTW(data.displayName||"")),address:nullable(compactAddress(data.address)),city:nullable(city),district:nullable(district),areaLabel:nullable([city,district].filter(Boolean).join("")),placeId:nullable(data.placeId),lat:coord(data.lat),lng:coord(data.lng)};}
+function hasStreetNumber(raw=''){return /(?:路|街|大道|段|巷|弄).*\d+(?:-\d+)?號/u.test(compactAddress(raw));}
+function structuredArea(data={}){const city=normalizeTW(data.city||'').replace(/\s+/g,'');let district=normalizeTW(data.district||'').replace(/\s+/g,'');if(/(?:里|村|鄰)$/u.test(district))district='';return{city,district,areaLabel:[city,district].filter(Boolean).join('')};}
+function addressMatchesArea(address='',data={}){const s=structuredArea(data),p=extractArea(address);if(s.city&&p.city&&s.city!==p.city)return false;if(s.district&&p.district&&s.district!==p.district)return false;return true;}
+function geocoderHasStreetNumber(result){const c=Array.isArray(result?.address_components)?result.address_components:[];return c.some(x=>x.types?.includes('route'))&&c.some(x=>x.types?.includes('street_number'));}
+function candidateDistance(candidate,data={}){const pt=candidate?.geometry?.location;if(!pt||data.lat==null||data.lng==null)return 0;const lat2=typeof pt.lat==='function'?pt.lat():Number(pt.lat),lng2=typeof pt.lng==='function'?pt.lng():Number(pt.lng),lat1=Number(data.lat),lng1=Number(data.lng);if(![lat1,lng1,lat2,lng2].every(Number.isFinite))return 0;const rad=v=>v*Math.PI/180,dlat=rad(lat2-lat1),dlng=rad(lng2-lng1),a=Math.sin(dlat/2)**2+Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(dlng/2)**2;return 6371000*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+async function enrichAddress(data={}){
+ if(!data||data.lat==null||data.lng==null)return normalizeAddress(data||{});const original=normalizeTW(data.address||''),s=structuredArea(data),consistent=addressMatchesArea(original,data);
+ if(hasStreetNumber(original)&&consistent)return normalizeAddress({...data,address:original,city:s.city||data.city||'',district:s.district||data.district||'',areaLabel:s.areaLabel||data.areaLabel||''});
+ try{const {Geocoder}=await google.maps.importLibrary('geocoding');const response=await new Geocoder().geocode({location:{lat:Number(data.lat),lng:Number(data.lng)}}),results=Array.isArray(response.results)?response.results:[];const acceptable=item=>{if(!item?.formatted_address||!geocoderHasStreetNumber(item))return false;const a=normalizeTW(item.formatted_address);if(!addressMatchesArea(a,data))return false;return candidateDistance(item,data)<=3000;};const c=results.find(x=>x.types?.includes('street_address')&&acceptable(x))||results.find(acceptable);if(!c?.formatted_address){if(!consistent&&s.areaLabel)return normalizeAddress({...data,address:s.areaLabel,city:s.city,district:s.district,areaLabel:s.areaLabel});return normalizeAddress(data);}const a=normalizeTW(c.formatted_address),p=extractArea(a),city=s.city||p.city||data.city||'',district=s.district||p.district||data.district||'';return normalizeAddress({...data,address:a,city,district,areaLabel:[city,district].filter(Boolean).join('')});}
+ catch(e){console.warn('ERRAND ADDRESS ENRICH SKIPPED:',e);if(!consistent&&s.areaLabel)return normalizeAddress({...data,address:s.areaLabel,city:s.city,district:s.district,areaLabel:s.areaLabel});return normalizeAddress(data);}
+}
+function dispatchHeader(data,role){const a=orderAddress(data),area=a.areaLabel||"地址";return `📍 ${area}｜${role}`;}
+function dispatchText(data){const a=orderAddress(data);const name=a.displayName||a.name||"";let street=a.address||"";if(a.city)street=street.replace(a.city,"");if(a.district)street=street.replace(a.district,"");street=street.replace(/^[-－—\s]+/,"");return name&&street?`${name}｜${street}`:(name||street||"未提供");}
+
+function loadPreferences(){
+ try{sharedAddresses=JSON.parse(localStorage.getItem(SHARED_ADDRESS_KEY)||"[]").map(normalizeAddress).filter(x=>x.address||x.displayName).slice(0,4);}catch(e){sharedAddresses=[];}
+ try{const p=JSON.parse(localStorage.getItem(CUSTOMER_PREFERENCE_KEY)||"{}");savedPaymentPreference=p.paymentMode||p.payment||"";}catch(e){savedPaymentPreference="";}
+}
+function savePaymentPreference(value){
+ try{const p=JSON.parse(localStorage.getItem(CUSTOMER_PREFERENCE_KEY)||"{}");p.paymentMode=value;localStorage.setItem(CUSTOMER_PREFERENCE_KEY,JSON.stringify(p));savedPaymentPreference=value;renderPayment();showPaymentToast("已設為預設付款方式");}catch(e){}
+}
+function renderPayment(){
+ $$('[data-payment-option]').forEach(el=>{const v=el.dataset.paymentOption;el.classList.toggle('default',v===savedPaymentPreference);});
+ $$('[data-payment-default-badge]').forEach(el=>el.style.display=el.dataset.paymentDefaultBadge===savedPaymentPreference?'inline-flex':'none');
+ if(savedPaymentPreference){const r=document.querySelector(`input[name="errandPayment"][value="${CSS.escape(savedPaymentPreference)}"]`);if(r)r.checked=true;}
+}
+function showPaymentToast(t){const el=$('#paymentToast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1400);}
+function selectedPayment(){return document.querySelector('input[name="errandPayment"]:checked')?.value||DEFAULT_PAYMENT;}
+function isPostpaid(){return selectedPayment()===POSTPAID_PAYMENT;}
+
+function taskConfig(){
+ if(taskType==='purchase')return{p1:'購買地點 1',p1Role:'購買點 1',p2:'購買地點 2',p2Role:'購買點 2',final:'送達地址',finalRequired:true,p2Max:1,content:'購買內容',placeholder:'例：大杯冰美式 2 杯、600ml 可樂 1 瓶'};
+ if(taskType==='delivery')return{p1:'取件地點 1',p1Role:'取件點 1',p2:'取件地點 2',p2Role:'取件點 2',final:'送達地址',finalRequired:true,p2Max:1,content:'物品內容',placeholder:'例：文件一份、紙箱一箱、鑰匙一串'};
+ if(taskType==='queue')return{p1:'排隊地點',p1Role:'排隊',p2:null,final:'送達地址',finalRequired:false,p2Max:0,content:'排隊事項',placeholder:'例：幫我排候位、領號碼牌，完成後電話通知'};
+ if(taskType==='pet')return{p1:'接寵物地址',p1Role:'接寵物',p2:null,final:'送達地址',finalRequired:true,p2Max:0,content:'接送事項／備註',placeholder:'例：送到動物醫院櫃台交給王小姐'};
+ return{p1:'任務地點 1',p1Role:'任務點 1',p2:'停靠點',p2Role:'停靠點',final:'最終送達地址',finalRequired:false,p2Max:2,content:'需求內容',placeholder:'例：到店門口拍照回報後，再前往下一個指定地點'};
+}
+function newSlot(key,label,required=true,role=label){return{key,label,required,role,place:null,data:null,contactOpen:false,contactName:'',contactPhone:''};}
+function rebuildSlots(){
+ const cfg=taskConfig(),prev=addressSlots;addressSlots={};activeSlotKeys=[];
+ addressSlots.p1=prev.p1||newSlot('p1',cfg.p1,true,cfg.p1.replace(/地點|地址/g,''));Object.assign(addressSlots.p1,{label:cfg.p1,required:true,role:cfg.p1Role});activeSlotKeys.push('p1');
+ const wanted=[];if(cfg.p2Max>0){for(let i=1;i<=cfg.p2Max;i++)wanted.push('p2_'+i);}wanted.forEach((k,i)=>{if(prev[k])addressSlots[k]=prev[k];else addressSlots[k]=newSlot(k,cfg.p2Max===1?cfg.p2:`${cfg.p2} ${i+1}`,false,cfg.p2Role?`${cfg.p2Role}${cfg.p2Max>1?' '+(i+1):''}`:`停靠點 ${i+1}`);});
+ addressSlots.final=prev.final||newSlot('final',cfg.final,cfg.finalRequired,'送達');Object.assign(addressSlots.final,{label:cfg.final,required:cfg.finalRequired,role:'送達'});
+ renderAddresses();
+}
+function renderAddresses(){
+ const cfg=taskConfig(),root=$('#addressSection');root.innerHTML='';activeSlotKeys=['p1'];
+ root.appendChild(addressBlock(addressSlots.p1));
+ if(cfg.p2Max>0){
+   const wrap=document.createElement('div');wrap.id='extraStopsWrap';root.appendChild(wrap);
+   const add=document.createElement('button');add.type='button';add.className='booking-add-waypoint';add.id='addStopBtn';add.textContent='＋ 新增停靠點';add.addEventListener('click',addStop);root.appendChild(add);
+   const help=document.createElement('div');help.className='booking-waypoint-help';help.textContent=cfg.p2Max===1?'最多新增 1 個停靠點；新增後 +NT$50':'最多 2 個停靠點；每增加 1 個停靠點 +NT$50';root.appendChild(help);
+   Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active).forEach(k=>activateStop(k,false));
+ }
+ const finalBlock=addressBlock(addressSlots.final,true);finalBlock.id='finalAddressBlock';root.appendChild(finalBlock);
+ if(!cfg.finalRequired){const note=document.createElement('div');note.className='booking-compact-help';note.textContent=taskType==='queue'?'如不需要配送，可留空':'純任務型跑腿可不填送達地址';finalBlock.appendChild(note);}
+ renderSavedChips();
+ initAutocompleteForVisibleSlots();
+ updateDeliveryModule();
+ syncDeliveryVisibility();
+ updateEstimate();
+}
+function addressBlock(slot,isFinal=false){
+ const d=document.createElement('div');d.className='input-group errand-address-block';d.dataset.slot=slot.key;
+ d.innerHTML=`<div class="errand-address-head"><label>${slot.key==='p1'?'📍':isFinal?'🏁':'🟡'} ${slot.label} <span class="field-tag ${slot.required?'required-tag':'optional-tag'}">${slot.required?'必填':'選填'}</span></label></div><div id="${slot.key}Box"></div><div id="${slot.key}Saved"></div><div class="errand-contact-box"><button type="button" class="errand-contact-toggle" data-contact-toggle="${slot.key}"><span>＋ 新增聯絡人</span><span>›</span></button><div id="${slot.key}ContactFields" class="errand-contact-fields ${slot.contactOpen?'':'errand-hidden'}"><input id="${slot.key}ContactName" type="text" placeholder="聯絡人姓名"><input id="${slot.key}ContactPhone" type="tel" inputmode="tel" placeholder="電話"></div></div>${isFinal?deliveryModuleHtml():''}`;
+ d.querySelector(`[data-contact-toggle="${slot.key}"]`).addEventListener('click',()=>toggleContact(slot.key));
+ return d;
+}
+function deliveryModuleHtml(){return `<div id="deliveryModule" class="errand-delivery-box"><div class="errand-delivery-title">送達方式</div><div class="errand-row-toggle"><button type="button" class="errand-pill active" data-delivery="handoff">當面交付</button><button type="button" class="errand-pill" data-delivery="table">放置外送桌</button><button type="button" class="errand-pill" data-delivery="management">放置管理室</button></div><div id="deliveryLocationWrap" class="errand-small-input errand-hidden"><input id="deliveryLocation" type="text" placeholder="請填棟別、樓層、門牌或明確放置位置"></div><div id="deliveryPhotoNote" class="errand-section-note errand-hidden">司機送達後將拍照回報，照片作為完成配送紀錄。</div></div>`;}
+let deliveryMethod='handoff';
+function syncDeliveryVisibility(){
+ const module=$('#deliveryModule');if(!module)return;const cfg=taskConfig();const hasFinal=!!addressValue('final');module.classList.toggle('errand-hidden',!cfg.finalRequired&&!hasFinal);
+}
+function updateDeliveryModule(){
+ const module=$('#deliveryModule');if(!module)return;
+ $$('[data-delivery]').forEach(b=>{b.addEventListener('click',()=>{deliveryMethod=b.dataset.delivery;$$('[data-delivery]').forEach(x=>x.classList.toggle('active',x===b));const forced=deliveryMethod!=='handoff';$('#deliveryLocationWrap').classList.toggle('errand-hidden',!forced);$('#deliveryPhotoNote').classList.toggle('errand-hidden',!forced);if(forced){photoReturn=true;renderPhoto();}updateEstimate();});});syncDeliveryVisibility();
+}
+function toggleContact(key){const s=addressSlots[key];s.contactOpen=!s.contactOpen;const f=$(`#${key}ContactFields`);f?.classList.toggle('errand-hidden',!s.contactOpen);}
+function syncContacts(){Object.values(addressSlots).forEach(s=>{const n=$(`#${s.key}ContactName`),p=$(`#${s.key}ContactPhone`);if(n)s.contactName=n.value.trim();if(p)s.contactPhone=p.value.trim();});}
+function addStop(){const cfg=taskConfig();const keys=Object.keys(addressSlots).filter(k=>k.startsWith('p2_'));const k=keys.find(x=>!addressSlots[x].active);if(!k)return;activateStop(k,true);if(keys.filter(x=>addressSlots[x].active).length>=cfg.p2Max)$('#addStopBtn')?.setAttribute('hidden','');updateEstimate();}
+function activateStop(key,focus){const s=addressSlots[key];s.active=true;if(!activeSlotKeys.includes(key))activeSlotKeys.push(key);const wrap=$('#extraStopsWrap');const node=addressBlock(s);node.querySelector('.errand-address-head').insertAdjacentHTML('beforeend',`<button type="button" class="errand-text-btn" data-remove-stop="${key}">移除</button>`);wrap.appendChild(node);node.querySelector(`[data-remove-stop="${key}"]`).addEventListener('click',()=>removeStop(key));initAutocompleteForSlot(s);if(focus)setTimeout(()=>document.getElementById(`${key}Input`)?.focus(),50);}
+function removeStop(key){const s=addressSlots[key];s.active=false;s.place=null;s.data=null;s.contactOpen=false;s.contactName='';s.contactPhone='';document.querySelector(`[data-slot="${key}"]`)?.remove();activeSlotKeys=activeSlotKeys.filter(x=>x!==key);$('#addStopBtn')?.removeAttribute('hidden');updateEstimate();}
+function renderSavedChips(){const box=$('#p1Saved');if(!box)return;if(!sharedAddresses.length){box.innerHTML='';return;}box.className='saved-address-panel compact';box.innerHTML='<div class="saved-address-chips">'+sharedAddresses.map((a,i)=>`<button type="button" class="saved-address-chip" data-saved="${i}">${a.name||a.displayName||`常用地點${i+1}`}</button>`).join('')+'</div>';box.querySelectorAll('[data-saved]').forEach(b=>b.addEventListener('click',()=>useSaved(Number(b.dataset.saved))));}
+async function useSaved(i){
+ const a=sharedAddresses[i];if(!a)return;const s=addressSlots.p1;s.data=normalizeAddress(a);s.place=null;const input=$('#p1Input');if(input)input.value=displayAddress(s.data);
+ try{
+   if(a.placeId&&PlaceClass){const place=new PlaceClass({id:a.placeId});await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});s.place=place;s.data=placeToData(place,{name:a.name,address:a.address,placeId:a.placeId});if(input)input.value=displayAddress(s.data);}
+ }catch(e){console.warn('SAVED ADDRESS RESOLVE ERROR:',e);}
+ syncDeliveryVisibility();renderPhoto();updateEstimate();
+}
+
+function renderTaskUi(){
+ $$('#errandForm [data-task]').forEach(b=>b.classList.toggle('active',b.dataset.task===taskType));
+ const cfg=taskConfig();$('#taskContentLabel').innerHTML=`${cfg.content} <span class="field-tag required-tag">必填</span>`;$('#taskContent').placeholder=cfg.placeholder;
+ $('#purchaseSpecNote').classList.toggle('errand-hidden',taskType!=='purchase');$('#petFields').classList.toggle('errand-hidden',taskType!=='pet');
+ $('#advanceGroup').classList.toggle('errand-hidden',!(taskType==='purchase'||taskType==='pet'||taskType==='other'));
+ rebuildSlots();
+ if(taskType==='delivery')ensureDeliveryWarning();
+}
+function ensureDeliveryWarning(){const g=$('#taskContentGroup');if(!g||$('#deliverySafetyNote'))return;const n=document.createElement('div');n.id='deliverySafetyNote';n.className='errand-warning-note';n.innerHTML='為保障配送安全，無法確認內容物之不透明包裹，取件時需配合開封確認；如無法配合，恕無法承接配送。<br><br>菸彈、電子煙相關產品及其他違法、違禁物品，TOP Taxi 一律不提供配送服務。';g.appendChild(n);}
+function cleanTaskWarnings(){if(taskType!=='delivery')$('#deliverySafetyNote')?.remove();}
+
+function renderPhoto(){const forced=deliveryMethod!=='handoff'&&!!addressValue('final');$('#photoReturnSummary').textContent=(photoReturn||forced)?'需要拍照回報 ›':'不需要 ›';$('#photoRequirementWrap').classList.toggle('errand-hidden',!(photoReturn||forced));}
+function renderOtherNeeds(){const items=[];if(floorMode==='elevator')items.push('有電梯上樓 +$50');if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);items.push(`爬樓梯 ${n||'?'} 層`);}if($('#heavyItem')?.checked)items.push('搬運重物 +$100');if($('#otherNote')?.value.trim())items.push('其他備註');$('#otherNeedsSummary').textContent=(items.length?items.join('・'):'上樓／樓梯／搬重物／其他備註・選填')+' ›';updateEstimate();}
+function extraFees(){let amount=0,items=[];const activeStops=Object.values(addressSlots).filter(s=>s.key.startsWith('p2_')&&s.active&&addressValue(s.key)).length;if(activeStops){amount+=activeStops*50;items.push(`停靠點 ${activeStops} 個 +$${activeStops*50}`);}if(floorMode==='elevator'){amount+=50;items.push('有電梯上樓 +$50');}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`爬樓梯 ${n} 層 +$${n*50}`);}if($('#heavyItem')?.checked){amount+=100;items.push('搬運重物 +$100');}if(taskType==='pet'&&petCarrier==='no'){amount+=50;items.push('寵物無提籠／提袋 +$50');}return{amount,items};}
+function addressValue(key){const s=addressSlots[key];if(!s)return'';const input=$(`#${key}Input`);return input?.value.trim()||displayAddress(s.data)||'';}
+function activeRouteSlots(){const arr=[addressSlots.p1];Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressValue(k)).sort().forEach(k=>arr.push(addressSlots[k]));if(addressValue('final'))arr.push(addressSlots.final);return arr;}
+function calculateMeterFare(distanceKm,minutes){const distanceFare=distanceKm<=20?distanceKm*15:20*15+(distanceKm-20)*25;return Math.floor((80+distanceFare+minutes*3)/10)*10;}
+function quote(){const extras=extraFees();const base=currentEstimate?Math.max(220,currentEstimate.meterFare):220;return{base,extras,total:base+extras.amount};}
+function renderEstimate(){const q=quote();$('#estimateFare').textContent=`$${q.total}`;$('#fareExtras').textContent=q.extras.items.length?'加價項目：'+q.extras.items.join('、'):'';if(currentEstimate){$('#estimateDistance').textContent=`距離 ${currentEstimate.distanceKm.toFixed(1)} km`;$('#estimateDuration').textContent=`${currentEstimate.minutes} 分鐘`;$('#fareStatus').textContent=currentEstimate.routeMode==='SURFACE'?'平面道路｜優先避開高速／收費道路':'推薦快速｜依 Google 即時交通';}else{$('#estimateDistance').textContent='未填完整路線時，以跑腿低消計';$('#estimateDuration').textContent='最低消費';$('#fareStatus').textContent='跑腿最低消費 NT$220';}}
+function summarizeRoute(route,legsExpected){const legs=Array.isArray(route?.legs)?route.legs:[];if(legs.length!==legsExpected)throw new Error('路線分段不符');const d=legs.reduce((s,l)=>s+Number(l?.distanceMeters||0),0),t=legs.reduce((s,l)=>s+Number(l?.durationMillis||0),0);if(!(d>0&&t>0))throw new Error('路線資料不完整');return{d,t};}
+async function updateEstimate(){
+ routeRequestNo++;const id=routeRequestNo;currentEstimate=null;routeOptions={FAST:null,SURFACE:null};renderEstimate();if(!RouteClass)return;
+ const slots=activeRouteSlots();if(slots.length<2)return;if(slots.some(s=>!s.place&&!s.data?.lat))return;
+ const origin=slots[0].place||{location:{lat:slots[0].data.lat,lng:slots[0].data.lng}},destination=slots.at(-1).place||{location:{lat:slots.at(-1).data.lat,lng:slots.at(-1).data.lng}};
+ const mids=slots.slice(1,-1).map(s=>({location:s.place?.location||{lat:s.data.lat,lng:s.data.lng}}));
+ const departure=new Date(Date.now()+120000),base={origin,destination,travelMode:'DRIVING',intermediates:mids,optimizeWaypointOrder:false,routingPreference:'TRAFFIC_AWARE_OPTIMAL',departureTime:departure,fields:['legs']};
+ try{const [fast,surface]=await Promise.all([RouteClass.computeRoutes({...base,routeModifiers:{avoidHighways:false,avoidTolls:false,avoidFerries:true}}),RouteClass.computeRoutes({...base,routeModifiers:{avoidHighways:true,avoidTolls:true,avoidFerries:true}})]);if(id!==routeRequestNo)return;const mk=(mode,r)=>{const m=summarizeRoute(r.routes?.[0],slots.length-1),km=m.d/1000,min=Math.ceil(m.t/60000);return{routeMode:mode,distanceKm:km,minutes:min,meterFare:calculateMeterFare(km,min)};};routeOptions={FAST:mk('FAST',fast),SURFACE:mk('SURFACE',surface)};currentEstimate=routeOptions[routeMode]||routeOptions.FAST;renderEstimate();}catch(e){console.warn('ERRAND ROUTE ERROR:',e);renderEstimate();}
+}
+function selectRoute(mode){routeMode=mode==='SURFACE'?'SURFACE':'FAST';$('#surfaceBtn').classList.toggle('active',routeMode==='SURFACE');$('#fastBtn').classList.toggle('active',routeMode==='FAST');if(routeOptions[routeMode]){currentEstimate=routeOptions[routeMode];renderEstimate();}else updateEstimate();}
+
+function contactFor(s){syncContacts();return(s.contactName||s.contactPhone)?{name:nullable(s.contactName),phone:nullable(s.contactPhone)}:null;}
+function deliveryInfo(){if(!addressValue('final'))return null;const forced=deliveryMethod!=='handoff';return{method:deliveryMethod,label:deliveryMethod==='handoff'?'當面交付':deliveryMethod==='table'?'放置外送桌':'放置管理室',locationNote:forced?nullable($('#deliveryLocation')?.value):null,photoRequired:forced||photoReturn};}
+function photoInfo(){const forced=deliveryMethod!=='handoff'&&!!addressValue('final');return{required:photoReturn||forced,requirement:nullable($('#photoRequirement')?.value)};}
+function otherNeedsInfo(){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);return{floorMode,stairsFloors:floorMode==='stairs'?n:0,heavyItem:!!$('#heavyItem')?.checked,note:nullable($('#otherNote')?.value),items:extraFees().items};}
+function pickupTimeIso(){if(errandMode!=='reserve')return null;const d=$('#errandDate').value,t=$('#errandTime').value;if(!d||!t)return null;return `${d}T${t}${t.length===5?':00':''}+08:00`;}
+function timingLabel(){return errandMode==='now'?'立即跑腿':`${$('#errandDate').value} ${$('#errandTime').value}`;}
+function taskSpecific(){const o={taskType:TASK_CODES[taskType],taskLabel:TASKS[taskType]};if(advanceNeeded)o.advanceAmount=Number($('#advanceAmount').value||0)||null;if(taskType==='pet'){o.petType=$('#petType').value;o.petName=nullable($('#petName').value);o.petCarrier=petCarrier;}return o;}
+function orderPoint(s){if(!s)return null;const data=s.place?placeToData(s.place):normalizeAddress(s.data||{address:addressValue(s.key)});return{...orderAddress(data),contact:contactFor(s)};}
+async function buildOrderData(){
+ const id=ensureIdentity(),q=quote(),slots=activeRouteSlots();
+ const rawPickup=addressSlots.p1.place?placeToData(addressSlots.p1.place):normalizeAddress(addressSlots.p1.data||{address:addressValue('p1')});
+ const pickupData=await enrichAddress(rawPickup);
+ const finalExists=!!addressValue('final');
+ let finalData=null;if(finalExists){const raw=addressSlots.final.place?placeToData(addressSlots.final.place):normalizeAddress(addressSlots.final.data||{address:addressValue('final')});finalData=await enrichAddress(raw);}
+ const midSlots=finalExists?slots.slice(1,-1):slots.slice(1);
+ const waypointData=[];for(const slot of midSlots){const raw=slot.place?placeToData(slot.place):normalizeAddress(slot.data||{address:addressValue(slot.key)});waypointData.push(await enrichAddress(raw));}
+ const pickup={...orderAddress(pickupData),contact:contactFor(addressSlots.p1)};
+ const waypoints=midSlots.map((slot,i)=>({...orderAddress(waypointData[i]),contact:contactFor(slot)}));
+ const final=finalExists?{...orderAddress(finalData),contact:contactFor(addressSlots.final)}:null;
+ const payment=selectedPayment();
+ return{schemaVersion:1,orderId:id.orderId,createdAt:id.createdAt,orderStatus:'submitted',orderType:'errand',serviceType:TASK_CODES[taskType],sourceEntry:'errand',sourceOA:'TOP Taxi | 24H多元化平台',sourceOAId:null,tenantId:'top-taxi',customer:{lineUserId:nullable(lineUserId),lineDisplayName:nullable(lineDisplayName)},pickupTime:pickupTimeIso(),trip:{pickup,waypoints,dropoff:final},route:currentEstimate?{routeMode:currentEstimate.routeMode,routeStrategy:'WHOLE_TRIP',distanceKm:Math.round(currentEstimate.distanceKm*100)/100,minutes:currentEstimate.minutes}:null,pricing:{currency:'TWD',quotedAmount:q.total,finalAmount:null,pricingType:'normal',minimumFare:220,meterFare:currentEstimate?currentEstimate.meterFare:null,extraAmount:q.extras.amount},needs:{errand:taskSpecific(),taskContent:nullable($('#taskContent').value),other:otherNeedsInfo(),delivery:deliveryInfo(),photoReturn:photoInfo()},payment:{method:payment===POSTPAID_PAYMENT?'postpaid':'cash',label:payment,isPostpaid:payment===POSTPAID_PAYMENT,advanceRequired:advanceNeeded,advanceAmount:advanceNeeded?(Number($('#advanceAmount').value||0)||null):null,prepaymentRequired:advanceNeeded&&!isPostpaid()&&Number($('#advanceAmount').value||0)>2000},delivery:{lineStatus:'pending',backendStatus:'pending',lastUpdatedAt:taipeiIso()}};
+}
+
+
+function validate(){
+ cleanTaskWarnings();syncContacts();const cfg=taskConfig();if(errandMode==='reserve'&&(!$('#errandDate').value||!$('#errandTime').value)){alert('請選擇預約日期與時間。');return false;}
+ for(const key of ['p1',...Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active),'final']){const s=addressSlots[key];if(!s)continue;if(s.required&&!addressValue(key)){alert(`請填寫${s.label}。`);$(`#${key}Input`)?.focus();return false;}if(addressValue(key)&&!s.place&&!s.data?.lat){alert(`${s.label}請從 Google 地址建議中選擇。`);$(`#${key}Input`)?.focus();return false;}}
+ if(!$('#taskContent').value.trim()){alert(`請填寫${cfg.content}。`);$('#taskContent').focus();return false;}
+ if(taskType==='pet'&&!$('#petType').value){alert('請選擇寵物種類。');return false;}
+ if(advanceNeeded&&!(Number($('#advanceAmount').value)>0)){alert('請填寫代墊金額。');$('#advanceAmount').focus();return false;}
+ if(floorMode==='stairs'&&!(Number($('#stairsFloors').value)>0)){alert('請填寫爬樓梯樓層數。');$('#stairsFloors').focus();return false;}
+ if(addressValue('final')&&deliveryMethod!=='handoff'&&!$('#deliveryLocation')?.value.trim()){alert('請填寫外送桌／管理室的放置位置。');$('#deliveryLocation')?.focus();return false;}
+ return true;
+}
+function confirmAddressRows(){const rows=[];const all=[addressSlots.p1,...Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active).map(k=>addressSlots[k]),addressSlots.final];all.forEach(s=>{if(!s||!addressValue(s.key))return;const contact=contactFor(s),extra=contact?`<div class="errand-confirm-note">聯絡人｜${contact.name||''}${contact.name&&contact.phone?'・':''}${contact.phone||''}</div>`:'';rows.push(`<div class="booking-confirm-section"><span>${s.label}</span><strong>${escapeHtml(addressValue(s.key))}</strong>${extra}</div>`);});return rows.join('');}
+function needsLabel(){const x=otherNeedsInfo(),arr=[];if(x.floorMode==='elevator')arr.push('有電梯上樓');if(x.floorMode==='stairs')arr.push(`爬樓梯 ${x.stairsFloors} 層`);if(x.heavyItem)arr.push('搬運重物');if(x.note)arr.push(x.note);if(taskType==='pet'&&petCarrier==='no')arr.push('無提籠／提袋');return arr.join('、')||'無';}
+function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function openConfirm(){if(!validate())return;const q=quote();$('#confirmTaskType').textContent=TASKS[taskType];$('#confirmTiming').textContent=timingLabel();$('#confirmAddressList').innerHTML=confirmAddressRows();$('#confirmTaskContent').textContent=$('#taskContent').value.trim();$('#confirmAdvance').textContent=advanceNeeded?`NT$${Number($('#advanceAmount').value).toLocaleString('zh-TW')}${isPostpaid()?'・後結客戶':''}`:'不需要';$('#confirmNeeds').textContent=needsLabel();const p=photoInfo();$('#confirmPhoto').textContent=p.required?(p.requirement?`需要｜${p.requirement}`:'需要'):'不需要';$('#confirmPayment').textContent=selectedPayment();$('#confirmFare').textContent=`NT$${q.total.toLocaleString('zh-TW')}`;$('#confirmOverlay').hidden=false;document.body.style.overflow='hidden';}
+function closeConfirm(){if(sendState!=='idle')return;$('#confirmOverlay').hidden=true;document.body.style.overflow='';}
+
+function dispatchMessage(orderData){
+ const lines=[];lines.push(`🛵 TOP Taxi｜跑腿・${TASKS[taskType]}`);lines.push('');lines.push(`類型｜${errandMode==='now'?'立即跑腿':'預約跑腿'}`);if(errandMode==='reserve')lines.push(`時間｜${timingLabel()}`);if(lineDisplayName)lines.push(`客戶｜${lineDisplayName}`);lines.push(`付款｜${selectedPayment()}`);lines.push('');
+ const slotList=[addressSlots.p1,...Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active).map(k=>addressSlots[k]),addressSlots.final].filter(s=>s&&addressValue(s.key));
+ let wi=0;slotList.forEach(s=>{let data;if(s.key==='p1')data=orderData.trip.pickup;else if(s.key==='final')data=orderData.trip.dropoff;else data=orderData.trip.waypoints[wi++];if(!data)return;lines.push(dispatchHeader(data,s.role));lines.push(dispatchText(data));const c=data.contact;if(c)lines.push(`聯絡人｜${c.name||''}${c.name&&c.phone?'・':''}${c.phone||''}`);if(s.key==='final'){const d=deliveryInfo();if(d){lines.push(`送達方式｜${d.label}`);if(d.locationNote)lines.push(`放置位置｜${d.locationNote}`);}}lines.push('');});
+ lines.push('任務內容');lines.push($('#taskContent').value.trim());if(taskType==='pet'){lines.push(`寵物｜${$('#petType').value}${$('#petName').value.trim()?`・${$('#petName').value.trim()}`:''}`);lines.push(`提籠／提袋｜${petCarrier==='yes'?'有':'無 +$50'}`);}if(advanceNeeded)lines.push(`代墊｜需要・約 NT$${Number($('#advanceAmount').value).toLocaleString('zh-TW')}${isPostpaid()?'・後結客戶':''}`);const need=needsLabel();if(need!=='無')lines.push(`其他需求｜${need}`);const photo=photoInfo();if(photo.required)lines.push(`📷 拍照回報｜${photo.requirement||'需要'}`);lines.push('');if(currentEstimate)lines.push(`預估路程｜${currentEstimate.distanceKm.toFixed(1)} km・約 ${currentEstimate.minutes} 分鐘`);lines.push(`預估跑腿費｜NT$${quote().total.toLocaleString('zh-TW')}`);if(advanceNeeded)lines.push('※ 商品／代墊費另計');lines.push('');lines.push('📡 TOP Taxi｜跑腿服務');lines.push('━━━━━━━━━━━━━');lines.push('跑腿需求已送出！客服確認後會立刻幫您安排！');return lines.join('\n');
+}
+
+function returnToLine(){if(typeof liff!=='undefined'&&liff.isInClient?.()){try{liff.closeWindow();return;}catch(e){}}alert('請返回 TOP Taxi LINE 聊天室。');}
+function showResult(mode){const card=$('.errand-confirm-card'),state=$('#resultState'),uncertain=mode==='uncertain',sync=mode==='sync-warning';$('#resultIcon').textContent=uncertain?'!':'✓';$('#resultTitle').textContent=uncertain?'訂單送出狀態待確認':sync?'訂單已傳送成功':'訂單已成功送出';$('#resultCopy').innerHTML=uncertain?'系統目前無法確認訂單是否成功送達，<strong>請勿重複送出</strong>。':sync?'客服已收到您的訂單，<strong>不需要重新送出</strong>。':'TOP Taxi 已收到您的跑腿需求，客服確認後將為您安排。';$('#resultSubcopy').textContent=uncertain?'請返回 LINE 聊天室聯繫客服，我們會協助您確認訂單狀態。':sync?'系統紀錄同步暫時異常；如需協助，可返回 LINE 聊天室聯繫客服。':'即將返回 TOP Taxi LINE 聊天室；如未自動返回，也可使用下方按鈕。';$('#resultReturnText').textContent=uncertain||sync?'返回聊天室聯繫客服':'返回 LINE 聊天室';state.className='top-line-result-state '+(uncertain?'warning':sync?'sync-warning':'success');state.hidden=false;card.classList.add('errand-result-mode');if(!uncertain&&SEND_TEST_MODE!=='success'&&SEND_TEST_MODE!=='backendfail'){clearTimeout(returnTimer);returnTimer=setTimeout(returnToLine,1800);}}
+async function sendErrand(){if(sendInProgress||sendState!=='idle')return;sendInProgress=true;const b=$('#confirmSend'),main=$('#submitBtn');b.disabled=true;b.textContent='正在送出…';main.disabled=true;main.textContent='正在送出…';let orderData;try{orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;}catch(e){console.error(e);sendInProgress=false;b.disabled=false;main.disabled=false;b.textContent='確認送出跑腿單 →';main.textContent='確認跑腿 →';alert('訂單資料建立失敗，請重新送出。');return;}
+ if(BROWSER_TEST_MODE){window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState='success';showResult('success');return;}
+ if(SEND_TEST_MODE==='uncertain'){sendInProgress=false;sendState='uncertain';showResult('uncertain');return;}if(SEND_TEST_MODE==='success'){sendInProgress=false;sendState='success';showResult('success');return;}if(SEND_TEST_MODE==='backendfail'){sendInProgress=false;sendState='sync-warning';showResult('sync-warning');return;}
+ try{await liff.sendMessages([{type:'text',text:dispatchMessage(orderData)}]);orderData.delivery.lineStatus='success';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();let ok=true;try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok)ok=false;}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}orderData.delivery.backendStatus=ok?'success':'failed';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState=ok?'success':'sync-warning';b.textContent='✅ 已送出';main.textContent='✅ 跑腿已送出';showResult(sendState);}catch(e){console.error('ERRAND SEND STATUS UNCERTAIN:',e);sendInProgress=false;sendState='uncertain';b.textContent='⚠️ 狀態待確認';main.textContent='⚠️ 狀態待確認';showResult('uncertain');}
+}
+
+async function initLiff(){
+ if(BROWSER_TEST_MODE){lineDisplayName='瀏覽器測試';return;}
+ try{await liff.init({liffId:LIFF_ID});liffInitialized=true;if(!liff.isLoggedIn()){liff.login();return;}const p=await liff.getProfile();lineDisplayName=p.displayName||'';lineUserId=p.userId||'';}catch(e){console.error('LIFF INIT ERROR:',e);const c=$('#connectionStatus');if(c){c.style.display='flex';$('#connectionText').textContent='LINE 連線失敗，請返回聊天室後重新開啟';}}
+}
+
+async function initMaps(){
+ try{
+   const places=await google.maps.importLibrary('places');AutocompleteSuggestion=places.AutocompleteSuggestion;AutocompleteSessionToken=places.AutocompleteSessionToken;PlaceClass=places.Place||null;
+   const routes=await google.maps.importLibrary('routes');RouteClass=routes.Route;
+   try{const maps=await google.maps.importLibrary('maps');GeocoderClass=maps.Geocoder;}catch(e){}
+   navigator.geolocation?.getCurrentPosition(p=>{searchCenter={lat:p.coords.latitude,lng:p.coords.longitude};},()=>{}, {enableHighAccuracy:false,timeout:4000,maximumAge:300000});
+   initAutocompleteForVisibleSlots();updateEstimate();
+ }catch(e){console.error('GOOGLE MAPS INIT ERROR:',e);}
+}
+function initAutocompleteForVisibleSlots(){Object.values(addressSlots).filter(s=>s.key==='p1'||s.key==='final'||s.active).forEach(initAutocompleteForSlot);}
+function initAutocompleteForSlot(slot){
+ const box=$(`#${slot.key}Box`);if(!box||box.dataset.ready==='1'||!AutocompleteSuggestion)return;box.dataset.ready='1';box.className='address-autocomplete';const input=document.createElement('input');input.type='search';input.id=`${slot.key}Input`;input.className='address-input';input.placeholder=`請輸入${slot.label}地址或地標名稱`;input.autocomplete='off';input.enterKeyHint='search';if(slot.required)input.required=true;const icon=document.createElement('span');icon.className='address-search-icon';icon.textContent='⌕';const clear=document.createElement('button');clear.type='button';clear.className='address-clear-btn';clear.textContent='×';clear.hidden=true;const sug=document.createElement('div');sug.className='address-suggestions';box.append(icon,input,clear,sug);if(slot.data)input.value=displayAddress(slot.data);let token=new AutocompleteSessionToken(),timer=null,req=0;
+ function hide(){sug.classList.remove('show');sug.innerHTML='';}
+ async function choose(pred){const fallback=pred.text?.toString?.()||'';input.value=fallback;clear.hidden=false;hide();try{const place=pred.toPlace();await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});slot.place=place;slot.data=placeToData(place);input.value=displayAddress(slot.data)||fallback;syncDeliveryVisibility();renderPhoto();updateEstimate();}catch(e){console.warn('PLACE DETAIL ERROR',e);}token=new AutocompleteSessionToken();}
+ function render(items){sug.innerHTML='';const preds=(items||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);if(!preds.length){sug.innerHTML='<div class="address-no-results">找不到相符地點，請輸入更完整的名稱或地址</div>';sug.classList.add('show');return;}preds.forEach(pred=>{const r=document.createElement('button');r.type='button';r.className='address-suggestion';const ic=document.createElement('span');ic.className='address-suggestion-icon';ic.textContent='📍';const tx=document.createElement('span'),m=document.createElement('strong'),s=document.createElement('span');m.className='address-suggestion-main';s.className='address-suggestion-secondary';m.textContent=pred.mainText?.toString?.()||pred.text?.toString?.()||'';s.textContent=pred.secondaryText?.toString?.()||'';tx.append(m,s);r.append(ic,tx);r.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();choose(pred);});sug.append(r);});const a=document.createElement('div');a.className='address-google-attribution';a.textContent='Google Maps';sug.append(a);sug.classList.add('show');}
+ async function fetchSug(q){const n=++req;try{const res=await AutocompleteSuggestion.fetchAutocompleteSuggestions({input:q,includedRegionCodes:['tw'],language:'zh-TW',region:'TW',locationBias:{center:searchCenter,radius:50000},origin:searchCenter,sessionToken:token});if(n===req)render(res.suggestions||[]);}catch(e){if(n===req)hide();}}
+ input.addEventListener('input',()=>{const q=input.value.trim();clear.hidden=!q;slot.place=null;slot.data=q?normalizeAddress({address:q}):null;clearTimeout(timer);syncDeliveryVisibility();renderPhoto();updateEstimate();if(!q){req++;hide();return;}timer=setTimeout(()=>fetchSug(q),220);});input.addEventListener('focus',()=>{if(input.value.trim())fetchSug(input.value.trim());});clear.addEventListener('click',()=>{req++;input.value='';slot.place=null;slot.data=null;clear.hidden=true;hide();syncDeliveryVisibility();renderPhoto();updateEstimate();input.focus();});document.addEventListener('pointerdown',e=>{if(!box.contains(e.target))hide();});
+}
+
+function setMinDate(){const now=new Date(),p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);$('#errandDate').min=p;}
+function bind(){
+ $$('[data-mode]').forEach(b=>b.addEventListener('click',()=>{errandMode=b.dataset.mode;$$('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));$('#reserveFields').classList.toggle('errand-hidden',errandMode!=='reserve');}));
+ $$('[data-task]').forEach(b=>b.addEventListener('click',()=>{taskType=b.dataset.task;cleanTaskWarnings();renderTaskUi();pendingIdentity=null;}));
+ $$('[data-pet-carrier]').forEach(b=>b.addEventListener('click',()=>{petCarrier=b.dataset.petCarrier;$$('[data-pet-carrier]').forEach(x=>x.classList.toggle('active',x===b));updateEstimate();}));
+ $$('[data-advance]').forEach(b=>b.addEventListener('click',()=>{advanceNeeded=b.dataset.advance==='yes';$$('[data-advance]').forEach(x=>x.classList.toggle('active',x===b));$('#advanceAmountWrap').classList.toggle('errand-hidden',!advanceNeeded);}));
+ $('#openOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=false;document.body.style.overflow='hidden';});$$('[data-close-sheet]').forEach(b=>b.addEventListener('click',()=>{document.getElementById(b.dataset.closeSheet).hidden=true;document.body.style.overflow='';}));
+ $$('[data-floor-mode]').forEach(b=>b.addEventListener('click',()=>{floorMode=b.dataset.floorMode;$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x===b));$('#stairsFloorWrap').classList.toggle('errand-hidden',floorMode!=='stairs');renderOtherNeeds();}));
+ $('#stairsFloors').addEventListener('input',renderOtherNeeds);$('#heavyItem').addEventListener('change',renderOtherNeeds);$('#otherNote').addEventListener('input',renderOtherNeeds);$('#saveOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=true;document.body.style.overflow='';renderOtherNeeds();});
+ $('#togglePhotoReturn').addEventListener('click',()=>{const forced=deliveryMethod!=='handoff'&&!!addressValue('final');if(!forced)photoReturn=!photoReturn;renderPhoto();});
+ $('#surfaceBtn').addEventListener('click',()=>selectRoute('SURFACE'));$('#fastBtn').addEventListener('click',()=>selectRoute('FAST'));
+ $$('[data-payment-set-default]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();savePaymentPreference(b.dataset.paymentSetDefault);}));
+ $('#submitBtn').addEventListener('click',openConfirm);$('#closeConfirm').addEventListener('click',closeConfirm);$('#backToEdit').addEventListener('click',closeConfirm);$('#confirmSend').addEventListener('click',sendErrand);$('#resultReturn').addEventListener('click',returnToLine);$('#confirmOverlay').addEventListener('click',e=>{if(e.target===$('#confirmOverlay'))closeConfirm();});
+}
+
+document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();setMinDate();renderPayment();renderTaskUi();renderOtherNeeds();renderPhoto();if(BROWSER_TEST_MODE){const b=$('#messageBox');b.style.display='block';b.style.margin='0 auto 14px';b.style.maxWidth='720px';b.innerHTML='🧪 瀏覽器測試模式｜LINE sendMessages 與 n8n 已停用';}await initLiff();initMaps();});
+</script>
+<script>
+(function (g) {
+    var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
+    b = b[c] || (b[c] = {});
+    var d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams(), u = function () {
+        return h || (h = new Promise(async function (f, n) {
+            await (a = m.createElement("script"));
+            e.set("libraries", Array.from(r) + "");
+            for (k in g) e.set(k.replace(/[A-Z]/g, function (t) { return "_" + t[0].toLowerCase(); }), g[k]);
+            e.set("callback", c + ".maps." + q);
+            a.src = "https://maps." + c + "apis.com/maps/api/js?" + e;
+            d[q] = f;
+            a.onerror = function () { h = n(Error(p + " could not load.")); };
+            a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+            m.head.append(a);
+        }));
+    };
+    d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = function (f) {
+        for (var n = arguments.length, t = new Array(n > 1 ? n - 1 : 0), i = 1; i < n; i++) t[i - 1] = arguments[i];
+        r.add(f);
+        return u().then(function () { return d[l].apply(d, [f].concat(t)); });
+    };
+})({
+    key: "AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw",
+    v: "weekly",
+    language: "zh-TW",
+    region: "TW"
+});
+</script>
+
+
+
+</body>
+</html>
