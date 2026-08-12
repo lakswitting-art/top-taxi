@@ -2916,7 +2916,7 @@ function prohibitedErrandTask(raw="") {
  if(!text)return false;
  const patterns=[
   /(綁架|擄人|擄走|挾持|抓走|押走|限制.{0,4}自由)/u,
-  /(殺人|殺掉|砍人|刺人|毆打|打傷|傷害.{0,4}人|攻擊.{0,4}人)/u,
+  /(殺.{0,6}人|殺掉|殺害|弄死|幹掉|砍.{0,4}人|刺.{0,4}人|毆打|打傷|傷害.{0,4}人|攻擊.{0,4}人)/u,
   /(放火|縱火|燒掉.{0,8}(?:房|車|店|人))/u,
   /(搶劫|搶奪|偷竊|偷東西|闖空門|撬門|破壞門鎖)/u,
   /(販毒|運毒|送毒品|買毒品|毒品交易|槍枝|彈藥|爆裂物|炸彈)/u,
@@ -2964,7 +2964,7 @@ async function enrichAddress(data={}){
  try{const {Geocoder}=await google.maps.importLibrary('geocoding');const response=await new Geocoder().geocode({location:{lat:Number(data.lat),lng:Number(data.lng)}}),results=Array.isArray(response.results)?response.results:[];const acceptable=item=>{if(!item?.formatted_address||!geocoderHasStreetNumber(item))return false;const a=normalizeTW(item.formatted_address);if(!addressMatchesArea(a,data))return false;return candidateDistance(item,data)<=3000;};const c=results.find(x=>x.types?.includes('street_address')&&acceptable(x))||results.find(acceptable);if(!c?.formatted_address){if(!consistent&&s.areaLabel)return normalizeAddress({...data,address:s.areaLabel,city:s.city,district:s.district,areaLabel:s.areaLabel});return normalizeAddress(data);}const a=normalizeTW(c.formatted_address),p=extractArea(a),city=s.city||p.city||data.city||'',district=s.district||p.district||data.district||'';return normalizeAddress({...data,address:a,city,district,areaLabel:[city,district].filter(Boolean).join('')});}
  catch(e){console.warn('ERRAND ADDRESS ENRICH SKIPPED:',e);if(!consistent&&s.areaLabel)return normalizeAddress({...data,address:s.areaLabel,city:s.city,district:s.district,areaLabel:s.areaLabel});return normalizeAddress(data);}
 }
-function dispatchHeader(data,role){const a=orderAddress(data),area=a.areaLabel||"地址";return `📍 ${area}｜${role}`;}
+function dispatchHeader(data,role){const a=orderAddress(data),area=a.areaLabel||"地址";return `📍 ${role}｜${area}`;}
 function dispatchText(data){const a=orderAddress(data);const name=a.displayName||a.name||"";let street=a.address||"";if(a.city)street=street.replace(a.city,"");if(a.district)street=street.replace(a.district,"");street=street.replace(/^[-－—\s]+/,"");return name&&street?`${name}｜${street}`:(name||street||"未提供");}
 
 function loadPreferences(){
