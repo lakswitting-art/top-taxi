@@ -2880,6 +2880,7 @@ body{
 <div id="messageBox" class="message-box" style="display:none"></div>
 
 <script>
+// Round 5 sealed UI + Order Data V1 backend alignment
 const LIFF_ID="2011008197-NjirAoUX";
 const WEBHOOK_URL="https://lakswitting.app.n8n.cloud/webhook/96798dda-c12a-4552-bcaa-e51a1166a1a8";
 const BROWSER_TEST_MODE=new URLSearchParams(location.search).get("test")==="1";
@@ -3124,18 +3125,127 @@ function renderPetUi(){
  $$('[data-pet-count]').forEach(b=>b.classList.toggle('active',Number(b.dataset.petCount)===petCount));
  $$('[data-pet-type]').forEach(b=>b.classList.toggle('active',petTypes.has(b.dataset.petType)));
 }
-function taskSpecific(){const o={taskType:TASK_CODES[taskType],taskLabel:TASKS[taskType]};if(taskType==='purchase')o.purchaseLocationMode=purchaseLocationMode;if(advanceNeeded)o.advanceAmount=advanceAmountValue();if(taskType==='pet'){o.petCount=petCount;o.petTypes=petTypeList();o.petType=petTypeLabel();o.petName=nullable($('#petName').value);o.petCarrier=petCarrier;}if(taskType==='move'){o.movePlan=movePlan;o.movePlanLabel=movePlan==='driver'?'司機協助搬運':'自行搬運';o.moveServiceFee=movePlan==='driver'?600:300;o.moveLift=movePlan==='driver'?moveLift:null;o.moveFloor=movePlan==='driver'&&moveLift==='no'?(Number($('#moveFloor').value)||null):null;o.movePhoto=movePhotoDataUrl?{name:movePhotoName||'moving-photo.jpg',dataUrl:movePhotoDataUrl,url:movePhotoRemoteUrl}:null;}return o;}
+function taskSpecific(){
+ const amount=advanceNeeded?advanceAmountValue():null;
+ const o={
+  taskType:TASK_CODES[taskType],
+  taskLabel:TASKS[taskType],
+  taskContent:nullable($('#taskContent').value),
+  contact:contactInfo(),
+  otherNeeds:otherNeedsInfo(),
+  delivery:deliveryInfo(),
+  photoReturn:photoInfo(),
+  advanceRequired:advanceNeeded,
+  advanceAmount:amount,
+  prepaymentRequired:advanceNeeded&&!isPostpaid()&&Number(amount||0)>2000
+ };
+ if(taskType==='purchase')o.purchaseLocationMode=purchaseLocationMode;
+ if(taskType==='pet'){
+  o.petCount=petCount;
+  o.petTypes=petTypeList();
+  o.petType=petTypeLabel();
+  o.petName=nullable($('#petName').value);
+  o.petCarrier=petCarrier;
+ }
+ if(taskType==='move'){
+  o.movePlan=movePlan;
+  o.movePlanLabel=movePlan==='driver'?'司機協助搬運':'自行搬運';
+  o.moveServiceFee=movePlan==='driver'?600:300;
+  o.moveLift=movePlan==='driver'?moveLift:null;
+  o.moveFloor=movePlan==='driver'&&moveLift==='no'?(Number($('#moveFloor').value)||null):null;
+  o.movePhoto=movePhotoDataUrl?{name:movePhotoName||'moving-photo.jpg',dataUrl:movePhotoDataUrl,url:movePhotoRemoteUrl}:null;
+ }
+ return o;
+}
 function orderPoint(s){if(!s)return null;const data=s.place?placeToData(s.place):normalizeAddress(s.data||{address:addressValue(s.key)});return orderAddress(data);}
 async function buildOrderData(){
- const id=ensureIdentity(),q=quote(),slots=activeRouteSlots();
+ const id=ensureIdentity(),q=quote();
  let pickup=null;
- if(taskType==='purchase'&&purchaseLocationMode==='unspecified'){pickup={name:null,displayName:'送達地點附近購買',address:null,city:null,district:null,areaLabel:null,placeId:null,lat:null,lng:null};}
- else{const rawPickup=addressSlots.p1.place?placeToData(addressSlots.p1.place):normalizeAddress(addressSlots.p1.data||{address:addressValue('p1')});pickup=orderAddress(await enrichAddress(rawPickup));}
- const finalExists=!!addressValue('final');let final=null;if(finalExists){const raw=addressSlots.final.place?placeToData(addressSlots.final.place):normalizeAddress(addressSlots.final.data||{address:addressValue('final')});final=orderAddress(await enrichAddress(raw));}
- const waypointSlots=Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual&&addressValue(k)).sort().map(k=>addressSlots[k]);
- const waypoints=[];for(const slot of waypointSlots){const raw=slot.place?placeToData(slot.place):normalizeAddress(slot.data||{address:addressValue(slot.key)});waypoints.push(orderAddress(await enrichAddress(raw)));}
- const payment=selectedPayment();
- return{schemaVersion:1,orderId:id.orderId,createdAt:id.createdAt,orderStatus:'submitted',orderType:'errand',serviceType:TASK_CODES[taskType],sourceEntry:'errand',sourceOA:'TOP Taxi | 24H多元化平台',sourceOAId:null,tenantId:'top-taxi',customer:{lineUserId:nullable(lineUserId),lineDisplayName:nullable(lineDisplayName)},pickupTime:pickupTimeIso(),trip:{pickup,waypoints,dropoff:final},route:currentEstimate?{routeMode:currentEstimate.routeMode,routeStrategy:'WHOLE_TRIP',distanceKm:Math.round(currentEstimate.distanceKm*100)/100,durationMin:currentEstimate.minutes}:null,pricing:{currency:'TWD',quotedAmount:q.total,finalAmount:null,pricingType:'normal',minimumFare:taskType==='move'?null:220,meterFare:currentEstimate?currentEstimate.meterFare:null,extraAmount:q.extras.amount,estimateIsStarting:!!q.isStarting},needs:{errand:taskSpecific(),taskContent:nullable($('#taskContent').value),contact:contactInfo(),other:otherNeedsInfo(),delivery:deliveryInfo(),photoReturn:photoInfo()},payment:{method:payment===POSTPAID_PAYMENT?'postpaid':'cash',label:payment,isPostpaid:payment===POSTPAID_PAYMENT,advanceRequired:advanceNeeded,advanceAmount:advanceAmountValue(),prepaymentRequired:advanceNeeded&&!isPostpaid()&&Number(advanceAmountValue()||0)>2000},delivery:{lineStatus:'pending',backendStatus:'pending',lastUpdatedAt:null}};
+ if(taskType==='purchase'&&purchaseLocationMode==='unspecified'){
+  pickup={name:null,displayName:'送達地點附近購買',address:null,city:null,district:null,areaLabel:null,placeId:null,lat:null,lng:null};
+ }else{
+  const rawPickup=addressSlots.p1.place?placeToData(addressSlots.p1.place):normalizeAddress(addressSlots.p1.data||{address:addressValue('p1')});
+  pickup=orderAddress(await enrichAddress(rawPickup));
+ }
+ const finalExists=!!addressValue('final');
+ let final=null;
+ if(finalExists){
+  const raw=addressSlots.final.place?placeToData(addressSlots.final.place):normalizeAddress(addressSlots.final.data||{address:addressValue('final')});
+  final=orderAddress(await enrichAddress(raw));
+ }
+ const waypointSlots=Object.keys(addressSlots)
+  .filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual&&addressValue(k))
+  .sort()
+  .map(k=>addressSlots[k]);
+ const waypoints=[];
+ for(const slot of waypointSlots){
+  const raw=slot.place?placeToData(slot.place):normalizeAddress(slot.data||{address:addressValue(slot.key)});
+  waypoints.push(orderAddress(await enrichAddress(raw)));
+ }
+ const paymentLabel=selectedPayment();
+ const paymentMode=paymentLabel===POSTPAID_PAYMENT?'postpaid':'cash';
+ const specific=taskSpecific();
+ return{
+  schemaVersion:1,
+  orderId:id.orderId,
+  createdAt:id.createdAt,
+  orderStatus:'submitted',
+  orderType:'errand',
+  serviceType:TASK_CODES[taskType],
+  sourceEntry:'errand',
+  sourceOA:'TOP Taxi | 24H多元化平台',
+  sourceOAId:null,
+  tenantId:'top-taxi',
+  customer:{
+   lineUserId:nullable(lineUserId),
+   lineDisplayName:nullable(lineDisplayName),
+   phone:null,
+   email:null,
+   customerId:null
+  },
+  pickupTime:pickupTimeIso(),
+  trip:{pickup,waypoints,dropoff:final},
+  route:{
+   routeMode:currentEstimate?currentEstimate.routeMode:null,
+   routeStrategy:currentEstimate?'WHOLE_TRIP':null,
+   distanceKm:currentEstimate?Math.round(currentEstimate.distanceKm*1000)/1000:null,
+   durationMin:currentEstimate?Number(currentEstimate.minutes):null
+  },
+  pricing:{
+   quotedAmount:q.total==null?null:Number(q.total),
+   finalAmount:null,
+   currency:'TWD',
+   pricingType:'normal',
+   minimumFare:taskType==='move'?null:220,
+   meterFare:currentEstimate?Number(currentEstimate.meterFare):null,
+   extraAmount:Number(q.extras.amount||0),
+   estimateIsStarting:!!q.isStarting
+  },
+  needs:{
+   passengers:null,
+   luggage:null,
+   vehicleType:null,
+   smokingMode:null,
+   petMode:null,
+   wheelchair:null,
+   receipt:null,
+   otherNote:nullable($('#otherNote')?.value)
+  },
+  payment:{
+   mode:paymentMode,
+   status:null,
+   provider:null,
+   transactionId:null,
+   label:paymentLabel,
+   isPostpaid:paymentMode==='postpaid'
+  },
+  delivery:{
+   lineStatus:'pending',
+   backendStatus:'pending',
+   lastUpdatedAt:null
+  },
+  taskSpecific:specific
+ };
 }
 
 
@@ -3221,7 +3331,7 @@ async function sendErrand(){
    orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;const message=dispatchMessage(orderData);
    await liff.sendMessages([{type:'text',text:message}]);
    orderData.delivery.lineStatus='success';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;
-   let ok=true;try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok){ok=false;console.warn('ERRAND n8n HTTP:',r.status);}else{try{const payload=await r.clone().json();const candidate=payload?.movePhotoUrl||payload?.photoUrl||payload?.data?.movePhotoUrl||payload?.data?.photoUrl;if(taskType==='move'&&typeof candidate==='string'&&/^https:\/\//i.test(candidate)){movePhotoRemoteUrl=candidate;orderData.needs.errand.movePhoto={...(orderData.needs.errand.movePhoto||{}),url:candidate};try{await liff.sendMessages([{type:'image',originalContentUrl:candidate,previewImageUrl:candidate}]);}catch(photoSendError){console.warn('ERRAND MOVE PHOTO LINE SEND FAILED:',photoSendError);}}}catch(parseError){/* Existing n8n may not return JSON/photo URL yet. */}}}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}
+   let ok=true;try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok){ok=false;console.warn('ERRAND n8n HTTP:',r.status);}else{try{const payload=await r.clone().json();const candidate=payload?.movePhotoUrl||payload?.photoUrl||payload?.data?.movePhotoUrl||payload?.data?.photoUrl;if(taskType==='move'&&typeof candidate==='string'&&/^https:\/\//i.test(candidate)){movePhotoRemoteUrl=candidate;orderData.taskSpecific.movePhoto={...(orderData.taskSpecific.movePhoto||{}),url:candidate,dataUrl:null};try{await liff.sendMessages([{type:'image',originalContentUrl:candidate,previewImageUrl:candidate}]);}catch(photoSendError){console.warn('ERRAND MOVE PHOTO LINE SEND FAILED:',photoSendError);}}}catch(parseError){/* Existing n8n may not return JSON/photo URL yet. */}}}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}
    orderData.delivery.backendStatus=ok?'success':'failed';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState=ok?'success':'sync-warning';b.textContent='✅ 已送出';main.textContent='✅ 跑腿已送出';showResult(sendState);
  }catch(e){console.error('ERRAND SEND STATUS UNCERTAIN:',e);if(orderData){orderData.delivery.lineStatus='uncertain';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;}sendInProgress=false;sendState='uncertain';b.textContent='⚠️ 狀態待確認';main.textContent='⚠️ 狀態待確認';showResult('uncertain');}
 }
