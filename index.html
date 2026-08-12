@@ -11,8 +11,76 @@
 
 <title>TOP Taxi｜24H 預約系統</title>
 
+<script id="topTaxiBookingOpenAtTop">
+(function () {
+    try {
+        if ("scrollRestoration" in history) {
+            history.scrollRestoration = "manual";
+        }
+    } catch (error) {}
+
+    let keepAtTop = true;
+
+    function forceTop() {
+        if (!keepAtTop) return;
+
+        try {
+            window.scrollTo(0, 0);
+        } catch (error) {}
+
+        if (document.documentElement) {
+            document.documentElement.scrollTop = 0;
+        }
+
+        if (document.body) {
+            document.body.scrollTop = 0;
+        }
+
+        if (document.scrollingElement) {
+            document.scrollingElement.scrollTop = 0;
+        }
+    }
+
+    function releaseTopLock() {
+        keepAtTop = false;
+    }
+
+    forceTop();
+
+    document.addEventListener("DOMContentLoaded", function () {
+        forceTop();
+        requestAnimationFrame(forceTop);
+    }, { once: true });
+
+    window.addEventListener("pageshow", function () {
+        forceTop();
+        requestAnimationFrame(forceTop);
+        setTimeout(forceTop, 80);
+        setTimeout(forceTop, 180);
+    });
+
+    window.addEventListener("load", function () {
+        forceTop();
+        requestAnimationFrame(forceTop);
+        setTimeout(forceTop, 100);
+        setTimeout(function () {
+            forceTop();
+            releaseTopLock();
+        }, 280);
+    }, { once: true });
+
+    ["touchstart", "pointerdown", "wheel", "keydown"].forEach(function (eventName) {
+        window.addEventListener(eventName, releaseTopLock, {
+            once: true,
+            passive: true
+        });
+    });
+})();
+</script>
+
+
 <!-- LINE LIFF SDK -->
-<script defer src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 
 <style>
