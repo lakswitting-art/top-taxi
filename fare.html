@@ -3446,6 +3446,14 @@ async function fareEnsureStreetAddress(data = {}) {
 
 let RouteClass = null;
 
+let fareAddressSelectionGuardUntil = 0;
+function armFareAddressSelectionGuard() {
+    fareAddressSelectionGuardUntil = Date.now() + 700;
+}
+function isFareAddressSelectionSuppressed() {
+    return Date.now() < fareAddressSelectionGuardUntil;
+}
+
 let serviceMode = "taxi";
 
 const LIFF_ID =
@@ -4335,6 +4343,7 @@ async function initGoogle() {
                     prediction
                 ) => {
 
+                    armFareAddressSelectionGuard();
                     input.disabled = true;
 
                     try {
@@ -4492,6 +4501,8 @@ async function initGoogle() {
                                 (event) => {
 
                                     event.preventDefault();
+                                    event.stopPropagation();
+                                    armFareAddressSelectionGuard();
                                     choosePrediction(
                                         prediction
                                     );
@@ -4782,6 +4793,8 @@ function setFarePickupStatus(message = "", type = "") {
 
 
 async function useFareCurrentLocation() {
+
+    if (isFareAddressSelectionSuppressed()) return;
 
     const button =
         document.getElementById(
