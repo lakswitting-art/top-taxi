@@ -11,8 +11,13 @@
     }
   }
 
-  if (!cfg || !cfg.source || !cfg.type) {
+  if (!cfg || !cfg.source || !cfg.type || !cfg.liffId) {
     fail("Demo 頁面設定遺失");
+    return;
+  }
+
+  if (!/^2011084643-[A-Za-z0-9]+$/.test(String(cfg.liffId))) {
+    fail("Demo LIFF ID 格式不正確");
     return;
   }
 
@@ -20,8 +25,7 @@
     /2011008197-[A-Za-z0-9]+/,
     /lakswitting\.app\.n8n\.cloud\/webhook/i,
     /topTaxiAddresses/,
-    /topTaxiCustomerPreferences/,
-    /static\.line-scdn\.net\/liff/i
+    /topTaxiCustomerPreferences/
   ];
 
   async function boot(){
@@ -37,9 +41,12 @@
         throw new Error("Production source 格式不正確");
       }
 
+      if (!/static\.line-scdn\.net\/liff/i.test(html)) {
+        throw new Error("Production source 缺少 LINE LIFF SDK");
+      }
+
       html = html
-        .replace(/<script\b[^>]*src=["']https:\/\/static\.line-scdn\.net\/liff\/[^"']+["'][^>]*><\/script>/gi, "")
-        .replace(/2011008197-[A-Za-z0-9]+/g, "DEMO-LIFF-DISABLED")
+        .replace(/2011008197-[A-Za-z0-9]+/g, String(cfg.liffId))
         .replace(/https:\/\/lakswitting\.app\.n8n\.cloud\/webhook\/[A-Za-z0-9-]+/gi, "https://demo.invalid/webhook")
         .replace(/topTaxiAddresses/g, "topTaxiDemoAddresses")
         .replace(/topTaxiCustomerPreferences/g, "topTaxiDemoCustomerPreferences")
@@ -47,11 +54,16 @@
 
       const remaining = forbiddenAfterTransform.find(re => re.test(html));
       if (remaining) throw new Error("偵測到未隔離的正式環境識別，已阻止執行：" + remaining);
+      if (!html.includes(String(cfg.liffId))) throw new Error("Demo LIFF ID 未成功套用");
 
       const runtimeUrl = new URL("./demo.js", location.href).href;
       const cssUrl = new URL("./demo.css", location.href).href;
       const productionBase = new URL("../", location.href).href;
-      const runtimeConfig = JSON.stringify({ type:String(cfg.type), environment:"demo" }).replace(/</g, "\\u003c");
+      const runtimeConfig = JSON.stringify({
+        type:String(cfg.type),
+        environment:"demo-line",
+        liffId:String(cfg.liffId)
+      }).replace(/</g, "\\u003c");
 
       const injection =
         '<base href="'+productionBase+'">' +
@@ -61,6 +73,11 @@
 
       if (!/<head[\s>]/i.test(html)) throw new Error("Production source 缺少 head");
       html = html.replace(/<head([^>]*)>/i, "<head$1>" + injection);
+
+      html = html.replace(
+        /(<script\b[^>]*src=["']https:\/\/static\.line-scdn\.net\/liff\/[^"']+["'][^>]*><\/script>)/i,
+        '$1<script>window.__TOP_TAXI_DEMO_PATCH_LIFF__&&window.__TOP_TAXI_DEMO_PATCH_LIFF__();<\/script>'
+      );
 
       document.open();
       document.write(html);

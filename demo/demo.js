@@ -5,6 +5,7 @@
   const ORDER_KEY = "topTaxiDemoOrders";
   const MESSAGE_KEY = "topTaxiDemoMessages";
   const PAGE_TYPE = String(cfg.type || "demo");
+  const DEMO_LIFF_ID = String(cfg.liffId || "");
 
   function nowIso(){ return new Date().toISOString(); }
 
@@ -32,7 +33,8 @@
       ...(copy.demo && typeof copy.demo === "object" ? copy.demo : {}),
       source: source || PAGE_TYPE,
       capturedAt: nowIso(),
-      sandbox: true
+      sandbox: true,
+      liffId: DEMO_LIFF_ID
     };
 
     const list = readList(ORDER_KEY);
@@ -47,7 +49,12 @@
 
   function saveMessages(messages){
     const list = readList(MESSAGE_KEY);
-    list.unshift({ pageType: PAGE_TYPE, capturedAt: nowIso(), messages: safeJson(messages || []) });
+    list.unshift({
+      pageType: PAGE_TYPE,
+      capturedAt: nowIso(),
+      liffId: DEMO_LIFF_ID,
+      messages: safeJson(messages || [])
+    });
     writeList(MESSAGE_KEY, list);
   }
 
@@ -81,19 +88,30 @@
     return String(input || "");
   }
 
-  function isGoogleHost(host){
+  function hostMatches(host, root){
     host = String(host || "").toLowerCase();
-    return host === "google.com" || host.endsWith(".google.com") ||
-      host === "googleapis.com" || host.endsWith(".googleapis.com") ||
-      host === "gstatic.com" || host.endsWith(".gstatic.com") ||
-      host === "ggpht.com" || host.endsWith(".ggpht.com");
+    root = String(root || "").toLowerCase();
+    return host === root || host.endsWith("." + root);
+  }
+
+  function isAllowedExternalHost(host){
+    return hostMatches(host, "google.com") ||
+      hostMatches(host, "googleapis.com") ||
+      hostMatches(host, "gstatic.com") ||
+      hostMatches(host, "ggpht.com") ||
+      hostMatches(host, "line.me") ||
+      hostMatches(host, "line-scdn.net") ||
+      hostMatches(host, "line-apps.com") ||
+      hostMatches(host, "linecorp.com") ||
+      hostMatches(host, "lin.ee") ||
+      hostMatches(host, "cloudinary.com");
   }
 
   function classifyUrl(raw){
     try {
       const u = new URL(raw, location.href);
       if (u.origin === location.origin) return "same-origin";
-      if (isGoogleHost(u.hostname)) return "google";
+      if (isAllowedExternalHost(u.hostname)) return "allowed-external";
       return "blocked-external";
     } catch (_) {
       return "blocked-external";
@@ -105,7 +123,7 @@
     const raw = urlString(input);
     const kind = classifyUrl(raw);
 
-    if (kind === "same-origin" || kind === "google") {
+    if (kind === "same-origin" || kind === "allowed-external") {
       return nativeFetch(input, init);
     }
 
@@ -141,34 +159,75 @@
     console.warn("TOP Taxi DEMO XHR guard warning:", error);
   }
 
-  const demoLiff = {
-    init: async () => true,
-    ready: Promise.resolve(),
-    isLoggedIn: () => true,
-    login: () => true,
-    logout: async () => true,
-    isInClient: () => true,
-    getProfile: async () => ({ displayName:"Demo Tester", userId:"demo-user", pictureUrl:"", statusMessage:"" }),
-    getContext: () => ({ type:"utou", userId:"demo-user", viewType:"full", endpointUrl:location.href }),
-    sendMessages: async (messages) => { saveMessages(messages); return true; },
-    closeWindow: () => { setTimeout(() => toast("DEMO：不會關閉視窗，也不會返回正式 LINE"), 0); },
-    openWindow: ({url}={}) => { if (url) window.open(url, "_blank", "noopener"); },
-    getOS: () => "web",
-    getLanguage: () => "zh-TW",
-    getVersion: () => "demo",
-    isApiAvailable: (name) => name === "sendMessages"
-  };
-
-  try {
-    Object.defineProperty(window, "liff", { value: demoLiff, configurable:false, enumerable:true, writable:false });
-  } catch (_) {
-    window.liff = demoLiff;
+  function setMethod(target, name, fn){
+    try {
+      Object.defineProperty(target, name, {
+        value: fn,
+        configurable: true,
+        enumerable: true,
+        writable: true
+      });
+      return true;
+    } catch (_) {
+      try {
+        target[name] = fn;
+        return target[name] === fn;
+      } catch (_) {
+        return false;
+      }
+    }
   }
+
+  function patchRealLiff(){
+    const realLiff = window.liff;
+    if (!realLiff || typeof realLiff.init !== "function") return false;
+    if (realLiff.__topTaxiDemoGuarded) return true;
+
+    const nativeIsApiAvailable =
+      typeof realLiff.isApiAvailable === "function"
+        ? realLiff.isApiAvailable.bind(realLiff)
+        : null;
+
+    const safeSendMessages = async function(messages){
+      saveMessages(messages);
+      setTimeout(() => toast("DEMO：LINE 訊息已攔截，不會正式送出"), 0);
+      return true;
+    };
+
+    if (!setMethod(realLiff, "sendMessages", safeSendMessages)) {
+      console.error("TOP Taxi DEMO: 無法攔截 liff.sendMessages");
+      return false;
+    }
+
+    setMethod(realLiff, "isApiAvailable", function(name){
+      if (name === "sendMessages") return true;
+      return nativeIsApiAvailable ? nativeIsApiAvailable(name) : false;
+    });
+
+    try {
+      Object.defineProperty(realLiff, "__topTaxiDemoGuarded", {
+        value: true,
+        configurable: false,
+        enumerable: false,
+        writable: false
+      });
+    } catch (_) {
+      realLiff.__topTaxiDemoGuarded = true;
+    }
+
+    if (window.TOP_TAXI_DEMO) window.TOP_TAXI_DEMO.realLiffReady = true;
+    console.info("TOP Taxi DEMO: real Demo LIFF connected with sendMessages guard", DEMO_LIFF_ID);
+    return true;
+  }
+
+  window.__TOP_TAXI_DEMO_PATCH_LIFF__ = patchRealLiff;
 
   window.TOP_TAXI_DEMO = {
     enabled: true,
-    environment: "demo",
+    environment: "demo-line",
     pageType: PAGE_TYPE,
+    liffId: DEMO_LIFF_ID,
+    realLiffReady: false,
     orderStorageKey: ORDER_KEY,
     addressesStorageKey: "topTaxiDemoAddresses",
     preferencesStorageKey: "topTaxiDemoCustomerPreferences",
@@ -176,6 +235,12 @@
     toast,
     markResult: () => toast("DEMO 測試完成｜不會正式派車")
   };
+
+  let patchAttempts = 0;
+  const patchTimer = setInterval(function(){
+    patchAttempts += 1;
+    if (patchRealLiff() || patchAttempts >= 400) clearInterval(patchTimer);
+  }, 25);
 
   function installBanner(){
     if (!document.body || document.getElementById("topTaxiDemoBar")) return;
@@ -185,8 +250,8 @@
     bar.id = "topTaxiDemoBar";
     const demoBase = new URL("./", location.href).href;
     bar.innerHTML =
-      '<div class="demo-pill"><span class="demo-dot"></span><span>DEMO 測試環境</span></div>' +
-      '<div class="demo-copy">所有送出均為 Sandbox，不會進入正式 LINE／n8n／派單</div>' +
+      '<div class="demo-pill"><span class="demo-dot"></span><span>DEMO LINE 測試環境</span></div>' +
+      '<div class="demo-copy">使用 Demo LINE 身分｜送出只進 Sandbox，不會進正式 n8n／派單</div>' +
       '<div class="demo-actions"><a href="'+demoBase+'index.html">測試首頁</a><a href="'+demoBase+'orders.html">測試訂單</a></div>';
     document.body.prepend(bar);
   }
