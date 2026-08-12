@@ -1059,6 +1059,63 @@ main{
 
 </style>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+/* ===== TOP TAXI ADDRESS UX V2 ===== */
+.autocomplete,
+.address-autocomplete {
+  position: relative;
+}
+.autocomplete .input,
+.address-autocomplete > input {
+  padding-right: 44px;
+}
+.top-taxi-address-clear,
+.address-clear-btn {
+  touch-action: manipulation;
+}
+.top-taxi-address-clear {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  z-index: 5200;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #85858b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.top-taxi-address-clear[hidden],
+.address-clear-btn[hidden] {
+  display: none !important;
+}
+.suggestions,
+.address-suggestions {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-gutter: stable;
+}
+.suggestions.top-taxi-open-up,
+.address-suggestions.top-taxi-open-up {
+  top: auto !important;
+  bottom: calc(100% + 7px) !important;
+}
+</style>
+
+<style id="topTaxiTripResetStyle">
+/* TOP Taxi｜清除本次行程：只重設本次表單，不動常用地址 / 固定偏好 */
+.form-header-actions{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
+.trip-reset-btn{border:0;background:transparent;color:#8d8d94;padding:2px 0;font-size:11px;font-weight:750;line-height:1.35;cursor:pointer;white-space:nowrap}
+.trip-reset-btn:active{opacity:.55}
+@media(max-width:390px){.trip-reset-btn{font-size:10.5px}.form-header-actions{gap:2px}}
+</style>
 </head>
 <body>
   <header class="hero">
@@ -1071,7 +1128,7 @@ main{
   </header>
   <main>
     <section class="card">
-      <div class="form-header"><div id="rideTitle" class="form-title">🚕 即時叫車</div><div class="form-label-small">TOP TAXI RIDE</div></div>
+      <div class="form-header"><div id="rideTitle" class="form-title">🚕 即時叫車</div><div class="form-header-actions"><div class="form-label-small">TOP TAXI RIDE</div><button id="clearRideTrip" class="trip-reset-btn" type="button">清除本次行程</button></div></div>
       <p class="sub">選擇地址後，系統會依 Google 即時路線重新預估車資</p>
 
       <div class="ride-service-switch" role="group" aria-label="選擇即時服務">
@@ -1363,18 +1420,20 @@ main{
           </div>
         </div>
 
-        <div class="ride-confirm-line"></div>
+        <div id="cDropoffWrap">
+          <div class="ride-confirm-line"></div>
 
-        <div class="ride-confirm-location-row">
-          <div class="ride-confirm-dot ride-confirm-dropoff-dot"></div>
-          <div>
-            <div class="ride-confirm-label">下車地點</div>
-            <div id="cDropoff" class="ride-confirm-address"></div>
+          <div class="ride-confirm-location-row">
+            <div class="ride-confirm-dot ride-confirm-dropoff-dot"></div>
+            <div>
+              <div class="ride-confirm-label">下車地點</div>
+              <div id="cDropoff" class="ride-confirm-address"></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="ride-confirm-route-box">
+      <div id="cRouteBox" class="ride-confirm-route-box">
         <div class="ride-confirm-route-name">
           <span>🛣️ 行車路線</span>
           <strong id="cRoute"></strong>
@@ -1410,12 +1469,12 @@ main{
         </div>
       </div>
 
-      <div class="ride-confirm-price">
+      <div id="cPriceBox" class="ride-confirm-price">
         <span id="cPriceLabel" data-note="">預估車資</span>
         <strong id="cFare"></strong>
       </div>
 
-      <div class="ride-confirm-note">
+      <div id="cEstimateNote" class="ride-confirm-note">
         預估路線、時間與金額僅供參考，實際內容仍以行駛狀況與客服最終確認為準。
       </div>
 
@@ -2152,7 +2211,7 @@ main{
       const suffix = index == null ? role : role + " " + index;
 
       return area
-        ? icon + " " + area + "｜" + suffix
+        ? icon + " " + suffix + "｜" + area
         : icon + " " + suffix;
     }
 
@@ -2261,7 +2320,7 @@ main{
     }
 
     async function placeFromSaved(item){if(item.placeId){const {Place}=await google.maps.importLibrary("places");const place=new Place({id:item.placeId});await place.fetchFields({fields:["id","displayName","formattedAddress","location","addressComponents"]});return place}return resolveAddress(item.address)}
-    async function useSaved(i){const item=savedAddresses[i];$("#pickup").value=addressDisplayText(item);$("#pickupNote").value=item.pickupNote||"";updatePickupNoteUi(false);pickupPlace=null;hideEstimate();setStatus("pickupStatus","正在確認「"+item.name+"」地址…");try{pickupPlace=await placeFromSaved(item);const upgraded=placeToAddressData(pickupPlace,{name:item.name,address:item.address,placeId:item.placeId,pickupNote:item.pickupNote});savedAddresses[i]=normalizeAddress(upgraded,item);localStorage.setItem(SHARED_ADDRESS_KEY,JSON.stringify(savedAddresses));$("#pickup").value=addressDisplayText(savedAddresses[i])||pickupPlace.formattedAddress||item.address;setStatus("pickupStatus","已帶入「"+item.name+"」地址與上車位置補充","ok");await recalculate()}catch(e){setStatus("pickupStatus","找不到這個常用地址，請重新設定。","error")}}
+    async function useSaved(i){const item=savedAddresses[i];$("#pickup").value=addressDisplayText(item);window.TOP_TAXI_SYNC_ADDRESS_CLEAR?.();$("#pickupNote").value=item.pickupNote||"";updatePickupNoteUi(false);pickupPlace=null;hideEstimate();setStatus("pickupStatus","正在確認「"+item.name+"」地址…");try{pickupPlace=await placeFromSaved(item);const upgraded=placeToAddressData(pickupPlace,{name:item.name,address:item.address,placeId:item.placeId,pickupNote:item.pickupNote});savedAddresses[i]=normalizeAddress(upgraded,item);localStorage.setItem(SHARED_ADDRESS_KEY,JSON.stringify(savedAddresses));$("#pickup").value=addressDisplayText(savedAddresses[i])||pickupPlace.formattedAddress||item.address;window.TOP_TAXI_SYNC_ADDRESS_CLEAR?.();setStatus("pickupStatus","已帶入「"+item.name+"」地址與上車位置補充","ok");await recalculate()}catch(e){setStatus("pickupStatus","找不到這個常用地址，請重新設定。","error")}}
     function setStatus(id,text,type=""){$("#"+id).textContent=text;$("#"+id).className="status "+type}
     function hideEstimate(){routeData=null;rideRouteOptions={FAST:null,SURFACE:null};$("#estimate").hidden=true;updateSubmit()}
 
@@ -2285,6 +2344,7 @@ main{
       rideWaypointAddressData[index]=null;
       const input=$("#waypoint"+(index+1));
       if(input)input.value="";
+      window.TOP_TAXI_SYNC_ADDRESS_CLEAR?.();
     }
     function removeRideWaypoint(index){
       if(index===0&&rideWaypointActive[1]){
@@ -2438,6 +2498,7 @@ main{
           await place.fetchFields({fields:["id","displayName","formattedAddress","location","addressComponents"]});
           const selectedData=placeToAddressData(place);input.value=addressDisplayText(selectedData)||getText(prediction.text)||place.formattedAddress||displayNameOf(place)||"";
           sessionToken=null;hide();onSelect(place);
+          window.TOP_TAXI_SYNC_ADDRESS_CLEAR?.();
         }catch(error){
           setStatus("pageStatus","地址資料讀取失敗，請重新選擇。","error");
         }finally{input.disabled=false}
@@ -2746,6 +2807,7 @@ main{
           || place.formattedAddress
           || first.formatted_address
           || "";
+        window.TOP_TAXI_SYNC_ADDRESS_CLEAR?.();
 
         document.querySelectorAll("#savedChips .chip").forEach(chip=>{
           chip.classList.remove("active");
@@ -2880,16 +2942,22 @@ main{
         $("#cWaypoint"+(i+1)).textContent=active?$("#waypoint"+(i+1)).value.trim():"";
       }
 
-      $("#cDropoff").textContent=$("#dropoff").value.trim()||"未提供";
-      $("#cRoute").textContent=routeData
-        ? routeData.routeName
-        : ($("#dropoff").value.trim()?"未完成試算":"未提供下車地點");
-      $("#cDistance").textContent=routeData
-        ? routeData.km.toFixed(1)+" km"
-        : "未試算";
-      $("#cDuration").textContent=routeData
-        ? "約 "+routeData.min+" 分鐘"
-        : "未試算";
+      const dropoffText=$("#dropoff").value.trim();
+      const hasRouteEstimate=!!routeData;
+      const dropoffWrap=$("#cDropoffWrap");
+      if(dropoffWrap)dropoffWrap.hidden=!dropoffText;
+      $("#cDropoff").textContent=dropoffText;
+
+      const routeBox=$("#cRouteBox");
+      const priceBox=$("#cPriceBox");
+      const estimateNote=$("#cEstimateNote");
+      if(routeBox)routeBox.hidden=!hasRouteEstimate;
+      if(priceBox)priceBox.hidden=!hasRouteEstimate;
+      if(estimateNote)estimateNote.hidden=!hasRouteEstimate;
+
+      $("#cRoute").textContent=hasRouteEstimate?routeData.routeName:"";
+      $("#cDistance").textContent=hasRouteEstimate?routeData.km.toFixed(1)+" km":"";
+      $("#cDuration").textContent=hasRouteEstimate?"約 "+routeData.min+" 分鐘":"";
 
       $("#cService").textContent=
         isDriver
@@ -2908,11 +2976,11 @@ main{
         !isDriver&&
         $("#passengers").value==="9";
 
-      $("#cFare").textContent=routeData
+      $("#cFare").textContent=hasRouteEstimate
         ?(quoteRequired
             ?"請洽客服"
             :"$"+(routeData.baseFare+extras().amount))
-        :"未試算";
+        :"";
 
       $("#cPriceLabel").dataset.note=
         isDriver
@@ -3244,6 +3312,54 @@ main{
         showRideSendResult("uncertain");
       }
     }
+    function resetRideTrip(){
+      if(!window.confirm("確定清除本次填寫內容？\n常用地址與固定偏好不會被刪除。"))return;
+
+      pickupPlace=null;
+      dropoffPlace=null;
+      $("#pickup").value="";
+      $("#dropoff").value="";
+      $("#pickupNote").value="";
+      updatePickupNoteUi(false);
+
+      for(let i=0;i<MAX_RIDE_WAYPOINTS;i++){
+        clearRideWaypoint(i);
+        rideWaypointActive[i]=false;
+      }
+      updateRideWaypointUi();
+
+      $("#passengers").value="1";
+      $("#luggage").value="無行李";
+      document.querySelectorAll("[data-note].active").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll("[data-pet]").forEach(b=>b.classList.remove("active"));
+      petMode="";
+      $("#note").value="";
+      smokingMode=savedSmokingPreference||"不限";
+      $("#rememberSmokingPreference").checked=false;
+
+      selectedRideRouteMode="FAST";
+      hideEstimate();
+      selectRideRouteMode("FAST");
+      setRideService("taxi");
+      applyPaymentPreferenceOnLoad();
+
+      updateRideNeedsSummary();
+      updateLuggageNotice();
+      updateSmokingPreferenceUi();
+      updateOtherNeedsSummary();
+
+      pendingOrderIdentity=null;
+      rideSendState="idle";
+      setStatus("pickupStatus","");
+      $("#pageStatus").textContent="送出後由客服確認並安排車輛";
+      $("#pageStatus").className="status";
+
+      document.querySelectorAll("#savedChips .chip").forEach(chip=>chip.classList.remove("active"));
+      ["pickupSuggestions","waypoint1Suggestions","waypoint2Suggestions","dropoffSuggestions"].forEach(id=>{const box=$("#"+id);if(box)box.hidden=true;});
+      window.TOP_TAXI_SYNC_ADDRESS_CLEAR?.();
+      $("#pickup").focus();
+    }
+
     async function init(){
       renderSaved();
       setupAutocomplete("pickup","pickupSuggestions",p=>{pickupPlace=p;setStatus("pickupStatus","地址已確認","ok");recalculate()},()=>{pickupPlace=null;hideEstimate()});
@@ -3257,6 +3373,7 @@ main{
     }
 
     $("#toggleSettings").onclick=()=>{$("#settings").hidden=!$("#settings").hidden};
+    $("#clearRideTrip").onclick=resetRideTrip;
 
     document.querySelectorAll("[data-clear-saved]").forEach(button=>{
       button.addEventListener("click",()=>{
@@ -3472,5 +3589,199 @@ main{
     window.initGoogle=init;
   </script>
   <script>(g=>{let h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});let d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{a=m.createElement("script");e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({key:CONFIG.googleKey,v:"weekly",language:"zh-TW",region:"TW"});initGoogle();</script>
+
+<script id="topTaxiAddressUxV2">
+(function () {
+  const ADDRESS_INPUT_SELECTOR =
+    '.autocomplete input, .address-autocomplete input, input[id^="sharedAddress"]';
+
+  function panelFor(input) {
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    return parent
+      ? parent.querySelector('.suggestions, .address-suggestions')
+      : null;
+  }
+
+  function existingClearFor(input) {
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    return parent
+      ? parent.querySelector('.address-clear-btn, .top-taxi-address-clear')
+      : null;
+  }
+
+  function syncClear(input) {
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const clear = existingClearFor(input);
+    if (clear) clear.hidden = !input.value.trim();
+  }
+
+  function ensureClear(input) {
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    if (!parent) return;
+
+    let clear = existingClearFor(input);
+    if (!clear) {
+      clear = document.createElement('button');
+      clear.type = 'button';
+      clear.className = 'top-taxi-address-clear';
+      clear.textContent = '×';
+      clear.setAttribute('aria-label', '清除地址');
+      const panel = panelFor(input);
+      if (panel) parent.insertBefore(clear, panel);
+      else parent.appendChild(clear);
+
+      clear.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        syncClear(input);
+        input.focus();
+      });
+    }
+
+    if (input.dataset.topTaxiClearReady !== '1') {
+      input.dataset.topTaxiClearReady = '1';
+      input.addEventListener('input', function () { syncClear(input); });
+      input.addEventListener('change', function () { syncClear(input); });
+      input.addEventListener('focus', function () { syncClear(input); });
+    }
+    syncClear(input);
+  }
+
+  function ensureAllClearButtons(root) {
+    (root || document)
+      .querySelectorAll(ADDRESS_INPUT_SELECTOR)
+      .forEach(ensureClear);
+  }
+
+  function isPanelVisible(panel) {
+    if (!panel) return false;
+    if (panel.hidden) return false;
+    if (panel.classList.contains('address-suggestions')) {
+      return panel.classList.contains('show');
+    }
+    return true;
+  }
+
+  function fitPanel(panel) {
+    if (!isPanelVisible(panel)) return;
+    const parent = panel.parentElement;
+    const input = parent ? parent.querySelector('input') : null;
+    if (!input) return;
+
+    const vv = window.visualViewport;
+    const viewportTop = vv ? vv.offsetTop : 0;
+    const viewportHeight = vv ? vv.height : window.innerHeight;
+    const viewportBottom = viewportTop + viewportHeight;
+    const rect = input.getBoundingClientRect();
+
+    const below = Math.max(0, viewportBottom - rect.bottom - 10);
+    const above = Math.max(0, rect.top - viewportTop - 10);
+    const openUp = below < 150 && above > below;
+    const available = openUp ? above : below;
+    const maxHeight = Math.max(104, Math.min(330, available));
+
+    panel.style.maxHeight = maxHeight + 'px';
+    panel.classList.toggle('top-taxi-open-up', openUp);
+  }
+
+  function refreshOpenPanels() {
+    document
+      .querySelectorAll('.suggestions, .address-suggestions')
+      .forEach(fitPanel);
+  }
+
+  let scrollTimer = null;
+  function keepFocusedAddressVisible() {
+    const input = document.activeElement;
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const rect = input.getBoundingClientRect();
+    const viewportBottom = vv.offsetTop + vv.height;
+    const viewportTop = vv.offsetTop;
+    if (rect.bottom > viewportBottom - 96 || rect.top < viewportTop + 16) {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(function () {
+        input.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+      }, 60);
+    }
+  }
+
+  function refreshAll() {
+    ensureAllClearButtons(document);
+    refreshOpenPanels();
+    keepFocusedAddressVisible();
+  }
+
+  const observer = new MutationObserver(function (mutations) {
+    let needsRefresh = false;
+    for (const m of mutations) {
+      if (
+        m.type === 'childList' ||
+        (m.type === 'attributes' && (m.attributeName === 'class' || m.attributeName === 'hidden'))
+      ) {
+        needsRefresh = true;
+        break;
+      }
+    }
+    if (needsRefresh) requestAnimationFrame(refreshAll);
+  });
+
+  function boot() {
+    ensureAllClearButtons(document);
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['class', 'hidden']
+    });
+
+    document.addEventListener('focusin', function (event) {
+      if (!event.target.matches?.(ADDRESS_INPUT_SELECTOR)) return;
+      ensureClear(event.target);
+      setTimeout(refreshAll, 40);
+      setTimeout(refreshAll, 220);
+    });
+
+    document.addEventListener('click', function () {
+      setTimeout(function () {
+        ensureAllClearButtons(document);
+        document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+      }, 0);
+      setTimeout(function () {
+        document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+      }, 700);
+    }, true);
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', refreshAll);
+      window.visualViewport.addEventListener('scroll', refreshAll);
+    }
+    window.addEventListener('resize', refreshAll);
+    window.TOP_TAXI_REFRESH_ADDRESS_SUGGESTIONS = refreshAll;
+    window.TOP_TAXI_SYNC_ADDRESS_CLEAR = function () {
+      ensureAllClearButtons(document);
+      document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+})();
+</script>
+
 </body>
 </html>
