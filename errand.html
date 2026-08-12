@@ -2911,6 +2911,19 @@ function taipeiIso(date=new Date()){
 function uuid(){if(crypto&&crypto.randomUUID)return crypto.randomUUID();return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==="x"?r:(r&3|8);return v.toString(16);});}
 function ensureIdentity(){if(!pendingIdentity)pendingIdentity={orderId:uuid(),createdAt:taipeiIso()};return pendingIdentity;}
 function nullable(v){v=String(v??"").trim();return v||null;}
+function prohibitedErrandTask(raw="") {
+ const text=normalizeTW(String(raw||"")).replace(/\s+/g,"");
+ if(!text)return false;
+ const patterns=[
+  /(綁架|擄人|擄走|挾持|抓走|押走|限制.{0,4}自由)/u,
+  /(殺人|殺掉|砍人|刺人|毆打|打傷|傷害.{0,4}人|攻擊.{0,4}人)/u,
+  /(放火|縱火|燒掉.{0,8}(?:房|車|店|人))/u,
+  /(搶劫|搶奪|偷竊|偷東西|闖空門|撬門|破壞門鎖)/u,
+  /(販毒|運毒|送毒品|買毒品|毒品交易|槍枝|彈藥|爆裂物|炸彈)/u,
+  /(恐嚇|威脅.{0,8}(?:人|對方)|騷擾.{0,8}(?:人|對方)|(?:跟蹤|尾隨|監視).{0,8}(?:人|他|她|對方))/u
+ ];
+ return patterns.some(re=>re.test(text));
+}
 function coord(v){v=Number(v);return Number.isFinite(v)?Math.round(v*1e7)/1e7:null;}
 function normalizeTW(raw=""){
  const map={"臺":"台","区":"區","县":"縣","乡":"鄉","镇":"鎮","号":"號","东":"東","势":"勢","晋":"晉","兴":"興","丰":"豐","华":"華","学":"學","国":"國","龙":"龍","凤":"鳳","广":"廣","长":"長","万":"萬","乐":"樂","荣":"榮","门":"門","义":"義","礼":"禮","发":"發","头":"頭","桥":"橋","环":"環","线":"線","园":"園","艺":"藝","馆":"館","医":"醫","药":"藥"};
@@ -3139,7 +3152,7 @@ function taskSpecific(){
   advanceAmount:amount,
   prepaymentRequired:advanceNeeded&&!isPostpaid()&&Number(amount||0)>2000
  };
- if(taskType==='purchase')o.purchaseLocationMode=purchaseLocationMode;
+ if(taskType==='purchase')o.purchaseLocationMode=purchaseLocationMode==='unspecified'?'near_dropoff':'specified';
  if(taskType==='pet'){
   o.petCount=petCount;
   o.petTypes=petTypeList();
@@ -3253,7 +3266,9 @@ function validate(){
  cleanTaskWarnings();const cfg=taskConfig();if(errandMode==='reserve'&&(!$('#errandDate').value||!$('#errandTime').value)){alert('請選擇預約日期與時間。');return false;}
  const keys=[];if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified'))keys.push('p1');keys.push(...Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual).sort(),'final');
  for(const key of keys){const s=addressSlots[key];if(!s)continue;if(s.required&&!addressValue(key)){alert(`請填寫${s.label}。`);$(`#${key}Input`)?.focus();return false;}if(addressValue(key)&&!s.place&&!s.data?.lat){alert(`${s.label}請從 Google 地址建議中選擇。`);$(`#${key}Input`)?.focus();return false;}}
- if(!$('#taskContent').value.trim()){alert(`請填寫${cfg.content}。`);$('#taskContent').focus();return false;}
+ const taskContent=$('#taskContent').value.trim();
+ if(!taskContent){alert(`請填寫${cfg.content}。`);$('#taskContent').focus();return false;}
+ if(prohibitedErrandTask(taskContent)){alert('此跑腿需求涉及違法、暴力、危害他人或禁止承接內容，TOP Taxi 無法受理。');$('#taskContent').focus();return false;}
  const c=contactInfo(),rawPhone=$('#globalContactPhone')?.value.trim()||'';$('#globalContactPhone')?.classList.remove('invalid');if(c){if(!c.name||!rawPhone||!isValidTaiwanMobile(rawPhone)){$('#globalContactPhone')?.classList.add('invalid');alert('聯絡人請完整填寫姓名與台灣手機號碼（09xxxxxxxx）。');$('#globalContactPhone')?.focus();return false;}}
  const advanceAmount=Number($('#advanceAmount')?.value||0);
  if(advanceNeeded&&advanceAmount>10000){alert('單筆代墊金額上限為 NT$10,000，如有較高金額需求請聯繫客服。');$('#advanceAmount')?.focus();return false;}
