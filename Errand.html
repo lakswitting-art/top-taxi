@@ -1,0 +1,3633 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+>
+
+<title>TOP Taxi｜24H 跑腿服務</title>
+
+<!-- LINE LIFF SDK -->
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+
+<style>
+
+/* =========================================
+   TOP Taxi Design System
+========================================= */
+
+:root {
+
+    --red: #ff1f2d;
+    --red-dark: #c90012;
+    --red-deep: #8e0010;
+
+    --black: #08080a;
+    --black-2: #101014;
+    --black-3: #18181d;
+
+    --white: #ffffff;
+
+    --gray-1: #f4f5f7;
+    --gray-2: #e5e5e8;
+    --gray-3: #a4a4aa;
+    --gray-4: #6d6d73;
+
+    --green: #06C755;
+
+}
+
+
+/* Match TOP Taxi system helper/status text */
+.status {
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.6;
+    font-weight: 400;
+    color: #74747c;
+    min-height: 19px;
+}
+.status.error { color: #b91c1c; }
+.status.ok { color: #15803d; }
+
+/* =========================================
+   RESET
+========================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--black);
+}
+
+body {
+
+    margin: 0;
+
+    min-height: 100vh;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Noto Sans TC",
+        "PingFang TC",
+        Arial,
+        sans-serif;
+
+    color: #222;
+
+    background:
+
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255, 31, 45, 0.22),
+            transparent 33%
+        ),
+
+        linear-gradient(
+            180deg,
+            #070709 0%,
+            #101014 40%,
+            #f2f3f5 40%,
+            #f2f3f5 100%
+        );
+
+}
+
+
+/* =========================================
+   HERO
+========================================= */
+
+.hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    max-width: 560px;
+    margin: 0 auto;
+    padding:
+        max(14px, env(safe-area-inset-top))
+        18px
+        16px;
+    color: white;
+    overflow: hidden;
+}
+
+.hero-copy {
+    min-width: 0;
+    flex: 1;
+    text-align: center;
+}
+
+.hero::after {
+    content: "";
+    flex: 0 0 70px;
+    width: 70px;
+}
+
+
+
+
+/* =========================================
+   LOGO
+========================================= */
+
+.logo-wrap {
+    position: relative;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+
+.logo-glow {
+    position: absolute;
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: rgba(255, 20, 35, .18);
+    filter: blur(18px);
+}
+
+
+.logo {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: #050506;
+    box-shadow:
+        0 0 0 1px rgba(255, 30, 45, .35),
+        0 8px 24px rgba(255, 0, 25, .22);
+}
+
+
+/* =========================================
+   BRAND
+========================================= */
+
+.brand {
+    margin: 0;
+    font-size: 25px;
+    line-height: 1.08;
+    font-weight: 900;
+    letter-spacing: .4px;
+}
+
+
+.brand-red {
+    color: var(--red);
+}
+
+
+.system-name {
+    margin-top: 5px;
+    color: #f3f3f4;
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+}
+
+
+.hero-description {
+    margin-top: 7px;
+    color: #a8a8ae;
+    font-size: 11px;
+    line-height: 1.45;
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.page {
+
+    width: 100%;
+
+    max-width: 560px;
+
+    margin: 0 auto;
+
+    padding:
+
+        0 14px
+
+        max(
+            34px,
+            env(safe-area-inset-bottom)
+        );
+
+}
+
+
+/* =========================================
+   CARD
+========================================= */
+
+.booking-card {
+
+    background:
+        rgba(255,255,255,.98);
+
+    border-radius: 22px;
+
+    padding: 22px 18px;
+
+    box-shadow:
+
+        0 18px 50px
+        rgba(0,0,0,.18);
+
+    border:
+        1px solid rgba(255,255,255,.7);
+
+}
+
+
+/* =========================================
+   LOGIN STATUS
+========================================= */
+
+.line-user {
+
+    display: none;
+
+    margin-bottom: 14px;
+
+    padding: 11px 13px;
+
+    border-radius: 11px;
+
+    background: #effff4;
+
+    border: 1px solid #ccefd8;
+
+    color: #087e3b;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+}
+
+
+.connection-status {
+
+    margin-bottom: 12px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    color: #8d8d94;
+
+    font-size: 12px;
+
+}
+
+
+.status-dot {
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #aaa;
+
+}
+
+
+.connection-status.ready
+.status-dot {
+
+    background: var(--green);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(6,199,85,.10);
+
+}
+
+
+.connection-status.ready {
+
+    color: #4d8c63;
+
+}
+
+
+/* =========================================
+   SECTION
+========================================= */
+
+.form-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    margin-bottom: 15px;
+
+}
+
+
+.form-title {
+
+    font-size: 16px;
+
+    font-weight: 900;
+
+    color: #1d1d20;
+
+}
+
+
+.form-label-small {
+
+    color: #aaa;
+
+    font-size: 11px;
+
+    letter-spacing: 1px;
+
+}
+
+.service-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 18px;
+    padding: 6px;
+    border: 1px solid var(--gray-2);
+    border-radius: 15px;
+    background: #f5f5f7;
+}
+
+.service-option {
+    min-height: 48px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: #77777d;
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    transition: background .18s, color .18s, box-shadow .18s;
+}
+
+.service-option.active {
+    background: linear-gradient(135deg, #ff3142, #f40020);
+    color: #ffffff;
+    box-shadow: 0 7px 18px rgba(244, 0, 32, .22);
+}
+
+.passenger-options.is-hidden {
+    display: none;
+}
+
+.fare-estimate {
+    display: grid;
+    gap: 12px;
+    margin: 2px 0 16px;
+    padding: 15px;
+    border: 1px solid var(--gray-2);
+    border-radius: 16px;
+    background: #ffffff;
+    box-shadow: 0 8px 22px rgba(0,0,0,.05);
+}
+.fare-estimate[hidden] { display: none; }
+.fare-estimate-money-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+/* Same result-row geometry as ride.html */
+.fare-estimate-top {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    gap: 10px;
+    align-items: center;
+}
+.fare-estimate-duration-badge {
+    flex: 0 0 auto;
+    align-self: center;
+    border-radius: 999px;
+    background: #f1f1f3;
+    padding: 6px 9px;
+    color: #55555b;
+    font-size: 12px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.fare-estimate-distance {
+    min-width: 0;
+    color: #74747c;
+    font-size: 12px;
+    line-height: 1.5;
+}
+.fare-estimate-money {
+    flex: 0 0 auto;
+    color: var(--red);
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1.05;
+    white-space: nowrap;
+}
+.fare-estimate-status,
+.fare-estimate-note {
+    color: #8f8f95;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.fare-estimate-note { color: #74747c; }
+.fare-estimate-long-distance[hidden] { display: none !important; }
+.fare-estimate-long-distance {
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f6f6f8;
+    color: #66666c;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.fare-estimate-long-distance.active {
+    border: 1px solid #ffd3d7;
+    background: #fff0f1;
+    color: #a31320;
+    font-weight: 800;
+}
+.fare-estimate.loading .fare-estimate-status { color: #8f8f95; }
+@media (max-width: 390px) {
+    .fare-estimate { padding: 14px; }
+    .fare-estimate-money { font-size: 28px; }
+}
+
+
+/* =========================================
+   FORM
+========================================= */
+
+.row {
+
+    display: flex;
+
+    gap: 18px;
+
+}
+
+
+.input-group {
+
+    flex: 1;
+
+    margin-bottom: 15px;
+
+}
+
+
+label {
+
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 15px;
+
+    color: #26262a;
+
+    font-weight: 800;
+
+}
+
+
+input,
+select {
+
+    width: 100%;
+
+    min-height: 46px;
+
+    padding: 0 11px;
+
+    border:
+        1px solid var(--gray-2);
+
+    border-radius: 12px;
+
+    background: #fafafa;
+
+    color: #222;
+
+    font-size: 16px;
+
+    outline: none;
+
+    appearance: auto;
+
+    transition:
+
+        border .15s,
+
+        background .15s,
+
+        box-shadow .15s;
+
+}
+
+
+input:focus,
+select:focus {
+
+    border-color:
+        var(--red);
+
+    background:
+        white;
+
+    box-shadow:
+
+        0 0 0 3px
+        rgba(255,31,45,.08),
+        0 6px 18px rgba(255,31,45,.06);
+
+}
+
+
+input::placeholder {
+
+    color: #b1b1b6;
+
+}
+
+.address-autocomplete {
+    position: relative;
+    width: 100%;
+}
+
+.address-input {
+    padding: 0 44px 0 42px;
+    color: #222222;
+    -webkit-text-fill-color: #222222;
+    caret-color: var(--red);
+    font-weight: 700;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.address-input::placeholder {
+    color: #8d8d93;
+    -webkit-text-fill-color: #8d8d93;
+    font-weight: 500;
+    opacity: 1;
+}
+
+.address-search-icon {
+    position: absolute;
+    top: 23px;
+    left: 15px;
+    z-index: 2;
+    transform: translateY(-50%);
+    color: #75757b;
+    font-size: 17px;
+    pointer-events: none;
+}
+
+.address-clear-btn {
+    position: absolute;
+    top: 23px;
+    right: 8px;
+    z-index: 2;
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+    padding: 0;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: #85858b;
+    font-size: 19px;
+    cursor: pointer;
+}
+
+.address-suggestions {
+    position: absolute;
+    top: calc(100% + 7px);
+    left: 0;
+    right: 0;
+    z-index: 5000;
+    display: none;
+    max-height: min(330px, 46vh);
+    overflow-y: auto;
+    border: 1px solid #e1e1e4;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 16px 38px rgba(0, 0, 0, .18);
+    -webkit-overflow-scrolling: touch;
+    pointer-events: auto;
+    touch-action: pan-y;
+    isolation: isolate;
+}
+
+.address-suggestions.show {
+    display: block;
+}
+
+.address-suggestion {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 1px solid #ededf0;
+    background: #ffffff;
+    color: #222222;
+    text-align: center;
+    cursor: pointer;
+}
+
+.address-suggestion:active {
+    background: #f5f5f7;
+}
+
+.address-suggestion-icon {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #f0f0f2;
+    font-size: 16px;
+}
+
+.address-suggestion-main,
+.address-suggestion-secondary {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.address-suggestion-main {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+.address-suggestion-secondary {
+    margin-top: 3px;
+    color: #77777d;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.address-google-attribution {
+    padding: 9px 14px;
+    color: #66666c;
+    font-size: 12px;
+    font-weight: 700;
+    text-align: right;
+}
+
+.address-no-results {
+    padding: 15px;
+    color: #77777d;
+    font-size: 13px;
+    text-align: center;
+}
+
+
+
+/* 日期 / 時間欄位：手機上更精緻，並保留清楚間距 */
+#bookDate,
+#bookTime {
+    min-height: 42px;
+    height: 42px;
+    font-size: 14px;
+    padding: 0 9px;
+}
+
+.row .input-group {
+    min-width: 0;
+}
+
+/* =========================================
+   SUBMIT
+========================================= */
+
+.submit-btn {
+
+    width: 100%;
+
+    min-height: 54px;
+
+    margin-top: 6px;
+
+    border: none;
+
+    border-radius: 15px;
+
+    background:
+
+        linear-gradient(
+            135deg,
+            #ff3341,
+            #e10019
+        );
+
+    color: white;
+
+    font-size: 17px;
+
+    font-weight: 900;
+
+    letter-spacing: .3px;
+
+    cursor: pointer;
+
+    position: relative;
+    overflow: hidden;
+
+    box-shadow:
+
+        0 11px 27px
+        rgba(210, 0, 22, .24);
+
+    transition:
+        transform .12s,
+        opacity .12s,
+        filter .16s,
+        box-shadow .16s;
+
+}
+
+
+.submit-btn:active {
+
+    transform:
+        scale(.985);
+
+}
+
+
+
+.submit-btn:hover {
+    filter: brightness(1.04);
+    box-shadow: 0 13px 30px rgba(210, 0, 22, .30);
+    transform: translateY(-1px);
+}
+
+.submit-btn::after {
+    content: "";
+    position: absolute;
+    top: -45%;
+    left: -28%;
+    width: 28%;
+    height: 190%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
+    transform: rotate(18deg);
+    transition: left .45s ease;
+}
+
+.submit-btn:hover::after {
+    left: 116%;
+}
+
+.submit-btn:disabled {
+
+    opacity: .55;
+
+    cursor:
+        not-allowed;
+
+}
+
+
+/* =========================================
+   NOTES
+========================================= */
+
+.notice {
+
+    margin-top: 18px;
+
+    padding-top: 16px;
+
+    border-top:
+        1px solid #eee;
+
+    text-align: center;
+
+    color: #8e8e94;
+
+    font-size: 12px;
+
+    line-height: 1.8;
+
+}
+
+
+/* =========================================
+   STATUS MESSAGE
+========================================= */
+
+.message-box {
+
+    display: none;
+
+    margin-top: 18px;
+
+    border-radius: 13px;
+
+    padding: 14px;
+
+    text-align: center;
+
+    font-size: 14px;
+
+    line-height: 1.65;
+
+}
+
+
+.message-box.success {
+
+    display: block;
+
+    color: #087c39;
+
+    background: #effff4;
+
+    border: 1px solid #caefd6;
+
+}
+
+
+.message-box.error {
+
+    display: block;
+
+    color: #bb2632;
+
+    background: #fff0f1;
+
+    border: 1px solid #ffd2d5;
+
+}
+
+
+/* =========================================
+   SPINNER
+========================================= */
+
+.spinner {
+
+    display: inline-block;
+
+    width: 17px;
+    height: 17px;
+
+    margin-right: 8px;
+
+    vertical-align: -3px;
+
+    border-radius: 50%;
+
+    border:
+        2px solid rgba(255,255,255,.35);
+
+    border-top-color:
+        white;
+
+    animation:
+        spin .7s linear infinite;
+
+}
+
+
+@keyframes spin {
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.footer {
+
+    text-align: center;
+
+    margin-top: 19px;
+
+    color: #999;
+
+    font-size: 10px;
+
+    line-height: 1.7;
+
+}
+
+
+
+@keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardUp {
+    from { opacity: 0; transform: translateY(14px) scale(.99); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes successPop {
+    0%   { opacity: 0; transform: scale(.96); }
+    70%  { opacity: 1; transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+@keyframes logoFloat {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-3px); }
+}
+
+.logo-wrap { animation: logoFloat 3.2s ease-in-out infinite; }
+.brand,
+.system-name,
+.hero-description { animation: fadeDown .55s ease both; }
+.booking-card { animation: cardUp .5s cubic-bezier(.2,.8,.2,1); }
+.message-box.success { animation: successPop .42s cubic-bezier(.2,.8,.2,1) both; }
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 520px) {
+
+    .hero {
+        justify-content: flex-start;
+        gap: 18px;
+        padding:
+            max(10px, env(safe-area-inset-top))
+            24px
+            12px;
+    }
+
+    .logo {
+        width: 58px;
+        height: 58px;
+        border-radius: 14px;
+    }
+
+    .logo-glow {
+        width: 66px;
+        height: 66px;
+        filter: blur(16px);
+    }
+
+    .hero::after {
+        flex-basis: 58px;
+        width: 58px;
+    }
+
+    .brand {
+        font-size: 23px;
+    }
+
+    .system-name {
+        margin-top: 3px;
+        font-size: 13px;
+        letter-spacing: 1.25px;
+    }
+
+    .hero-description {
+        margin-top: 5px;
+        max-width: calc(100vw - 125px);
+        overflow: hidden;
+        font-size: 10.5px;
+        font-weight: 600;
+        letter-spacing: .2px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .booking-card {
+        padding:
+            17px 15px;
+        border-radius:
+            20px;
+    }
+
+    .form-header {
+        margin-bottom: 10px;
+    }
+
+    .service-switch {
+        margin-bottom: 15px;
+    }
+
+    .row {
+        gap: 14px;
+    }
+
+    input,
+    select {
+        font-size: 15px;
+    }
+
+    #bookDate,
+    #bookTime {
+        height: 40px;
+        min-height: 40px;
+        font-size: 13px;
+        padding: 0 7px;
+    }
+}
+
+
+/* 小手機 */
+@media (max-width: 370px) {
+    .row { gap: 10px; }
+
+    #bookDate,
+    #bookTime {
+        font-size: 12px;
+    }
+    .hero { gap: 13px; padding-left: 18px; padding-right: 18px; }
+    .logo { width: 54px; height: 54px; border-radius: 13px; }
+    .hero::after { flex-basis: 54px; width: 54px; }
+    .hero-description { max-width: calc(100vw - 112px); font-size: 9.5px; }
+}
+
+
+
+/* =========================================
+   SHARED SAVED ADDRESSES - TEST VERSION
+========================================= */
+.saved-address-panel {
+    margin-bottom: 15px;
+    padding: 13px;
+    border: 1px solid var(--gray-2);
+    border-radius: 15px;
+    background: #fafafa;
+}
+.saved-address-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+.saved-address-title {
+    font-size: 14px;
+    font-weight: 900;
+    color: #26262a;
+}
+.saved-address-edit {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--red);
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+.saved-address-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.saved-address-chip {
+    min-height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--gray-2);
+    border-radius: 11px;
+    background: #ffffff;
+    color: #333338;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.saved-address-chip:active,
+.saved-address-chip.active {
+    border-color: var(--red);
+    background: #fff1f2;
+    color: var(--red);
+}
+.saved-address-empty {
+    color: #99999f;
+    font-size: 12px;
+}
+.saved-address-editor {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--gray-2);
+}
+.saved-address-editor[hidden] { display: none; }
+.saved-address-row {
+    display: grid;
+    grid-template-columns: 92px 1fr;
+    gap: 8px;
+}
+.saved-address-row input {
+    min-height: 42px;
+    font-size: 13px;
+}
+.saved-address-note {
+    grid-column: 2;
+}
+.saved-address-save {
+    width: 100%;
+    min-height: 44px;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--red), var(--red-dark));
+    color: #fff;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+}
+.pickup-note-helper {
+    margin-top: 8px;
+}
+@media (max-width: 390px) {
+    .saved-address-row { grid-template-columns: 82px 1fr; }
+}
+
+
+
+/* =========================================
+   ULTIMATE COMPACT CUSTOMER UX
+   Ported from approved ride.html UX baseline
+========================================= */
+.field-tag {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 4px;
+    font-size: 10.5px;
+    line-height: 1;
+    font-weight: 850;
+    vertical-align: middle;
+}
+.field-tag.required-tag { color: var(--red); }
+.field-tag.optional-tag { color: #9a9aa0; }
+
+.booking-saved-place-line {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    overflow-x: auto;
+    padding: 2px 1px 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+.booking-saved-place-line::-webkit-scrollbar { display: none; }
+.booking-saved-place-line .saved-address-chips {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 7px;
+    min-width: max-content;
+}
+.booking-saved-place-line .saved-address-chips:empty { display: none; }
+.booking-saved-place-line .saved-address-chip {
+    flex: 0 0 auto;
+    min-height: 38px;
+    white-space: nowrap;
+}
+.saved-address-panel.compact {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    margin: 5px 0 0;
+}
+.saved-address-edit.compact {
+    flex: 0 0 auto;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 11px;
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    background: #fff;
+    color: #5d5d63;
+    font-size: 12px;
+    font-weight: 850;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.settings-gear-icon {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.55;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex: 0 0 auto;
+}
+.saved-address-editor.compact-editor {
+    margin-top: 10px;
+    padding: 12px;
+    border: 1px solid var(--gray-2);
+    border-radius: 14px;
+    background: #fafafa;
+}
+.saved-setting-name {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+.saved-setting-name input {
+    min-width: 0;
+    flex: 1;
+}
+.saved-clear-btn {
+    flex: 0 0 auto;
+    border: 0;
+    background: transparent;
+    color: #a0a0a6;
+    padding: 3px 2px;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.2;
+    cursor: pointer;
+}
+.saved-clear-btn:active { opacity: .6; }
+
+.booking-location-status {
+    min-height: 18px;
+    margin-top: 5px;
+    color: #8e8e94;
+    font-size: 11px;
+    line-height: 1.45;
+}
+.booking-location-status:empty { display: none; }
+.booking-location-status.ok { color: #4d8c63; }
+.booking-location-status.error { color: #bb2632; }
+.location-inline-btn {
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 35px;
+    margin-top: 5px;
+    padding: 0 11px;
+    border: 1px solid var(--gray-2);
+    border-radius: 10px;
+    background: #f7f7f9;
+    color: #6f6f75;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 850;
+    cursor: pointer;
+    text-align: left;
+}
+.location-inline-btn:active {
+    opacity: .72;
+    transform: scale(.99);
+}
+.location-inline-btn:disabled {
+    opacity: .62;
+    cursor: wait;
+}
+.location-inline-icon {
+    font-size: 15px;
+    line-height: 1;
+    color: #77777d;
+}
+
+.pickup-note-compact {
+    display: grid;
+    gap: 8px;
+    margin-top: 8px;
+}
+.pickup-note-toggle {
+    width: 100%;
+    min-height: 42px;
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    color: #5d5d63;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.pickup-note-toggle-main {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12.5px;
+    font-weight: 800;
+}
+#bookingPickupNoteToggleText {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.pickup-note-toggle-arrow {
+    color: #a0a0a6;
+    font-size: 18px;
+    line-height: 1;
+}
+.pickup-note-field {
+    display: grid;
+    gap: 8px;
+}
+.pickup-note-field[hidden] { display: none !important; }
+.pickup-note-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.pickup-note-head label { margin: 0; }
+.pickup-note-collapse {
+    border: 0;
+    background: transparent;
+    color: #99999f;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    padding: 4px 0;
+}
+
+.booking-compact-choice {
+    width: 100%;
+    min-height: 50px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 0 14px;
+    border: 1px solid var(--gray-2);
+    border-radius: 14px;
+    background: #fff;
+    color: #1f1f22;
+    text-align: left;
+    font-family: inherit;
+    cursor: pointer;
+}
+.booking-compact-choice:active { transform: scale(.997); }
+.booking-compact-choice-label {
+    font-size: 14px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+.booking-compact-choice-value {
+    min-width: 0;
+    color: #55555b;
+    font-size: 13px;
+    font-weight: 750;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+}
+.booking-compact-choice-arrow {
+    color: #9a9aa0;
+    font-size: 20px;
+    line-height: 1;
+}
+.booking-compact-help {
+    margin-top: 6px;
+    padding-left: 2px;
+    color: #9b9ba1;
+    font-size: 11px;
+    line-height: 1.45;
+}
+.booking-hidden-control { display: none !important; }
+
+.booking-sheet-overlay {
+    position: fixed;
+    z-index: 12000;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-top: max(8px, env(safe-area-inset-top));
+    background: rgba(0,0,0,.45);
+    overscroll-behavior: contain;
+}
+.booking-sheet-overlay[hidden] { display: none !important; }
+.booking-bottom-sheet {
+    width: min(100%,560px);
+    max-height: 84vh;
+    max-height: min(88dvh, calc(100dvh - max(8px, env(safe-area-inset-top))));
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    padding: 10px 18px max(18px,env(safe-area-inset-bottom));
+    box-shadow: 0 -18px 55px rgba(0,0,0,.24);
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+.booking-sheet-handle {
+    width: 42px;
+    height: 5px;
+    border-radius: 999px;
+    background: #d8d8dd;
+    margin: 2px auto 14px;
+}
+.booking-sheet-head {
+    position: sticky;
+    top: -10px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 -2px 14px;
+    padding: 8px 2px 7px;
+    background: rgba(255,255,255,.98);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.booking-sheet-title {
+    font-size: 19px;
+    font-weight: 950;
+}
+.booking-sheet-close {
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: #f4f4f6;
+    color: #555;
+    font-size: 19px;
+    cursor: pointer;
+}
+.booking-sheet-section {
+    display: grid;
+    gap: 9px;
+    margin-top: 16px;
+}
+.booking-sheet-label {
+    font-size: 14px;
+    font-weight: 900;
+}
+.booking-option-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.booking-option-pill {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    background: #f7f7f9;
+    color: #404046;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 850;
+    cursor: pointer;
+}
+.booking-option-pill.active {
+    border-color: var(--red);
+    background: var(--red);
+    color: #fff;
+}
+.booking-sheet-note {
+    color: #8d8d93;
+    font-size: 11px;
+    line-height: 1.55;
+}
+.booking-preference-card {
+    display: grid;
+    gap: 7px;
+    margin-top: 2px;
+    padding: 11px 12px;
+    border: 1px solid #ececef;
+    border-radius: 12px;
+    background: #fafafa;
+}
+.booking-preference-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #55555b;
+    font-size: 12px;
+    font-weight: 850;
+    cursor: pointer;
+}
+.booking-preference-check input {
+    width: 16px;
+    height: 16px;
+    min-height: 16px;
+    margin: 0;
+    padding: 0;
+    accent-color: var(--red);
+    flex: 0 0 auto;
+}
+.booking-preference-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+    color: #99999f;
+    font-size: 10.8px;
+    line-height: 1.4;
+}
+#bookingSmokingPreferenceHint { min-width: 0; }
+.booking-preference-clear {
+    flex: 0 0 auto;
+    padding: 2px 0;
+    border: 0;
+    background: transparent;
+    color: #9a9aa0;
+    font-family: inherit;
+    font-size: 10.8px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+.booking-preference-clear:active { opacity: .6; }
+.booking-sheet-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 3;
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+    gap: 10px;
+    margin: 20px -2px 0;
+    padding: 12px 2px max(18px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(255,255,255,.82) 0%, #fff 24%, #fff 100%);
+}
+.booking-sheet-secondary,
+.booking-sheet-primary {
+    min-height: 48px;
+    border: 0;
+    border-radius: 13px;
+    font-family: inherit;
+    font-weight: 900;
+    cursor: pointer;
+}
+.booking-sheet-secondary {
+    background: #f0f0f2;
+    color: #666;
+}
+.booking-sheet-primary {
+    background: var(--red);
+    color: #fff;
+}
+.booking-other-textarea {
+    width: 100%;
+    min-height: 92px;
+    resize: vertical;
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    padding: 12px;
+    background: #fafafa;
+    color: #222;
+    font: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+}
+.booking-other-textarea:focus {
+    border-color: var(--red);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(255,31,45,.08);
+}
+.booking-luggage-notice,
+.booking-fare-surcharge {
+    margin-top: 8px;
+    padding: 9px 11px;
+    border-radius: 11px;
+    background: #fff4f4;
+    color: #9f1422;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.booking-luggage-notice[hidden],
+.booking-fare-surcharge[hidden] { display: none !important; }
+.booking-payment-list {
+    display: grid;
+    gap: 10px;
+}
+.booking-payment-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    padding: 11px 12px;
+    border: 1px solid var(--gray-2);
+    border-radius: 12px;
+    background: #fafafa;
+    cursor: pointer;
+}
+.booking-payment-option input {
+    width: 17px;
+    height: 17px;
+    min-height: 17px;
+    margin: 2px 0 0;
+    padding: 0;
+    accent-color: var(--red);
+    flex: 0 0 auto;
+}
+.booking-payment-copy {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+    color: #333338;
+    font-size: 13px;
+    font-weight: 850;
+}
+.booking-payment-copy small {
+    color: #909096;
+    font-size: 10.8px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.booking-payment-option {
+    position: relative;
+}
+
+.booking-payment-default-badge {
+    display: none;
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #f1f1f3;
+    color: #66666c;
+    font-size: 10.5px;
+    font-weight: 850;
+    white-space: nowrap;
+}
+
+.booking-payment-default-badge.show {
+    display: inline-flex;
+}
+
+.booking-payment-set-default {
+    display: none;
+    flex: 0 0 auto;
+    margin-left: auto;
+    min-height: 30px;
+    padding: 0 9px;
+    border: 1px solid #d8d8dc;
+    border-radius: 9px;
+    background: #fff;
+    color: #44444a;
+    font-size: 10.8px;
+    font-weight: 850;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.booking-payment-set-default.show {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.booking-payment-set-default:active {
+    transform: scale(.98);
+}
+
+.booking-payment-toast {
+    display: none;
+    margin-top: 8px;
+    color: #168447;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.booking-payment-toast.show {
+    display: block;
+}
+
+@media (max-width: 390px) {
+    .booking-payment-option {
+        align-items: flex-start;
+    }
+    .booking-payment-set-default {
+        padding: 0 8px;
+        font-size: 10.3px;
+    }
+    .booking-payment-default-badge {
+        font-size: 10px;
+    }
+}
+
+
+/* ===== STEP 3：MULTI-STOP + ROUTE MODE ===== */
+.booking-waypoints {
+    display: grid;
+    gap: 10px;
+    margin: -2px 0 15px;
+}
+.booking-waypoint {
+    display: grid;
+    gap: 8px;
+    padding-left: 14px;
+    border-left: 2px dashed #dedee2;
+}
+.booking-waypoint[hidden] { display: none !important; }
+.booking-waypoint-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+.booking-waypoint-head label { margin: 0; }
+.booking-waypoint-remove {
+    border: 1px solid var(--gray-2);
+    border-radius: 10px;
+    background: #fff;
+    color: #818187;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 800;
+}
+.booking-add-waypoint {
+    width: 100%;
+    min-height: 44px;
+    border: 1px dashed #d4d4d8;
+    border-radius: 13px;
+    background: #fff;
+    color: #56565c;
+    font-weight: 850;
+}
+.booking-add-waypoint[hidden] { display: none !important; }
+.booking-waypoint-help {
+    color: #99999f;
+    font-size: 11px;
+    line-height: 1.5;
+    text-align: center;
+}
+.booking-route-switch {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 7px;
+    padding: 5px;
+    border: 1px solid var(--gray-2);
+    border-radius: 14px;
+    background: #f5f5f7;
+}
+.booking-route-option {
+    min-height: 43px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #77777d;
+    font-size: 13px;
+    font-weight: 900;
+}
+.booking-route-option.active {
+    background: #fff;
+    color: #222226;
+    box-shadow: 0 4px 14px rgba(0,0,0,.08);
+}
+.booking-route-option.fast.active {
+    background: #17171b;
+    color: #fff;
+}
+.booking-route-help {
+    color: #96969c;
+    font-size: 11px;
+    line-height: 1.5;
+}
+.booking-route-switch-result {
+    margin: 0;
+}
+.booking-route-switch-result .booking-route-option {
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 12px;
+}
+
+
+/* ===== #5 WHOLE-SYSTEM VISUAL CONSISTENCY FINAL ===== */
+/* Fixed shell height: no longer depends on total document height */
+body{
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(255,31,45,.22) 0,
+            rgba(255,31,45,.12) 72px,
+            transparent 300px
+        ),
+        linear-gradient(
+            180deg,
+            #070709 0,
+            #101014 220px,
+            #f2f3f5 220px,
+            #f2f3f5 100%
+        ) !important;
+}
+
+.hero{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:flex-start !important;
+    gap:18px !important;
+    width:min(100%,560px) !important;
+    max-width:560px !important;
+    margin:0 auto !important;
+    padding:max(10px,env(safe-area-inset-top)) 24px 12px !important;
+    text-align:left !important;
+}
+.hero-copy{
+    min-width:0 !important;
+    flex:1 !important;
+    text-align:center !important;
+}
+.hero::after{
+    content:"";
+    flex:0 0 58px !important;
+    width:58px !important;
+}
+.hero .logo-wrap{
+    margin:0 !important;
+    flex:0 0 auto !important;
+}
+.hero .logo{
+    width:58px !important;
+    height:58px !important;
+    border-radius:14px !important;
+}
+.hero .logo-glow{
+    width:66px !important;
+    height:66px !important;
+    filter:blur(16px) !important;
+}
+.hero .brand{
+    font-size:23px !important;
+    line-height:1.08 !important;
+}
+.hero .system-name{
+    margin-top:3px !important;
+    font-size:13px !important;
+    font-weight:800 !important;
+    letter-spacing:1.25px !important;
+}
+.hero .hero-description{
+    margin-top:5px !important;
+    max-width:calc(100vw - 125px) !important;
+    overflow:hidden !important;
+    color:#a8a8ae !important;
+    font-size:10.5px !important;
+    font-weight:600 !important;
+    letter-spacing:.2px !important;
+    line-height:1.4 !important;
+    text-overflow:ellipsis !important;
+    white-space:nowrap !important;
+}
+@media(max-width:370px){
+    .hero{
+        gap:13px !important;
+        padding-left:18px !important;
+        padding-right:18px !important;
+    }
+    .hero .logo{
+        width:54px !important;
+        height:54px !important;
+        border-radius:13px !important;
+    }
+    .hero::after{
+        flex-basis:54px !important;
+        width:54px !important;
+    }
+    .hero .hero-description{
+        max-width:calc(100vw - 112px) !important;
+        font-size:9.5px !important;
+    }
+}
+
+.page{
+    margin:-6px auto 0 !important;
+}
+
+/* Fare page is the typography standard for +新增停靠點 */
+.booking-add-waypoint{
+    min-height:44px !important;
+    border:1px dashed #d7d7dc !important;
+    border-radius:12px !important;
+    color:#4f4f55 !important;
+    font-size:14px !important;
+    font-weight:850 !important;
+}
+
+
+
+/* =========================================
+   #6 BOOKING CONFIRMATION｜FARE EXACT SCALE
+   Same modal scale/position as fare.html.
+========================================= */
+.booking-confirm-overlay {
+    z-index: 12600;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0,0,0,.58);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.booking-confirm-card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 460px;
+    max-height: calc(100dvh - 40px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+
+    background: #fff;
+    border-radius: 24px;
+    padding: 18px 22px 22px;
+    box-shadow: 0 25px 60px rgba(0,0,0,.28);
+    animation: bookingConfirmPop .22s ease-out;
+}
+.booking-confirm-card::-webkit-scrollbar { display: none; }
+.booking-confirm-card.booking-result-mode > :not(.top-line-result-state){
+    display:none!important;
+}
+
+.booking-confirm-handle {
+    width: 42px;
+    height: 5px;
+    margin: 0 auto 20px;
+    border-radius: 99px;
+    background: #ddd;
+}
+
+.booking-confirm-header {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 18px;
+}
+.booking-confirm-icon {
+    width: 120px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: transparent;
+    border-radius: 0;
+}
+.booking-confirm-icon img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: contain;
+}
+.booking-confirm-title {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.25;
+    color: #111;
+}
+.booking-confirm-subtitle {
+    margin-top: 4px;
+    font-size: 14px;
+    line-height: 1.4;
+    color: #999;
+}
+
+.booking-confirm-meta,
+.booking-confirm-details {
+    padding: 4px 14px;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    background: #fff;
+}
+.booking-confirm-meta {
+    margin-bottom: 14px;
+}
+.booking-confirm-details {
+    margin-top: 14px;
+}
+
+.booking-confirm-detail-row {
+    display: grid;
+    grid-template-columns: 82px minmax(0,1fr);
+    gap: 10px;
+    align-items: start;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+.booking-confirm-detail-row:last-child { border-bottom: 0; }
+.booking-confirm-detail-row > span {
+    color: #999;
+    font-size: 12px;
+    font-weight: 600;
+}
+.booking-confirm-detail-row > strong {
+    min-width: 0;
+    color: #222;
+    font-size: 13px;
+    font-weight: 800;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.booking-confirm-location {
+    padding: 18px;
+    background: #fafafa;
+    border: 1px solid #eee;
+    border-radius: 16px;
+}
+.booking-confirm-location-row {
+    display: grid;
+    grid-template-columns: 18px minmax(0,1fr);
+    gap: 10px;
+    align-items: start;
+}
+.booking-confirm-dot {
+    width: 10px;
+    height: 10px;
+    margin-top: 6px;
+    border-radius: 50%;
+}
+.booking-confirm-pickup-dot { background: #20ad51; }
+.booking-confirm-pickup-dot::before { content: ""; }
+.booking-confirm-waypoint-dot { background: #f2aa1b; }
+.booking-confirm-waypoint-dot::before { content: ""; }
+.booking-confirm-dropoff-dot { background: #ff1f2d; }
+.booking-confirm-dropoff-dot::before { content: ""; }
+
+.booking-confirm-line {
+    width: 1px;
+    height: 22px;
+    margin: 4px 0 4px 4px;
+    border: 0;
+    background: #ddd;
+}
+.booking-confirm-location-label {
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #999;
+}
+.booking-confirm-address {
+    color: #222;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.5;
+    word-break: break-word;
+}
+.booking-confirm-pickup-note {
+    margin-top: 6px;
+    padding: 6px 8px;
+    border-radius: 9px;
+    background: #fff2f3;
+    color: #971e29;
+    font-size: 11px;
+    font-weight: 650;
+    line-height: 1.45;
+}
+.booking-confirm-pickup-note[hidden],
+.booking-confirm-waypoint-wrap[hidden] {
+    display: none !important;
+}
+
+.booking-confirm-route-box {
+    margin-top: 14px;
+    padding: 17px 18px;
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 16px;
+}
+.booking-confirm-route-box {
+    display: block;
+}
+.booking-confirm-route-icon {
+    display: none;
+}
+.booking-confirm-route-name {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #777;
+}
+.booking-confirm-route-name span {
+    display: block;
+    margin: 0;
+    color: #777;
+    font-size: 14px;
+    font-weight: 500;
+}
+.booking-confirm-route-name strong {
+    color: #222;
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+.booking-confirm-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding-top: 14px;
+}
+.booking-confirm-stats div {
+    min-width: 0;
+    display: block;
+}
+.booking-confirm-stats span {
+    display: block;
+    width: auto;
+    margin-bottom: 4px;
+    overflow: visible;
+    white-space: normal;
+    color: #999;
+    font-size: 11px;
+    font-weight: 600;
+}
+.booking-confirm-stats strong {
+    display: block;
+    color: #222;
+    font-size: 14px;
+    font-weight: 800;
+    white-space: normal;
+}
+
+.booking-confirm-price {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 18px;
+    border-radius: 16px;
+    background: linear-gradient(135deg,#fff4f5,#fffafa);
+}
+.booking-confirm-price span {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: block;
+    color: #555;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.booking-confirm-price span::after {
+    content: attr(data-note);
+    display: block;
+    max-width: 220px;
+    margin-top: 3px;
+    color: #8e8e94;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.35;
+    white-space: normal;
+}
+.booking-confirm-price span[data-note=""]::after { display: none; }
+.booking-confirm-price strong {
+    flex: 0 0 auto;
+    color: #f20d27;
+    font-size: 30px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.booking-confirm-note {
+    margin-top: 12px;
+    color: #999;
+    font-size: 10.5px;
+    line-height: 1.55;
+}
+
+.booking-confirm-send {
+    width: 100%;
+    min-height: 50px;
+    margin-top: 16px;
+    padding: 15px;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(90deg,#ff3045,#f0001d);
+    color: #fff;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 10px 24px rgba(242,13,39,.22);
+}
+.booking-confirm-send:active { transform: scale(.98); }
+.booking-confirm-send:disabled {
+    opacity: .58;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.booking-confirm-back {
+    width: 100%;
+    margin-top: 8px;
+    padding: 12px;
+    border: 0;
+    background: transparent;
+    color: #888;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+@keyframes bookingConfirmPop {
+    from { opacity: 0; transform: translateY(16px) scale(.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Only protect very narrow screens; do not enlarge the modal. */
+@media (max-width: 360px) {
+    .booking-confirm-overlay { padding: 12px; }
+    .booking-confirm-card {
+        max-height: calc(100dvh - 24px);
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+    .booking-confirm-header { gap: 12px; }
+    .booking-confirm-icon { width: 104px; height: 48px; }
+    .booking-confirm-title { font-size: 20px; }
+}
+
+
+/* =========================================
+   TOP TAXI｜UNIFIED LINE RETURN RESULT
+   成功：自動返回 + 手動返回備援
+   待確認：不自動返回 + 聯繫客服
+========================================= */
+.top-line-result-state{
+    padding:8px 0 2px;
+    text-align:center;
+}
+.top-line-result-state[hidden]{display:none!important}
+.top-line-result-icon{
+    width:64px;
+    height:64px;
+    margin:4px auto 16px;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    font-size:34px;
+    font-weight:900;
+}
+.top-line-result-state.success .top-line-result-icon{
+    background:#edf9f0;
+    color:#16a34a;
+}
+.top-line-result-state.warning .top-line-result-icon{
+    background:#fff7e8;
+    color:#e79a00;
+}
+.top-line-result-state.sync-warning .top-line-result-icon{
+    background:#eef7ff;
+    color:#2f7fd8;
+}
+.top-line-result-title{
+    color:#17171a;
+    font-size:21px;
+    font-weight:900;
+    line-height:1.3;
+}
+.top-line-result-state.success .top-line-result-title{color:#16893c}
+.top-line-result-state.warning .top-line-result-title{color:#c87700}
+.top-line-result-copy{
+    margin:12px auto 0;
+    max-width:340px;
+    color:#66666c;
+    font-size:13px;
+    font-weight:600;
+    line-height:1.7;
+}
+.top-line-result-copy strong{
+    color:#333338;
+    font-weight:850;
+}
+.top-line-result-subcopy{
+    margin-top:10px;
+    color:#99999f;
+    font-size:11.5px;
+    line-height:1.55;
+}
+.top-line-result-primary{
+    width:100%;
+    min-height:50px;
+    margin-top:20px;
+    padding:13px 15px;
+    border:1px solid #e5e5e8;
+    border-radius:14px;
+    background:#fff;
+    color:#222;
+    font-family:inherit;
+    font-size:15px;
+    font-weight:850;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+}
+.top-line-result-primary:active{transform:scale(.98)}
+.top-line-badge{
+    width:30px;
+    height:30px;
+    display:inline-grid;
+    place-items:center;
+    flex:0 0 30px;
+    border-radius:9px;
+    background:#06c755;
+    color:#fff;
+    font-size:8px;
+    font-weight:900;
+    letter-spacing:-.3px;
+}
+
+
+
+/* =========================================
+   TOP Taxi Errand V1 additions
+========================================= */
+.errand-mode-switch,
+.errand-task-grid{
+    display:grid;
+    gap:10px;
+}
+.errand-mode-switch{grid-template-columns:1fr 1fr;margin-bottom:16px;}
+.errand-task-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+.errand-choice{
+    appearance:none;border:1px solid #e6e6ea;background:#fff;border-radius:14px;
+    min-height:48px;padding:11px 12px;font-size:14px;font-weight:800;color:#242428;
+    box-shadow:0 4px 14px rgba(0,0,0,.04);cursor:pointer;
+}
+.errand-choice.active{border-color:#ff1f2d;background:#fff4f5;color:#c90012;box-shadow:0 7px 18px rgba(255,31,45,.10);}
+.errand-task-grid .errand-choice:last-child:nth-child(odd){grid-column:1/-1;}
+.errand-section-note{font-size:12px;line-height:1.7;color:#787880;margin-top:7px;}
+.errand-inline-note{font-size:12px;line-height:1.6;color:#777780;margin-top:7px;padding:9px 11px;background:#f7f7f9;border-radius:10px;}
+.errand-warning-note{font-size:12px;line-height:1.7;color:#6b4144;margin-top:10px;padding:11px 12px;background:#fff6f6;border:1px solid #f3d7d9;border-radius:12px;}
+.errand-address-block{margin-top:14px;}
+.errand-address-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+.errand-address-head label{margin:0;}
+.errand-text-btn{border:0;background:transparent;color:#c90012;font-weight:800;font-size:12px;padding:5px 0;cursor:pointer;}
+.errand-contact-box{margin-top:8px;padding:10px 11px;background:#f8f8fa;border:1px solid #ececef;border-radius:12px;}
+.errand-contact-toggle{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;background:transparent;padding:0;color:#55555d;font-size:13px;font-weight:800;cursor:pointer;}
+.errand-contact-fields{display:grid;grid-template-columns:1fr 1.2fr;gap:8px;margin-top:10px;}
+.errand-contact-fields input{margin:0;}
+.errand-textarea{width:100%;min-height:94px;resize:vertical;border:1px solid #ddddE3;border-radius:14px;padding:13px 14px;font:inherit;line-height:1.6;background:#fff;outline:none;}
+.errand-textarea:focus{border-color:#ff1f2d;box-shadow:0 0 0 3px rgba(255,31,45,.09);}
+.errand-small-input{margin-top:8px;}
+.errand-row-toggle{display:flex;gap:8px;flex-wrap:wrap;}
+.errand-pill{border:1px solid #dedee3;background:#fff;border-radius:999px;padding:9px 13px;font-size:13px;font-weight:800;color:#4a4a50;cursor:pointer;}
+.errand-pill.active{border-color:#ff1f2d;background:#fff2f3;color:#c90012;}
+.errand-hidden{display:none!important;}
+.errand-delivery-box{margin-top:14px;padding:12px;border:1px solid #ececf0;background:#fafafa;border-radius:14px;}
+.errand-delivery-title{font-size:13px;font-weight:900;color:#333;margin-bottom:9px;}
+.errand-summary-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #e4e4e8;background:#fff;border-radius:14px;padding:13px 14px;cursor:pointer;text-align:left;}
+.errand-summary-btn strong{font-size:14px;color:#29292e;}.errand-summary-btn span{font-size:12px;color:#777780;}
+.errand-fee-list{margin-top:7px;font-size:12px;color:#777780;line-height:1.7;}
+.errand-price-main{display:flex;justify-content:space-between;align-items:flex-end;gap:15px;}
+.errand-price-main strong{font-size:28px;line-height:1;color:#c90012;}
+.errand-price-main span{font-size:13px;color:#777780;}
+.errand-policy{margin-top:16px;border:1px solid #e5e5e9;border-radius:14px;overflow:hidden;background:#fff;}
+.errand-policy summary{cursor:pointer;padding:13px 14px;font-weight:900;font-size:13px;list-style:none;}
+.errand-policy summary::-webkit-details-marker{display:none;}
+.errand-policy-copy{padding:0 14px 14px;font-size:12px;color:#66666e;line-height:1.8;white-space:pre-line;}
+.errand-sheet-grid{display:grid;gap:10px;}
+.errand-sheet-option{display:flex;align-items:center;gap:10px;padding:12px;border:1px solid #e4e4e8;border-radius:12px;background:#fff;}
+.errand-sheet-option input{width:auto;margin:0;}
+.errand-sheet-option span{font-size:13px;font-weight:800;color:#3d3d42;}
+.errand-confirm-task{font-size:13px;line-height:1.7;white-space:pre-wrap;color:#333;}
+.errand-confirm-note{font-size:12px;color:#777780;line-height:1.7;}
+.errand-result-mode .errand-confirm-content,.errand-result-mode .errand-confirm-footer,.errand-result-mode .booking-confirm-head{display:none;}
+.errand-empty-estimate{padding:13px 14px;background:#fafafa;border:1px dashed #dddde2;border-radius:14px;color:#777780;font-size:12px;line-height:1.7;}
+
+.errand-saved-line{display:flex;align-items:center;gap:7px;margin-top:6px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.errand-saved-line::-webkit-scrollbar{display:none;}
+.errand-saved-line .saved-address-chips{display:flex;flex-wrap:nowrap;gap:7px;min-width:max-content;}
+.errand-saved-line .saved-address-chip{flex:0 0 auto;}
+.errand-saved-editor{margin-top:10px;padding:12px;border:1px solid #e4e4e8;border-radius:14px;background:#fafafa;}
+.errand-saved-editor[hidden]{display:none!important;}
+.errand-saved-row{display:grid;grid-template-columns:92px 1fr;gap:8px;margin-bottom:9px;}
+.errand-saved-row input{margin:0;min-width:0;}
+.errand-saved-row .errand-saved-name{font-size:13px;}
+.errand-saved-row .errand-saved-address{font-size:13px;}
+.errand-saved-row .address-suggestions{grid-column:2;}
+@media(max-width:390px){.errand-saved-row{grid-template-columns:82px 1fr;}}
+@media(max-width:430px){
+  .errand-contact-fields{grid-template-columns:1fr;}
+  .errand-task-grid{grid-template-columns:1fr 1fr;}
+  .errand-choice{font-size:13px;padding:10px 8px;}
+}
+
+
+/* =========================================
+   TOP Taxi Errand V1.3 UX fixes
+========================================= */
+.errand-task-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+.errand-task-grid .errand-choice:last-child:nth-child(odd){grid-column:auto;}
+.errand-move-plans{display:grid;gap:10px;margin-top:8px;}
+.errand-move-plan{width:100%;text-align:left;border:1px solid #e2e2e7;background:#fff;border-radius:15px;padding:13px 14px;cursor:pointer;color:#28282d;}
+.errand-move-plan.active{border-color:#ff1f2d;background:#fff5f6;box-shadow:0 6px 18px rgba(255,31,45,.08);}
+.errand-move-plan-head{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.errand-move-plan-head strong{font-size:14px;font-weight:900;}
+.errand-move-plan-head em{font-size:13px;font-style:normal;font-weight:900;color:#d20a1e;white-space:nowrap;}
+.errand-move-plan small{display:block;margin-top:6px;color:#6f6f77;font-size:12px;line-height:1.65;}
+.errand-move-photo-box,.errand-move-lift{margin-top:12px;padding:12px;border:1px solid #e8e8ec;border-radius:14px;background:#fafafa;}
+.errand-move-photo-head{display:flex;align-items:center;gap:8px;}
+.errand-photo-upload-btn{display:flex;align-items:center;justify-content:center;margin-top:10px;min-height:44px;border:1px dashed #cfcfd5;border-radius:12px;background:#fff;color:#44444a;font-size:13px;font-weight:850;cursor:pointer;}
+.errand-move-photo-preview{margin-top:10px;display:flex;align-items:flex-start;gap:10px;}
+.errand-move-photo-preview img{width:92px;height:92px;object-fit:cover;border-radius:12px;border:1px solid #e4e4e8;background:#fff;}
+.errand-move-lift>label{display:block;margin-bottom:8px;}
+/* Confirm modal: fixed close, readable rows, stable footer */
+.errand-confirm-card{max-height:min(90dvh,760px);padding:0!important;overflow:hidden!important;display:flex;flex-direction:column;}
+.booking-confirm-head{position:relative;flex:0 0 auto;padding:20px 58px 14px 20px;border-bottom:1px solid #eeeeF1;background:#fff;}
+.booking-confirm-head #closeConfirm{position:absolute;right:14px;top:14px;z-index:5;width:36px;height:36px;display:flex;align-items:center;justify-content:center;}
+.errand-confirm-content{flex:1 1 auto;min-height:0;overflow-y:auto;padding:6px 20px 16px;-webkit-overflow-scrolling:touch;}
+.booking-confirm-section{display:block;padding:12px 0;border-bottom:1px solid #eeeeF1;}
+.booking-confirm-section>span{display:block;margin:0 0 6px;color:#8b8b92;font-size:11.5px;font-weight:750;line-height:1.35;}
+.booking-confirm-section>strong,.booking-confirm-section>.errand-confirm-task{display:block;color:#242429;font-size:13.5px;font-weight:820;line-height:1.6;overflow-wrap:anywhere;word-break:break-word;}
+.booking-confirm-price{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;padding:16px 0 8px;}
+.booking-confirm-price span{font-size:13px;font-weight:800;color:#5d5d64;}
+.booking-confirm-price strong{font-size:27px;color:#e10b22;font-weight:950;white-space:nowrap;}
+.booking-confirm-footer{flex:0 0 auto;display:grid;grid-template-columns:.9fr 1.35fr;gap:10px;padding:12px 16px max(12px,env(safe-area-inset-bottom));border-top:1px solid #ececf0;background:#fff;box-shadow:0 -8px 22px rgba(0,0,0,.05);}
+.booking-confirm-footer .booking-confirm-back,.booking-confirm-footer .booking-confirm-submit{width:100%;min-height:48px;margin:0;border-radius:13px;font-family:inherit;font-size:14px;font-weight:850;cursor:pointer;}
+.booking-confirm-footer .booking-confirm-back{border:1px solid #dfdfe4;background:#f6f6f8;color:#55555c;}
+.booking-confirm-footer .booking-confirm-submit{border:0;background:linear-gradient(90deg,#ff3045,#f0001d);color:#fff;box-shadow:0 8px 18px rgba(242,13,39,.18);}
+.booking-confirm-footer .booking-confirm-submit:disabled{opacity:.58;box-shadow:none;}
+.errand-result-mode{padding:20px!important;overflow-y:auto!important;}
+.errand-result-mode .top-line-result-state{display:block;}
+@media(max-width:390px){.booking-confirm-footer{grid-template-columns:1fr 1.2fr;padding-left:12px;padding-right:12px}.booking-confirm-footer .booking-confirm-back,.booking-confirm-footer .booking-confirm-submit{font-size:13px}.booking-confirm-head{padding-left:17px}.errand-confirm-content{padding-left:17px;padding-right:17px}}
+
+#otherNeedsSheet .booking-bottom-sheet{width:min(100%,560px);max-height:min(86dvh,720px);padding:10px 18px max(18px,env(safe-area-inset-bottom));overflow-y:auto;}
+#otherNeedsSheet .booking-sheet-head{position:sticky;top:-10px;z-index:4;display:flex;align-items:center;justify-content:space-between;padding:8px 2px;background:#fff;}
+#otherNeedsSheet .booking-sheet-close{flex:0 0 36px;display:flex;align-items:center;justify-content:center;}
+#otherNeedsSheet .errand-sheet-grid{padding-bottom:4px;}
+
+/* =========================================
+   TOP Taxi Errand V1.5｜production UX alignment
+========================================= */
+.errand-purchase-location-mode{margin:0 0 12px;padding:12px;border:1px solid #ececf0;border-radius:14px;background:#fafafa;}
+.errand-purchase-location-mode .errand-section-note{margin:8px 0 0;}
+.errand-driver-alert{margin-top:8px;padding:10px 12px;border-radius:12px;background:#fff4e8;color:#8a4c00;font-size:12px;font-weight:800;line-height:1.55;}
+#queueCharterNotice{margin-top:-2px;margin-bottom:16px;}
+#queueCharterNotice strong{color:#8d1d28;}
+#globalContactPhone.invalid{border-color:#e10b22!important;box-shadow:0 0 0 3px rgba(225,11,34,.08)!important;}
+.errand-confirm-card{display:block!important;max-height:calc(100dvh - 40px)!important;padding:18px 22px 22px!important;overflow-y:auto!important;}
+.errand-confirm-card.errand-result-mode> :not(.top-line-result-state){display:none!important;}
+.errand-confirm-card .booking-confirm-header{display:flex!important;}
+.errand-confirm-card .booking-confirm-send{display:block;width:100%;}
+.errand-confirm-card .booking-confirm-back{display:block;width:100%;}
+.errand-confirm-card .booking-confirm-location:empty{display:none;}
+.errand-confirm-card .booking-confirm-details{margin-top:14px;}
+.errand-confirm-unspecified{color:#a05a00!important;}
+@media(max-width:360px){.errand-confirm-card{max-height:calc(100dvh - 24px)!important;padding-left:18px!important;padding-right:18px!important;}}
+
+.errand-confirm-card .booking-confirm-price{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;padding:18px;border-radius:16px;background:linear-gradient(135deg,#fff4f5,#fffafa);}
+.errand-confirm-card .booking-confirm-price span{flex:1 1 auto;min-width:0;display:block;color:#555;font-size:14px;font-weight:700;white-space:nowrap;}
+.errand-confirm-card .booking-confirm-price strong{flex:0 0 auto;color:#f20d27;font-size:30px;font-weight:900;white-space:nowrap;}
+.errand-confirm-card .booking-confirm-note{margin-top:12px;color:#999;font-size:10.5px;line-height:1.55;}
+</style>
+<style>
+/* ===== TOP TAXI ADDRESS UX V2 ===== */
+.autocomplete,
+.address-autocomplete {
+  position: relative;
+}
+.autocomplete .input,
+.address-autocomplete > input {
+  padding-right: 44px;
+}
+.top-taxi-address-clear,
+.address-clear-btn {
+  touch-action: manipulation;
+}
+.top-taxi-address-clear {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  z-index: 5200;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #85858b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.top-taxi-address-clear[hidden],
+.address-clear-btn[hidden] {
+  display: none !important;
+}
+.suggestions,
+.address-suggestions {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-gutter: stable;
+}
+.suggestions.top-taxi-open-up,
+.address-suggestions.top-taxi-open-up {
+  top: auto !important;
+  bottom: calc(100% + 7px) !important;
+}
+</style>
+<style>
+#estimateFare,#confirmFare{white-space:nowrap;}
+
+/* ===== ERRAND ROUND 2｜pet / confirmation alignment ===== */
+#petFields .input-group{margin-bottom:10px;}
+#petFields [data-pet-count],#petFields [data-pet-type]{min-width:72px;}
+.errand-fare-extra-note{margin-top:8px!important;padding:10px 12px;border-radius:12px;background:#fff8f0;color:#86500b!important;font-size:11.5px!important;font-weight:700;line-height:1.55!important;}
+.errand-floor-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important;flex-wrap:nowrap!important;width:100%;}
+.errand-floor-actions .errand-pill{min-width:0;padding:9px 4px;font-size:11.5px;white-space:nowrap;}
+#heavyItemToggle.active{border-color:#ff1f2d;background:#fff2f3;color:#c90012;}
+/* ROUND 4｜conditional confirmation rows must truly disappear */
+.booking-confirm-detail-row[hidden],
+.booking-confirm-route-box[hidden],
+.booking-confirm-price[hidden],
+.booking-confirm-note[hidden],
+.errand-fare-extra-note[hidden]{display:none!important;}
+/* ROUND 4｜other-needs sheet must stay inside the phone viewport */
+#otherNeedsSheet{box-sizing:border-box;padding-left:8px;padding-right:8px;overflow:hidden;}
+#otherNeedsSheet .booking-bottom-sheet{box-sizing:border-box;width:100%!important;max-width:560px!important;margin:0 auto;max-height:min(86dvh,720px);overflow-x:hidden!important;overflow-y:auto!important;padding:10px 14px max(18px,env(safe-area-inset-bottom))!important;}
+#otherNeedsSheet .booking-sheet-head,#otherNeedsSheet .errand-sheet-grid{box-sizing:border-box;width:100%;min-width:0;}
+#otherNeedsSheet .booking-sheet-title{min-width:0;}
+#otherNeedsSheet input,#otherNeedsSheet textarea{box-sizing:border-box;max-width:100%;width:100%;}
+@media(max-width:390px){#otherNeedsSheet{padding-left:6px;padding-right:6px;}#otherNeedsSheet .booking-bottom-sheet{padding-left:12px!important;padding-right:12px!important}.errand-floor-actions .errand-pill{font-size:11px;padding-left:3px;padding-right:3px;}}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="logo-wrap"><div class="logo-glow"></div><img src="logo.png" alt="TOP Taxi Logo" class="logo"></div>
+  <div class="hero-copy">
+    <h1 class="brand"><span class="brand-red">TOP</span> Taxi</h1>
+    <div class="system-name">24H 跑腿服務</div>
+    <div class="hero-description">代買・配送・排隊・寵物接送・小型搬家・其他</div>
+  </div>
+</header>
+
+<main class="page">
+  <div class="booking-card">
+    <div id="connectionStatus" class="connection-status" style="display:none"><span class="status-dot"></span><span id="connectionText">LINE 系統連線中...</span></div>
+    <div id="lineUser" class="line-user" style="display:none"></div>
+
+    <div class="form-header"><div class="form-title">🛵 跑腿服務</div><div class="form-label-small">TOP TAXI ERRAND</div></div>
+    <form id="errandForm" novalidate>
+      <div class="input-group">
+        <label>服務時間</label>
+        <div class="errand-mode-switch">
+          <button type="button" class="errand-choice active" data-mode="now">⚡ 立即跑腿</button>
+          <button type="button" class="errand-choice" data-mode="reserve">📅 預約跑腿</button>
+        </div>
+      </div>
+
+      <div id="reserveFields" class="row errand-hidden">
+        <div class="input-group"><label for="errandDate">📅 預約日期 <span class="field-tag required-tag">必填</span></label><input id="errandDate" type="date"></div>
+        <div class="input-group"><label for="errandTime">⏰ 預約時間 <span class="field-tag required-tag">必填</span></label><input id="errandTime" type="time"></div>
+      </div>
+
+      <div class="input-group">
+        <label>任務類型 <span class="field-tag required-tag">必填</span></label>
+        <div class="errand-task-grid">
+          <button type="button" class="errand-choice active" data-task="purchase">🛍️ 代買</button>
+          <button type="button" class="errand-choice" data-task="delivery">📦 配送</button>
+          <button type="button" class="errand-choice" data-task="queue">🧾 排隊</button>
+          <button type="button" class="errand-choice" data-task="pet">🐾 寵物接送</button>
+          <button type="button" class="errand-choice" data-task="move">🚚 小型搬家</button>
+          <button type="button" class="errand-choice" data-task="other">✨ 其他</button>
+        </div>
+      </div>
+
+      <section id="addressSection"></section>
+
+      <div id="taskContentGroup" class="input-group">
+        <label id="taskContentLabel" for="taskContent">購買內容 <span class="field-tag required-tag">必填</span></label>
+        <textarea id="taskContent" class="errand-textarea" placeholder="例：大杯冰美式 2 杯、600ml 可樂 1 瓶"></textarea>
+        <div id="purchaseSpecNote" class="errand-inline-note">商品如有尺寸、容量、口味、冰量、甜度等規格，請務必填寫完整，以免購買錯誤。</div>
+      </div>
+
+      <div class="input-group errand-global-contact">
+        <button type="button" id="toggleGlobalContact" class="errand-summary-btn"><strong>聯絡人</strong><span id="globalContactSummary">選填 ›</span></button>
+        <div id="globalContactFields" class="errand-contact-fields errand-hidden" style="margin-top:10px">
+          <input id="globalContactName" type="text" placeholder="聯絡人姓名">
+          <input id="globalContactPhone" type="tel" inputmode="numeric" autocomplete="tel" maxlength="16" placeholder="台灣手機號碼 09xxxxxxxx">
+          <div class="errand-section-note" style="grid-column:1/-1;margin-top:0">如有第二位聯絡人，請填寫於「其他備註」。</div>
+        </div>
+      </div>
+
+      <div id="queueCharterNotice" class="errand-warning-note errand-hidden">
+        <strong>排隊／等待計費提醒</strong><br>
+        現場等待期間持續依跳表計時。若總錶時間超過 1 小時，且等待超過 30 分鐘，可由司機回報調度申請包車計費；須經調度／管理同意並先告知客人後才會變更。<br><br>
+        包車每小時 NT$500；未滿半小時以半小時 NT$250 計。20 公里內含於包車費，超過 20 公里的部分每公里 +NT$10。
+      </div>
+
+      <div id="petFields" class="input-group errand-hidden">
+        <label>🐾 寵物資料</label>
+        <div class="input-group">
+          <label>寵物數量 <span class="field-tag required-tag">必填</span></label>
+          <div class="errand-row-toggle">
+            <button type="button" class="errand-pill active" data-pet-count="1">1 隻</button>
+            <button type="button" class="errand-pill" data-pet-count="2">2 隻</button>
+            <button type="button" class="errand-pill" data-pet-count="3">3 隻</button>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>寵物種類 <span class="field-tag required-tag">必填</span></label>
+          <div class="errand-row-toggle">
+            <button type="button" class="errand-pill active" data-pet-type="貓">貓</button>
+            <button type="button" class="errand-pill" data-pet-type="狗">狗</button>
+            <button type="button" class="errand-pill" data-pet-type="其他">其他</button>
+          </div>
+          <div class="errand-section-note" style="margin-top:6px">可複選，例如：2 隻貓，或 1 隻狗＋1 隻貓。</div>
+        </div>
+        <div class="input-group">
+          <label for="petName">寵物名字 <span class="field-tag optional-tag">選填</span></label>
+          <input id="petName" type="text" placeholder="例如：奶茶、小黑、Lucky">
+        </div>
+        <div class="errand-row-toggle" style="margin-top:8px">
+          <button type="button" class="errand-pill active" data-pet-carrier="yes">有提籠／提袋</button>
+          <button type="button" class="errand-pill" data-pet-carrier="no">無提籠／提袋 +$50</button>
+        </div>
+        <div class="errand-warning-note">為保障接送安全，如寵物有咬人、攻擊、容易逃脫或其他特殊狀況，請於預約時主動告知。<br>如未事先告知，或司機現場評估無法安全完成接送，TOP Taxi 得婉拒承接服務。</div>
+      </div>
+
+      <div id="moveFields" class="input-group errand-hidden">
+        <label>🚚 搬運方式 <span class="field-tag required-tag">必填</span></label>
+        <div class="errand-move-plans">
+          <button type="button" class="errand-move-plan active" data-move-plan="self">
+            <span class="errand-move-plan-head"><strong>自行搬運</strong><em>+ NT$300</em></span>
+            <small>客人自行將物品搬至車旁，送達後也自行搬離；司機協助物品上下車、車內擺放固定。</small>
+          </button>
+          <button type="button" class="errand-move-plan" data-move-plan="driver">
+            <span class="errand-move-plan-head"><strong>司機協助搬運</strong><em>+ NT$600</em></span>
+            <small>司機協助將物品由取件位置搬上車，送達後再協助搬至指定位置。</small>
+          </button>
+        </div>
+
+        <div class="errand-move-photo-box">
+          <div class="errand-move-photo-head"><strong>搬家物品照片</strong><span class="field-tag required-tag">必填</span></div>
+          <div class="errand-section-note" style="margin-top:4px">送出前請先拍攝本次搬運物品，方便客服與司機確認車輛空間及搬運需求。</div>
+          <label for="movePhoto" class="errand-photo-upload-btn">📷 選擇／拍攝物品照片</label>
+          <input id="movePhoto" type="file" accept="image/*" hidden>
+          <div id="movePhotoStatus" class="errand-section-note">尚未選擇照片（可從相簿選擇或直接拍攝）</div>
+          <div id="movePhotoPreviewWrap" class="errand-move-photo-preview errand-hidden"><img id="movePhotoPreview" alt="搬家物品照片預覽"><button type="button" id="clearMovePhoto" class="errand-text-btn">重新拍攝</button></div>
+        </div>
+
+        <div id="moveLiftWrap" class="errand-move-lift errand-hidden">
+          <label>有無電梯 <span class="field-tag required-tag">必填</span></label>
+          <div class="errand-row-toggle">
+            <button type="button" class="errand-pill active" data-move-lift="yes">有電梯</button>
+            <button type="button" class="errand-pill" data-move-lift="no">無電梯</button>
+          </div>
+          <div id="moveFloorWrap" class="errand-small-input errand-hidden">
+            <input id="moveFloor" type="number" min="1" max="99" step="1" inputmode="numeric" placeholder="請填樓層（每樓 +NT$50）">
+          </div>
+        </div>
+      </div>
+
+      <div id="advanceGroup" class="input-group">
+        <label>💰 需要代墊</label>
+        <div class="errand-row-toggle">
+          <button type="button" class="errand-pill active" data-advance="no">不需要</button>
+          <button type="button" class="errand-pill" data-advance="yes">需要</button>
+        </div>
+        <div id="advanceAmountWrap" class="errand-small-input errand-hidden"><input id="advanceAmount" type="number" min="0" max="10000" step="1" inputmode="numeric" placeholder="代墊金額（選填，上限 NT$10,000）"></div>
+        <div id="advanceNote" class="errand-inline-note errand-hidden">代墊金額超過 NT$2,000，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。</div>
+      </div>
+
+      <div class="input-group">
+        <button id="openOtherNeeds" class="errand-summary-btn" type="button"><strong>其他需求</strong><span id="otherNeedsSummary">上樓／樓梯／搬重物／其他備註・選填 ›</span></button>
+      </div>
+
+      <div class="input-group">
+        <label>📷 完成後拍照回報</label>
+        <div class="errand-row-toggle">
+          <button type="button" class="errand-pill active" data-photo-return="no">不需要</button>
+          <button type="button" class="errand-pill" data-photo-return="yes">需要</button>
+        </div>
+
+      </div>
+
+      <div id="fareEstimate" class="fare-estimate" aria-live="polite">
+        <div class="fare-estimate-top">
+          <div class="booking-route-switch booking-route-switch-result" role="group" aria-label="行車路線">
+            <button type="button" id="surfaceBtn" class="booking-route-option">🚕 平面道路</button>
+            <button type="button" id="fastBtn" class="booking-route-option fast active">🛣️ 推薦快速</button>
+          </div>
+          <span id="estimateDuration" class="fare-estimate-duration-badge">最低消費</span>
+        </div>
+        <div class="errand-price-main"><span id="estimateDistance">未填完整路線時，以跑腿低消計</span><strong id="estimateFare">$220</strong></div>
+        <div id="fareExtras" class="errand-fee-list"></div>
+        <div id="fareStatus" class="fare-estimate-status">跑腿最低消費 NT$220</div>
+        <div class="fare-estimate-note">預估金額僅供參考，實際依里程、時間、等待與加價項目計費</div>
+      </div>
+
+      <div class="input-group">
+        <label>💳 付款方式</label>
+        <div class="booking-payment-list">
+          <div class="booking-payment-option" data-payment-option="現金｜行程結束後付款"><input type="radio" name="errandPayment" value="現金｜行程結束後付款" checked><span class="booking-payment-copy">現金 <small>任務完成後付款</small></span><span class="booking-payment-default-badge" data-payment-default-badge="現金｜行程結束後付款">預設</span><button class="booking-payment-set-default" type="button" data-payment-set-default="現金｜行程結束後付款">設為預設</button></div>
+          <div class="booking-payment-option" data-payment-option="車資後結"><input type="radio" name="errandPayment" value="車資後結"><span class="booking-payment-copy">後結 <small>限已與 TOP Taxi 約定的後結客戶使用</small></span><span class="booking-payment-default-badge" data-payment-default-badge="車資後結">預設</span><button class="booking-payment-set-default" type="button" data-payment-set-default="車資後結">設為預設</button></div>
+        </div>
+        <div id="paymentToast" class="booking-payment-toast" aria-live="polite"></div>
+      </div>
+
+      <details class="errand-policy">
+        <summary id="policySummary">跑腿收費說明 ›</summary>
+        <div id="policyCopy" class="errand-policy-copy">跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。
+
+・每增加 1 個停靠點 +NT$50
+・有電梯需上樓 +NT$50
+・無電梯爬樓梯，每層 +NT$50
+・搬運重物 +NT$100
+・拍照回報不另收費
+
+代墊金額超過 NT$2,000 時，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。單筆代墊金額上限為 NT$10,000，超過上限恕不承接。
+
+司機接單並開始前往後，如因客人取消、店家未營業或商品缺貨而取消任務，酌收 NT$100 取消費。
+
+現場等待期間持續計時；符合包車申請條件時，將由調度確認並於變更計費方式前告知客人。</div>
+      </details>
+
+      <button type="button" id="submitBtn" class="submit-btn" style="margin-top:16px">確認跑腿 →</button>
+      <div id="pageStatus" class="status" style="text-align:center">送出後由客服確認並安排跑腿服務</div>
+    </form>
+  </div>
+</main>
+
+<div id="otherNeedsSheet" class="booking-sheet-overlay" hidden>
+  <div class="booking-bottom-sheet">
+    <div class="booking-sheet-handle"></div>
+    <div class="booking-sheet-head"><div class="booking-sheet-title">其他需求</div><button type="button" class="booking-sheet-close" data-close-sheet="otherNeedsSheet">×</button></div>
+    <div class="errand-sheet-grid">
+      <div id="floorModeGroup"><div class="errand-section-note" style="margin:0 0 7px">上樓／搬運需求</div><div class="errand-row-toggle errand-floor-actions"><button type="button" class="errand-pill" data-floor-mode="elevator">有電梯 +$50</button><button type="button" class="errand-pill" data-floor-mode="stairs">爬樓梯</button><button type="button" id="heavyItemToggle" class="errand-pill">搬重物 +$100</button></div><input id="heavyItem" type="checkbox" hidden></div>
+      <div id="stairsFloorWrap" class="errand-hidden"><label for="stairsFloors">爬樓梯樓層數 <span class="field-tag required-tag">必填</span></label><input id="stairsFloors" type="number" min="1" max="99" step="1" inputmode="numeric" placeholder="每層 +$50"></div>
+      <div><label for="otherNote">其他備註 <span class="field-tag optional-tag">選填</span></label><textarea id="otherNote" class="errand-textarea" style="min-height:76px" placeholder="其他需要司機注意的事項"></textarea></div>
+      <button type="button" id="saveOtherNeeds" class="saved-address-save">完成</button>
+    </div>
+  </div>
+</div>
+
+<div id="confirmOverlay" class="booking-sheet-overlay booking-confirm-overlay" hidden>
+  <section class="booking-confirm-card errand-confirm-card" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
+    <div class="booking-confirm-handle"></div>
+
+    <div class="booking-confirm-header">
+      <div class="booking-confirm-icon"><img src="./top-wordmark.png?v=7" alt="TOP Logo"></div>
+      <div>
+        <div id="confirmTitle" class="booking-confirm-title">確認您的跑腿</div>
+        <div class="booking-confirm-subtitle">請確認以下任務資訊</div>
+      </div>
+    </div>
+
+    <div class="booking-confirm-meta">
+      <div class="booking-confirm-detail-row"><span>任務類型</span><strong id="confirmTaskType"></strong></div>
+      <div class="booking-confirm-detail-row"><span>服務時間</span><strong id="confirmTiming"></strong></div>
+    </div>
+
+    <div id="confirmAddressList" class="booking-confirm-location"></div>
+
+    <div class="booking-confirm-route-box" id="confirmRouteBox">
+      <div class="booking-confirm-route-name"><span>🛣️ 路線</span><strong id="confirmRouteName"></strong></div>
+      <div class="booking-confirm-stats">
+        <div><span>📏 距離</span><strong id="confirmDistance"></strong></div>
+        <div><span>⏱️ 時間</span><strong id="confirmDuration"></strong></div>
+      </div>
+    </div>
+
+    <div class="booking-confirm-details">
+      <div class="booking-confirm-detail-row"><span>任務內容</span><strong id="confirmTaskContent"></strong></div>
+      <div id="confirmContactRow" class="booking-confirm-detail-row" hidden><span>聯絡人</span><strong id="confirmContact"></strong></div>
+      <div id="confirmPetRow" class="booking-confirm-detail-row" hidden><span>寵物資料</span><strong id="confirmPet"></strong></div>
+      <div id="confirmMoveRow" class="booking-confirm-detail-row" hidden><span>搬運方式</span><strong id="confirmMove"></strong></div>
+      <div id="confirmAdvanceRow" class="booking-confirm-detail-row" hidden><span>需要代墊</span><strong id="confirmAdvance"></strong></div>
+      <div id="confirmDeliveryRow" class="booking-confirm-detail-row" hidden><span>送達方式</span><strong id="confirmDelivery"></strong></div>
+      <div id="confirmNeedsRow" class="booking-confirm-detail-row" hidden><span>其他需求</span><strong id="confirmNeeds"></strong></div>
+      <div id="confirmPhotoRow" class="booking-confirm-detail-row" hidden><span>拍照回報</span><strong id="confirmPhoto"></strong></div>
+      <div class="booking-confirm-detail-row"><span>付款方式</span><strong id="confirmPayment"></strong></div>
+    </div>
+
+    <div id="confirmFareBox" class="booking-confirm-price">
+      <span id="confirmFareLabel" data-note="">預估跑腿費</span>
+      <strong id="confirmFare"></strong>
+    </div>
+    <div id="confirmFareExtraNote" class="booking-confirm-note errand-fare-extra-note" hidden></div>
+    <div id="confirmEstimateNote" class="booking-confirm-note">預估路線、時間與金額僅供參考，實際內容仍以執行狀況與客服最終確認為準。</div>
+
+    <button type="button" id="confirmSend" class="booking-confirm-send">確認送出跑腿單 →</button>
+    <button type="button" id="backToEdit" class="booking-confirm-back">返回修改</button>
+
+    <div id="resultState" class="top-line-result-state" hidden>
+      <div id="resultIcon" class="top-line-result-icon">✓</div>
+      <div id="resultTitle" class="top-line-result-title"></div>
+      <div id="resultCopy" class="top-line-result-copy"></div>
+      <div id="resultSubcopy" class="top-line-result-subcopy"></div>
+      <button id="resultReturn" type="button" class="top-line-result-primary"><span class="top-line-badge" aria-hidden="true">LINE</span><span id="resultReturnText">返回 LINE 聊天室</span></button>
+    </div>
+  </section>
+</div></div>
+
+<div id="messageBox" class="message-box" style="display:none"></div>
+
+<script>
+// Round 5 sealed UI + Order Data V1 backend alignment
+const LIFF_ID="2011008197-audD0402";
+const WEBHOOK_URL="https://lakswitting.app.n8n.cloud/webhook/96798dda-c12a-4552-bcaa-e51a1166a1a8";
+const BROWSER_TEST_MODE=new URLSearchParams(location.search).get("test")==="1";
+const SEND_TEST_MODE=new URLSearchParams(location.search).get("sendtest")||"";
+const CUSTOMER_PREFERENCE_KEY="topTaxiCustomerPreferences";
+const DEFAULT_PAYMENT="現金｜行程結束後付款";
+const POSTPAID_PAYMENT="車資後結";
+const TASKS={purchase:"代買",delivery:"配送",queue:"排隊",pet:"寵物接送",move:"小型搬家",other:"其他"};
+const TASK_CODES={purchase:"purchase",delivery:"delivery",queue:"queue",pet:"pet_transport",move:"small_move",other:"other"};
+const $=s=>document.querySelector(s);
+const $$=s=>Array.from(document.querySelectorAll(s));
+
+let lineDisplayName="",lineUserId="",liffInitialized=false;
+let errandMode="now",taskType="purchase",petCarrier="yes",petCount=1,petTypes=new Set(["貓"]),advanceNeeded=false,photoReturn=false,purchaseLocationMode="specified";
+let movePlan="self",moveLift="yes",movePhotoDataUrl=null,movePhotoName="",movePhotoRemoteUrl=null;
+let floorMode="none",routeMode="FAST",sendState="idle",sendInProgress=false,returnTimer=null,suppressAddStopUntil=0;
+let RouteClass=null,AutocompleteSuggestion=null,AutocompleteSessionToken=null,PlaceClass=null;
+let currentEstimate=null,routeOptions={FAST:null,SURFACE:null},routeRequestNo=0;
+let pendingIdentity=null;
+let addressSlots={};
+let activeSlotKeys=[];
+let savedPaymentPreference="",paymentPreferenceApplied=false;
+let searchCenter={lat:24.1477,lng:120.6736};
+
+function taipeiIso(date=new Date()){
+  try{const p=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Taipei",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",second:"2-digit",hourCycle:"h23"}).formatToParts(date).reduce((a,x)=>(a[x.type]=x.value,a),{});return `${p.year}-${p.month}-${p.day}T${p.hour}:${p.minute}:${p.second}+08:00`;}catch(e){return date.toISOString();}
+}
+function uuid(){if(crypto&&crypto.randomUUID)return crypto.randomUUID();return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0,v=c==="x"?r:(r&3|8);return v.toString(16);});}
+function ensureIdentity(){if(!pendingIdentity)pendingIdentity={orderId:uuid(),createdAt:taipeiIso()};return pendingIdentity;}
+function nullable(v){v=String(v??"").trim();return v||null;}
+function prohibitedErrandTask(raw="") {
+ const text=normalizeTW(String(raw||"")).replace(/\s+/g,"");
+ if(!text)return false;
+ const patterns=[
+  /(綁架|擄人|擄走|挾持|抓走|押走|限制.{0,4}自由)/u,
+  /(殺.{0,6}人|殺掉|殺害|弄死|幹掉|砍.{0,4}人|刺.{0,4}人|毆打|打傷|傷害.{0,4}人|攻擊.{0,4}人)/u,
+  /(放火|縱火|燒掉.{0,8}(?:房|車|店|人))/u,
+  /(搶劫|搶奪|偷竊|偷東西|闖空門|撬門|破壞門鎖)/u,
+  /(販毒|運毒|送毒品|買毒品|毒品交易|槍枝|彈藥|爆裂物|炸彈)/u,
+  /(恐嚇|威脅.{0,8}(?:人|對方)|騷擾.{0,8}(?:人|對方)|(?:跟蹤|尾隨|監視).{0,8}(?:人|他|她|對方))/u
+ ];
+ return patterns.some(re=>re.test(text));
+}
+function coord(v){v=Number(v);return Number.isFinite(v)?Math.round(v*1e7)/1e7:null;}
+function normalizeTW(raw=""){
+ const map={"臺":"台","区":"區","县":"縣","乡":"鄉","镇":"鎮","号":"號","东":"東","势":"勢","晋":"晉","兴":"興","丰":"豐","华":"華","学":"學","国":"國","龙":"龍","凤":"鳳","广":"廣","长":"長","万":"萬","乐":"樂","荣":"榮","门":"門","义":"義","礼":"禮","发":"發","头":"頭","桥":"橋","环":"環","线":"線","园":"園","艺":"藝","馆":"館","医":"醫","药":"藥"};
+ return String(raw||"").replace(/[臺区县乡镇号东势晋兴丰华学国龙凤广长万乐荣门义礼发头桥环线园艺馆医药]/g,c=>map[c]||c).trim().replace(/^\s*\d{3}(?:\d{2,3})?\s*/u,"").replace(/^台灣省?/u,"").replace(/^中華民國/u,"");
+}
+function extractArea(raw=""){
+ const text=normalizeTW(raw).replace(/\s+/g,"");
+ const m=text.match(/(新北市|台北市|桃園市|台中市|台南市|高雄市|基隆市|新竹市|嘉義市|宜蘭縣|新竹縣|苗栗縣|彰化縣|南投縣|雲林縣|嘉義縣|屏東縣|台東縣|花蓮縣|澎湖縣|金門縣|連江縣)/u);
+ if(!m)return{city:"",district:"",areaLabel:""};
+ const city=m[1],rest=text.slice(m.index+city.length),d=rest.match(/^([^0-9路街大道段巷弄號]{1,8}?(?:區|鄉|鎮|市))/u),district=d?d[1]:"";
+ return{city,district,areaLabel:[city,district].filter(Boolean).join("")};
+}
+function compactAddress(raw=""){
+ let a=normalizeTW(raw).replace(/^台灣/u,"").replace(/^\s*\d{3}(?:\d{2,3})?\s*/u,"");
+ a=a.replace(/(區|鄉|鎮|市)([^0-9縣市區鄉鎮路街巷弄號]{1,12}(?:里|村))(?!區|鄉|鎮|市)(?=[^0-9]*(?:路|街|大道|段|巷|弄|號))/gu,"$1").replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)(?!區|鄉|鎮|市)/gu,"").replace(/\d+\s*鄰/gu,"");
+ return a.replace(/[，,、\s-]*(?:地下)?\d+\s*樓(?:之\d+)?(?:\s*\d+\s*室)?/gu,"").replace(/[，,、\s-]*B\d+\s*(?:樓)?/giu,"").replace(/[，,、\s-]*\d+\s*F(?:-\d+)?/giu,"").replace(/[，,、\s-]*\d+\s*室/gu,"").replace(/[，,、]{2,}/g,"，").replace(/^[，,、\s-]+|[，,、\s-]+$/g,"").replace(/\s+/g,"");
+}
+function placeName(place){const d=place?.displayName;return d&&typeof d.toString==="function"?d.toString():String(d||"");}
+function addressComponent(place,types){const c=Array.isArray(place?.addressComponents)?place.addressComponents:[];for(const t of types){const m=c.find(x=>Array.isArray(x.types)&&x.types.includes(t));if(m)return m.longText||m.shortText||'';}return'';}
+function placeToData(place,extra={}){
+ const address=normalizeTW(place?.formattedAddress||extra.address||"");const parsed=extractArea(address);const loc=place?.location;
+ const city=normalizeTW(addressComponent(place,['administrative_area_level_1']))||parsed.city;
+ let district=normalizeTW(addressComponent(place,['administrative_area_level_3','administrative_area_level_2','locality']))||parsed.district;
+ if(/(?:里|村|鄰)$/u.test(district))district=parsed.district||'';
+ return{name:extra.name||"",displayName:placeName(place)||extra.name||"",address,city,district,areaLabel:[city,district].filter(Boolean).join(''),placeId:place?.id||extra.placeId||"",lat:loc?coord(typeof loc.lat==="function"?loc.lat():loc.lat):coord(extra.lat),lng:loc?coord(typeof loc.lng==="function"?loc.lng():loc.lng):coord(extra.lng)};
+}
+function normalizeAddress(item={}){const address=normalizeTW(item.address||"");const area=extractArea(address);return{name:item.name||"",displayName:item.displayName||item.name||"",address,city:item.city||area.city,district:item.district||area.district,areaLabel:item.areaLabel||area.areaLabel,placeId:item.placeId||"",lat:coord(item.lat),lng:coord(item.lng),pickupNote:item.pickupNote||""};}
+function displayAddress(data){if(!data)return"";const n=data.displayName||data.name||"",a=data.address||"";return n&&a&&!a.includes(n)?`${n}｜${a}`:(n||a);}
+function orderAddress(data){data=normalizeAddress(data||{});const area=extractArea(data.address);const city=area.city||data.city||"",district=area.district||data.district||"";return{name:nullable(data.name),displayName:nullable(normalizeTW(data.displayName||"")),address:nullable(compactAddress(data.address)),city:nullable(city),district:nullable(district),areaLabel:nullable([city,district].filter(Boolean).join("")),placeId:nullable(data.placeId),lat:coord(data.lat),lng:coord(data.lng)};}
+function hasStreetNumber(raw=''){return /(?:路|街|大道|段|巷|弄).*\d+(?:-\d+)?號/u.test(compactAddress(raw));}
+function structuredArea(data={}){const city=normalizeTW(data.city||'').replace(/\s+/g,'');let district=normalizeTW(data.district||'').replace(/\s+/g,'');if(/(?:里|村|鄰)$/u.test(district))district='';return{city,district,areaLabel:[city,district].filter(Boolean).join('')};}
+function addressMatchesArea(address='',data={}){const s=structuredArea(data),p=extractArea(address);if(s.city&&p.city&&s.city!==p.city)return false;if(s.district&&p.district&&s.district!==p.district)return false;return true;}
+function geocoderHasStreetNumber(result){const c=Array.isArray(result?.address_components)?result.address_components:[];return c.some(x=>x.types?.includes('route'))&&c.some(x=>x.types?.includes('street_number'));}
+function candidateDistance(candidate,data={}){const pt=candidate?.geometry?.location;if(!pt||data.lat==null||data.lng==null)return 0;const lat2=typeof pt.lat==='function'?pt.lat():Number(pt.lat),lng2=typeof pt.lng==='function'?pt.lng():Number(pt.lng),lat1=Number(data.lat),lng1=Number(data.lng);if(![lat1,lng1,lat2,lng2].every(Number.isFinite))return 0;const rad=v=>v*Math.PI/180,dlat=rad(lat2-lat1),dlng=rad(lng2-lng1),a=Math.sin(dlat/2)**2+Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(dlng/2)**2;return 6371000*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+async function enrichAddress(data={}){
+ if(!data||data.lat==null||data.lng==null)return normalizeAddress(data||{});const original=normalizeTW(data.address||''),s=structuredArea(data),consistent=addressMatchesArea(original,data);
+ if(hasStreetNumber(original)&&consistent)return normalizeAddress({...data,address:original,city:s.city||data.city||'',district:s.district||data.district||'',areaLabel:s.areaLabel||data.areaLabel||''});
+ try{const {Geocoder}=await google.maps.importLibrary('geocoding');const response=await new Geocoder().geocode({location:{lat:Number(data.lat),lng:Number(data.lng)}}),results=Array.isArray(response.results)?response.results:[];const acceptable=item=>{if(!item?.formatted_address||!geocoderHasStreetNumber(item))return false;const a=normalizeTW(item.formatted_address);if(!addressMatchesArea(a,data))return false;return candidateDistance(item,data)<=3000;};const c=results.find(x=>x.types?.includes('street_address')&&acceptable(x))||results.find(acceptable);if(!c?.formatted_address){if(!consistent&&s.areaLabel)return normalizeAddress({...data,address:s.areaLabel,city:s.city,district:s.district,areaLabel:s.areaLabel});return normalizeAddress(data);}const a=normalizeTW(c.formatted_address),p=extractArea(a),city=s.city||p.city||data.city||'',district=s.district||p.district||data.district||'';return normalizeAddress({...data,address:a,city,district,areaLabel:[city,district].filter(Boolean).join('')});}
+ catch(e){console.warn('ERRAND ADDRESS ENRICH SKIPPED:',e);if(!consistent&&s.areaLabel)return normalizeAddress({...data,address:s.areaLabel,city:s.city,district:s.district,areaLabel:s.areaLabel});return normalizeAddress(data);}
+}
+function dispatchHeader(data,role){const a=orderAddress(data),area=a.areaLabel||"地址";return `📍 ${role}｜${area}`;}
+function dispatchText(data){const a=orderAddress(data);const name=a.displayName||a.name||"";let street=a.address||"";if(a.city)street=street.replace(a.city,"");if(a.district)street=street.replace(a.district,"");street=street.replace(/^[-－—\s]+/,"");return name&&street?`${name}｜${street}`:(name||street||"未提供");}
+
+function loadPreferences(){
+ try{const p=JSON.parse(localStorage.getItem(CUSTOMER_PREFERENCE_KEY)||"{}");savedPaymentPreference=p.paymentMode||p.payment||"";}catch(e){savedPaymentPreference="";}
+}
+function savePaymentPreference(value){
+ try{const r=document.querySelector(`input[name="errandPayment"][value="${CSS.escape(value)}"]`);if(r)r.checked=true;const p=JSON.parse(localStorage.getItem(CUSTOMER_PREFERENCE_KEY)||"{}");p.paymentMode=value;localStorage.setItem(CUSTOMER_PREFERENCE_KEY,JSON.stringify(p));savedPaymentPreference=value;paymentPreferenceApplied=true;renderPayment();showPaymentToast("已設為預設付款方式");}catch(e){}
+}
+function renderPayment(){
+ if(!paymentPreferenceApplied&&savedPaymentPreference){
+   const r=document.querySelector(`input[name="errandPayment"][value="${CSS.escape(savedPaymentPreference)}"]`);
+   if(r)r.checked=true;
+   paymentPreferenceApplied=true;
+ }
+ const selected=selectedPayment();
+ $$('[data-payment-option]').forEach(el=>{
+   const v=el.dataset.paymentOption;
+   el.classList.toggle('default',!!savedPaymentPreference&&v===savedPaymentPreference);
+ });
+ $$('[data-payment-default-badge]').forEach(el=>{
+   el.classList.toggle('show',!!savedPaymentPreference&&el.dataset.paymentDefaultBadge===savedPaymentPreference);
+ });
+ $$('[data-payment-set-default]').forEach(el=>{
+   const v=el.dataset.paymentSetDefault||'';
+   const shouldShow=v===selected&&(!savedPaymentPreference||selected!==savedPaymentPreference);
+   el.classList.toggle('show',shouldShow);
+ });
+}
+function showPaymentToast(t){const el=$('#paymentToast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1400);}
+function selectedPayment(){return document.querySelector('input[name="errandPayment"]:checked')?.value||DEFAULT_PAYMENT;}
+function isPostpaid(){return selectedPayment()===POSTPAID_PAYMENT;}
+
+function taskConfig(){
+ if(taskType==='purchase')return{p1:'購買地點',p1Role:'購買點',p1Required:purchaseLocationMode==='specified',p2Max:2,final:'送達地址',finalRequired:true,content:'購買內容',placeholder:'例：大杯冰美式 2 杯、600ml 可樂 1 瓶'};
+ if(taskType==='delivery')return{p1:'取件地點',p1Role:'取件點',p1Required:true,p2Max:2,final:'送達地址',finalRequired:true,content:'物品內容',placeholder:'例：文件一份、紙箱一箱、鑰匙一串'};
+ if(taskType==='queue')return{p1:'排隊地點',p1Role:'排隊',p1Required:true,p2Max:2,final:'送達地址',finalRequired:false,content:'排隊事項',placeholder:'例：幫我排候位、領號碼牌，完成後電話通知'};
+ if(taskType==='pet')return{p1:'接送地點',p1Role:'接寵物',p1Required:true,p2Max:2,final:'送達地址',finalRequired:true,content:'接送事項／備註',placeholder:'例：送到動物醫院櫃台交給王小姐'};
+ if(taskType==='move')return{p1:'開始地點',p1Role:'開始',p1Required:true,p2Max:2,final:'送達地點',finalRequired:true,content:'搬運物品／備註',placeholder:'例：2 個行李箱、3 箱衣物、1 張折疊桌'};
+ return{p1:'開始地點',p1Role:'開始',p1Required:true,p2Max:2,final:'送達地點',finalRequired:false,content:'需求內容',placeholder:'例：到店門口拍照回報後，再前往下一個指定地點'};
+}
+function newSlot(key,label,required=true,role=label){return{key,label,required,role,place:null,data:null,active:false,manual:false};}
+function rebuildSlots(resetStops=false){
+ const cfg=taskConfig(),prev=addressSlots;addressSlots={};activeSlotKeys=[];
+ addressSlots.p1=prev.p1||newSlot('p1',cfg.p1,cfg.p1Required,cfg.p1Role);Object.assign(addressSlots.p1,{label:cfg.p1,required:cfg.p1Required,role:cfg.p1Role});
+ const wanted=[];for(let i=1;i<=cfg.p2Max;i++)wanted.push('p2_'+i);
+ wanted.forEach((k,i)=>{const old=prev[k];addressSlots[k]=old||newSlot(k,`停靠點 ${i+1}`,false,`停靠點 ${i+1}`);addressSlots[k].label=`停靠點 ${i+1}`;addressSlots[k].role=`停靠點 ${i+1}`;if(resetStops){addressSlots[k].active=false;addressSlots[k].manual=false;}});
+ addressSlots.final=prev.final||newSlot('final',cfg.final,cfg.finalRequired,'送達');Object.assign(addressSlots.final,{label:cfg.final,required:cfg.finalRequired,role:'送達'});
+ renderAddresses();
+}
+function renderAddresses(){
+ const cfg=taskConfig(),root=$('#addressSection');root.innerHTML='';activeSlotKeys=[];
+ if(taskType==='purchase'){
+   const mode=document.createElement('div');mode.className='errand-purchase-location-mode';
+   mode.innerHTML=`<div class="errand-delivery-title">購買地點</div><div class="errand-row-toggle"><button type="button" class="errand-pill ${purchaseLocationMode==='specified'?'active':''}" data-purchase-location="specified">指定購買地點</button><button type="button" class="errand-pill ${purchaseLocationMode==='unspecified'?'active':''}" data-purchase-location="unspecified">送達地點附近購買</button></div>${purchaseLocationMode==='unspecified'?'<div class="errand-driver-alert">由送達地址附近的司機就近購買，實際店家由司機依商品供應狀況選擇；預估費用以 NT$220 起顯示，實際依執行路線與等待時間計費。</div>':''}`;
+   root.appendChild(mode);
+   mode.querySelectorAll('[data-purchase-location]').forEach(b=>b.addEventListener('click',()=>{purchaseLocationMode=b.dataset.purchaseLocation;addressSlots.p1.required=purchaseLocationMode==='specified';if(purchaseLocationMode==='unspecified'){addressSlots.p1.place=null;addressSlots.p1.data=null;}renderAddresses();}));
+ }
+ if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified')){activeSlotKeys.push('p1');root.appendChild(addressBlock(addressSlots.p1));}
+ if(cfg.p2Max>0){
+   const wrap=document.createElement('div');wrap.id='extraStopsWrap';root.appendChild(wrap);
+   const add=document.createElement('button');add.type='button';add.className='booking-add-waypoint';add.id='addStopBtn';add.textContent='＋ 新增停靠點';add.addEventListener('click',e=>addStop(e));root.appendChild(add);
+   const help=document.createElement('div');help.className='booking-waypoint-help';help.textContent='最多新增 2 個停靠點；每增加 1 個停靠點 +NT$50';root.appendChild(help);
+   Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual).sort().forEach(k=>activateStop(k,false));
+   if(Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active).length>=cfg.p2Max)add.hidden=true;
+ }
+ const finalBlock=addressBlock(addressSlots.final,true);finalBlock.id='finalAddressBlock';root.appendChild(finalBlock);
+ if(!cfg.finalRequired){const note=document.createElement('div');note.className='booking-compact-help';note.textContent=taskType==='queue'?'如不需要配送，可留空':'純任務型跑腿可不填送達地址';finalBlock.appendChild(note);}
+ initAutocompleteForVisibleSlots();updateDeliveryModule();syncDeliveryVisibility();updateEstimate();
+}
+function addressBlock(slot,isFinal=false){
+ const d=document.createElement('div');d.className='input-group errand-address-block';d.dataset.slot=slot.key;
+ const initial=slot.data?displayAddress(slot.data):'';
+ d.innerHTML=`<div class="errand-address-head"><label>${slot.key==='p1'?'📍':isFinal?'🏁':'🟡'} ${slot.label} <span class="field-tag ${slot.required?'required-tag':'optional-tag'}">${slot.required?'必填':'選填'}</span></label></div><div id="${slot.key}Box" class="address-autocomplete"><span class="address-search-icon">⌕</span><input type="search" id="${slot.key}Input" class="address-input" placeholder="請輸入${slot.label}地址或地標名稱" autocomplete="off" enterkeyhint="search" ${slot.required?'required':''} value="${escapeHtml(initial)}"><button type="button" class="address-clear-btn" id="${slot.key}Clear" ${initial?'':'hidden'}>×</button><div class="address-suggestions" id="${slot.key}Suggestions"></div></div>${isFinal?deliveryModuleHtml():''}`;
+ const input=d.querySelector(`#${slot.key}Input`),clear=d.querySelector(`#${slot.key}Clear`);
+ input.addEventListener('input',()=>{const q=input.value.trim();clear.hidden=!q;slot.place=null;slot.data=q?normalizeAddress({address:q}):null;syncDeliveryVisibility();renderPhoto();updateEstimate();});
+ clear.addEventListener('click',()=>{input.value='';slot.place=null;slot.data=null;clear.hidden=true;const sug=d.querySelector(`#${slot.key}Suggestions`);if(sug){sug.classList.remove('show');sug.innerHTML='';}syncDeliveryVisibility();renderPhoto();updateEstimate();input.focus();});
+ return d;
+}
+function deliveryModuleHtml(){if(taskType==='move')return '';const tableOption=taskType==='pet'?'':'<button type="button" class="errand-pill" data-delivery="table">放置外送桌</button>';return `<div id="deliveryModule" class="errand-delivery-box"><div class="errand-delivery-title">送達方式</div><div class="errand-row-toggle"><button type="button" class="errand-pill active" data-delivery="handoff">當面交付</button>${tableOption}<button type="button" class="errand-pill" data-delivery="management">放置管理室</button></div><div id="deliveryLocationWrap" class="errand-small-input errand-hidden"><input id="deliveryLocation" type="text" placeholder="放置位置補充（選填），例如：A棟1樓外送桌／管理室旁"></div><div id="deliveryPhotoNote" class="errand-section-note errand-hidden">司機送達後將拍照回報，照片作為完成配送紀錄。</div></div>`;}
+let deliveryMethod='handoff';
+function syncDeliveryVisibility(){const module=$('#deliveryModule');if(!module)return;if(taskType==='move'){module.classList.add('errand-hidden');return;}const cfg=taskConfig(),hasFinal=!!addressValue('final');module.classList.toggle('errand-hidden',!cfg.finalRequired&&!hasFinal);}
+function updateDeliveryModule(){const module=$('#deliveryModule');if(!module)return;$$('[data-delivery]').forEach(b=>{b.addEventListener('click',()=>{deliveryMethod=b.dataset.delivery;$$('[data-delivery]').forEach(x=>x.classList.toggle('active',x===b));const forced=deliveryMethod!=='handoff';$('#deliveryLocationWrap')?.classList.toggle('errand-hidden',!forced);$('#deliveryPhotoNote')?.classList.toggle('errand-hidden',!forced);renderPhoto();updateEstimate();});});syncDeliveryVisibility();}
+function addStop(e){if(Date.now()<suppressAddStopUntil){e?.preventDefault?.();e?.stopPropagation?.();return;}const cfg=taskConfig();const keys=Object.keys(addressSlots).filter(k=>k.startsWith('p2_'));const k=keys.find(x=>!addressSlots[x].active);if(!k)return;addressSlots[k].manual=true;activateStop(k,false);if(keys.filter(x=>addressSlots[x].active&&addressSlots[x].manual).length>=cfg.p2Max)$('#addStopBtn')?.setAttribute('hidden','');updateEstimate();}
+function activateStop(key,focus=false){const s=addressSlots[key];if(!s||!s.manual)return;s.active=true;if(!activeSlotKeys.includes(key))activeSlotKeys.push(key);const wrap=$('#extraStopsWrap');if(!wrap)return;const node=addressBlock(s);node.querySelector('.errand-address-head').insertAdjacentHTML('beforeend',`<button type="button" class="errand-text-btn" data-remove-stop="${key}">移除</button>`);wrap.appendChild(node);node.querySelector(`[data-remove-stop="${key}"]`).addEventListener('click',()=>removeStop(key));initAutocompleteForSlot(s);}
+function removeStop(key){const s=addressSlots[key];s.active=false;s.manual=false;s.place=null;s.data=null;document.querySelector(`[data-slot="${key}"]`)?.remove();activeSlotKeys=activeSlotKeys.filter(x=>x!==key);$('#addStopBtn')?.removeAttribute('hidden');updateEstimate();}
+function renderTaskUi(){
+ $$('#errandForm [data-task]').forEach(b=>b.classList.toggle('active',b.dataset.task===taskType));
+ const cfg=taskConfig();$('#taskContentLabel').innerHTML=`${cfg.content} <span class="field-tag required-tag">必填</span>`;$('#taskContent').placeholder=cfg.placeholder;
+ $('#purchaseSpecNote').classList.toggle('errand-hidden',taskType!=='purchase');
+ $('#petFields').classList.toggle('errand-hidden',taskType!=='pet');
+ $('#moveFields').classList.toggle('errand-hidden',taskType!=='move');
+ $('#queueCharterNotice').classList.toggle('errand-hidden',taskType!=='queue');
+ const advanceEligible=['purchase','delivery','pet','other'].includes(taskType);$('#advanceGroup').classList.toggle('errand-hidden',!advanceEligible);if(!advanceEligible){advanceNeeded=false;$$('[data-advance]').forEach(x=>x.classList.toggle('active',x.dataset.advance==='no'));$('#advanceAmountWrap').classList.add('errand-hidden');$('#advanceNote')?.classList.add('errand-hidden');$('#advanceAmount').value='';}else{$('#advanceAmountWrap').classList.toggle('errand-hidden',!advanceNeeded);$('#advanceNote')?.classList.toggle('errand-hidden',!advanceNeeded);}
+ const moveMode=taskType==='move';
+ const policySummary=$('#policySummary'),policyCopy=$('#policyCopy');
+ if(moveMode){
+   if(policySummary)policySummary.textContent='小型搬家收費說明 ›';
+   if(policyCopy)policyCopy.textContent='小型搬家依一般車資加搬運方案計費。\n\n・自行搬運：車資 +NT$300\n・司機協助搬運：車資 +NT$600\n・每增加 1 個停靠點 +NT$50\n・司機協助搬運且無電梯時，每樓 +NT$50\n\n送出前需提供本次搬運物品照片；預估金額僅供參考，實際仍依行程與現場狀況計費。';
+ }else{
+   if(policySummary)policySummary.textContent='跑腿收費說明 ›';
+   if(policyCopy)policyCopy.textContent='跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。\n\n・每增加 1 個停靠點 +NT$50\n・有電梯需上樓 +NT$50\n・無電梯爬樓梯，每層 +NT$50\n・搬運重物 +NT$100\n・拍照回報不另收費\n\n代墊金額超過 NT$2,000 時，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。單筆代墊金額上限為 NT$10,000，超過上限恕不承接。\n\n司機接單並開始前往後，如因客人取消、店家未營業或商品缺貨而取消任務，酌收 NT$100 取消費。\n\n現場等待期間持續計時；符合包車申請條件時，將由調度確認並於變更計費方式前告知客人。';
+ }
+ $('#floorModeGroup')?.classList.toggle('errand-hidden',moveMode);
+ if(moveMode){floorMode='none';$('#heavyItem').checked=false;$('#heavyItemToggle')?.classList.remove('active');$('#stairsFloors').value='';$('#stairsFloorWrap').classList.add('errand-hidden');$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode==='none'));}
+ rebuildSlots(true);
+ cleanTaskWarnings();
+ if(taskType==='delivery')ensureDeliveryWarning();
+ renderPetUi();renderMoveUi();renderOtherNeeds();
+}
+function ensureDeliveryWarning(){const g=$('#taskContentGroup');if(!g||$('#deliverySafetyNote'))return;const n=document.createElement('div');n.id='deliverySafetyNote';n.className='errand-warning-note';n.innerHTML='為保障配送安全，無法確認內容物之不透明包裹，取件時需配合開封確認；如無法配合，恕無法承接配送。<br><br>菸彈、電子煙相關產品及其他違法、違禁物品，TOP Taxi 一律不提供配送服務。';g.appendChild(n);}
+function cleanTaskWarnings(){if(taskType!=='delivery')$('#deliverySafetyNote')?.remove();}
+
+function renderPhoto(){
+ const forced=taskType!=='move'&&deliveryMethod!=='handoff'&&!!addressValue('final');
+ $$('[data-photo-return]').forEach(b=>{const yes=b.dataset.photoReturn==='yes';b.classList.toggle('active',yes===(photoReturn||forced));b.disabled=forced&&!yes;});
+}
+function renderMoveUi(){
+ const isMove=taskType==='move';if(!isMove)return;
+ $$('[data-move-plan]').forEach(b=>b.classList.toggle('active',b.dataset.movePlan===movePlan));
+ $('#moveLiftWrap').classList.toggle('errand-hidden',movePlan!=='driver');
+ $$('[data-move-lift]').forEach(b=>b.classList.toggle('active',b.dataset.moveLift===moveLift));
+ $('#moveFloorWrap').classList.toggle('errand-hidden',movePlan!=='driver'||moveLift!=='no');
+ updateEstimate();
+}
+async function compressMovePhoto(file){
+ return await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onerror=reject;reader.onload=()=>{const img=new Image();img.onerror=reject;img.onload=()=>{const max=320,scale=Math.min(1,max/Math.max(img.naturalWidth||img.width,img.naturalHeight||img.height)),w=Math.max(1,Math.round((img.naturalWidth||img.width)*scale)),h=Math.max(1,Math.round((img.naturalHeight||img.height)*scale)),canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);resolve(canvas.toDataURL('image/jpeg',0.45));};img.src=reader.result;};reader.readAsDataURL(file);});
+}
+async function handleMovePhoto(file){
+ if(!file){movePhotoDataUrl=null;movePhotoName='';movePhotoRemoteUrl=null;$('#movePhotoStatus').textContent='尚未選擇照片';$('#movePhotoPreviewWrap').classList.add('errand-hidden');return;}
+ if(!file.type.startsWith('image/')){alert('請選擇照片檔案。');$('#movePhoto').value='';return;}
+ $('#movePhotoStatus').textContent='正在處理照片…';
+ try{movePhotoDataUrl=await compressMovePhoto(file);movePhotoName=file.name||'moving-photo.jpg';movePhotoRemoteUrl=null;$('#movePhotoPreview').src=movePhotoDataUrl;$('#movePhotoPreviewWrap').classList.remove('errand-hidden');$('#movePhotoStatus').textContent='已選擇 1 張搬家物品照片';}
+ catch(e){console.error('MOVE PHOTO ERROR',e);movePhotoDataUrl=null;movePhotoName='';$('#movePhoto').value='';$('#movePhotoStatus').textContent='照片處理失敗，請重新拍攝';alert('照片無法處理，請重新拍攝或改用 JPG／PNG 照片。');}
+}
+function renderOtherNeeds(){const items=[];$$('[data-floor-mode]').forEach(b=>b.classList.toggle('active',b.dataset.floorMode===floorMode));if(taskType!=='move'){if(floorMode==='elevator')items.push('有電梯上樓 +$50');if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);items.push(`爬樓梯 ${n||'?'} 層`);}if($('#heavyItem')?.checked)items.push('搬運重物 +$100');}$('#heavyItemToggle')?.classList.toggle('active',!!$('#heavyItem')?.checked);if($('#otherNote')?.value.trim())items.push('其他備註');$('#otherNeedsSummary').textContent=(items.length?items.join('・'):(taskType==='move'?'其他備註・選填':'上樓／樓梯／搬重物／其他備註・選填'))+' ›';updateEstimate();}
+function extraFees(){let amount=0,items=[];const activeStops=Object.values(addressSlots).filter(s=>s.key.startsWith('p2_')&&s.active&&s.manual&&addressValue(s.key)).length;if(activeStops){amount+=activeStops*50;items.push(`停靠點 ${activeStops} 個 +$${activeStops*50}`);}if(taskType==='move'){const service=movePlan==='driver'?600:300;amount+=service;items.push(`${movePlan==='driver'?'司機協助搬運':'自行搬運'} +$${service}`);if(movePlan==='driver'&&moveLift==='no'){const n=Math.max(0,parseInt($('#moveFloor')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`無電梯 ${n} 樓 +$${n*50}`);}return{amount,items};}if(floorMode==='elevator'){amount+=50;items.push('有電梯上樓 +$50');}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`爬樓梯 ${n} 層 +$${n*50}`);}if($('#heavyItem')?.checked){amount+=100;items.push('搬運重物 +$100');}if(taskType==='pet'&&petCarrier==='no'){amount+=50;items.push('寵物無提籠／提袋 +$50');}return{amount,items};}
+function addressValue(key){const s=addressSlots[key];if(!s)return'';const input=$(`#${key}Input`);return input?.value.trim()||displayAddress(s.data)||'';}
+function activeRouteSlots(){const arr=[];if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified'))arr.push(addressSlots.p1);Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual&&addressValue(k)).sort().forEach(k=>arr.push(addressSlots[k]));if(addressValue('final'))arr.push(addressSlots.final);return arr;}
+function calculateMeterFare(distanceKm,minutes){const distanceFare=distanceKm<=20?distanceKm*15:20*15+(distanceKm-20)*25;return Math.floor((80+distanceFare+minutes*3)/10)*10;}
+function quote(){const extras=extraFees();if(taskType==='move'){const base=currentEstimate?currentEstimate.meterFare:null;return{base,extras,total:base==null?null:base+extras.amount,isStarting:false};}if(taskType==='purchase'&&purchaseLocationMode==='unspecified'){return{base:220,extras,total:220+extras.amount,isStarting:true};}const meter=currentEstimate?Number(currentEstimate.meterFare):null;const base=meter==null?220:Math.max(220,meter);return{base,extras,total:base+extras.amount,isStarting:meter==null||meter<=220};}
+function renderEstimate(){const q=quote();$('#estimateFare').textContent=q.total==null?'待試算':`$${q.total}${q.isStarting?' 起':''}`;$('#fareExtras').textContent=q.extras.items.length?'加價項目：'+q.extras.items.join('、'):'';if(taskType==='purchase'&&purchaseLocationMode==='unspecified'){$('#estimateDistance').textContent='送達地點附近購買';$('#estimateDuration').textContent='NT$220 起';$('#fareStatus').textContent='實際費用依送達地點附近實際購買店家、里程與時間計算';return;}if(currentEstimate){$('#estimateDistance').textContent=`距離 ${currentEstimate.distanceKm.toFixed(1)} km`;$('#estimateDuration').textContent=`${currentEstimate.minutes} 分鐘`;$('#fareStatus').textContent=currentEstimate.routeMode==='SURFACE'?'平面道路｜優先避開高速／收費道路':'推薦快速｜依 Google 即時交通';}else if(taskType==='move'){$('#estimateDistance').textContent='填寫開始與送達地點後試算車資';$('#estimateDuration').textContent='小型搬家';$('#fareStatus').textContent='搬家依車資加搬運方案計費';}else{$('#estimateDistance').textContent='未填完整路線時，以跑腿低消計';$('#estimateDuration').textContent='最低消費';$('#fareStatus').textContent='跑腿最低消費 NT$220';}}
+function summarizeRoute(route,legsExpected){const legs=Array.isArray(route?.legs)?route.legs:[];if(legs.length!==legsExpected)throw new Error('路線分段不符');const d=legs.reduce((s,l)=>s+Number(l?.distanceMeters||0),0),t=legs.reduce((s,l)=>s+Number(l?.durationMillis||0),0);if(!(d>0&&t>0))throw new Error('路線資料不完整');return{d,t};}
+async function updateEstimate(){
+ routeRequestNo++;const id=routeRequestNo;currentEstimate=null;routeOptions={FAST:null,SURFACE:null};renderEstimate();if(taskType==='purchase'&&purchaseLocationMode==='unspecified')return;if(!RouteClass)return;
+ const slots=activeRouteSlots();if(slots.length<2)return;if(slots.some(s=>!s.place&&!s.data?.lat))return;
+ const origin=slots[0].place||{location:{lat:slots[0].data.lat,lng:slots[0].data.lng}},destination=slots.at(-1).place||{location:{lat:slots.at(-1).data.lat,lng:slots.at(-1).data.lng}};
+ const mids=slots.slice(1,-1).map(s=>({location:s.place?.location||{lat:s.data.lat,lng:s.data.lng}}));
+ const departure=new Date(Date.now()+120000),base={origin,destination,travelMode:'DRIVING',intermediates:mids,optimizeWaypointOrder:false,routingPreference:'TRAFFIC_AWARE_OPTIMAL',departureTime:departure,fields:['legs']};
+ try{const [fast,surface]=await Promise.all([RouteClass.computeRoutes({...base,routeModifiers:{avoidHighways:false,avoidTolls:false,avoidFerries:true}}),RouteClass.computeRoutes({...base,routeModifiers:{avoidHighways:true,avoidTolls:true,avoidFerries:true}})]);if(id!==routeRequestNo)return;const mk=(mode,r)=>{const m=summarizeRoute(r.routes?.[0],slots.length-1),km=m.d/1000,min=Math.ceil(m.t/60000);return{routeMode:mode,distanceKm:km,minutes:min,meterFare:calculateMeterFare(km,min)};};routeOptions={FAST:mk('FAST',fast),SURFACE:mk('SURFACE',surface)};currentEstimate=routeOptions[routeMode]||routeOptions.FAST;renderEstimate();}catch(e){console.warn('ERRAND ROUTE ERROR:',e);renderEstimate();}
+}
+function selectRoute(mode){routeMode=mode==='SURFACE'?'SURFACE':'FAST';$('#surfaceBtn').classList.toggle('active',routeMode==='SURFACE');$('#fastBtn').classList.toggle('active',routeMode==='FAST');if(routeOptions[routeMode]){currentEstimate=routeOptions[routeMode];renderEstimate();}else updateEstimate();}
+
+function normalizeTaiwanMobile(value=''){let v=String(value||'').trim().replace(/[\s-]/g,'');if(/^\+8869\d{8}$/.test(v))v='0'+v.slice(4);else if(/^8869\d{8}$/.test(v))v='0'+v.slice(3);return v;}
+function isValidTaiwanMobile(value=''){return /^09\d{8}$/.test(normalizeTaiwanMobile(value));}
+function advanceAmountValue(){
+ const n=Number($('#advanceAmount')?.value||0);
+ if(!advanceNeeded)return null;
+ if(n>10000)throw new Error('ADVANCE_AMOUNT_EXCEEDS_LIMIT');
+ return n>0?n:null;
+}
+function contactInfo(){const name=$('#globalContactName')?.value.trim()||'',raw=$('#globalContactPhone')?.value.trim()||'',phone=raw?normalizeTaiwanMobile(raw):'';return(name||phone)?{name:nullable(name),phone:nullable(phone)}:null;}
+function renderGlobalContactSummary(){const c=contactInfo();$('#globalContactSummary').textContent=c?`${c.name||''}${c.name&&c.phone?'・':''}${c.phone||''} ›`:'選填 ›';}
+function deliveryInfo(){if(taskType==='move'||!addressValue('final'))return null;const forced=deliveryMethod!=='handoff';return{method:deliveryMethod,label:deliveryMethod==='handoff'?'當面交付':deliveryMethod==='table'?'放置外送桌':'放置管理室',locationNote:forced?nullable($('#deliveryLocation')?.value):null,photoRequired:forced||photoReturn};}
+function photoInfo(){const forced=taskType!=='move'&&deliveryMethod!=='handoff'&&!!addressValue('final');return{required:photoReturn||forced};}
+function otherNeedsInfo(){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);return{floorMode:taskType==='move'?'none':floorMode,stairsFloors:taskType==='move'?0:(floorMode==='stairs'?n:0),heavyItem:taskType==='move'?false:!!$('#heavyItem')?.checked,note:nullable($('#otherNote')?.value),items:taskType==='move'?[]:extraFees().items};}
+function pickupTimeIso(){if(errandMode!=='reserve')return null;const d=$('#errandDate').value,t=$('#errandTime').value;if(!d||!t)return null;return `${d}T${t}${t.length===5?':00':''}+08:00`;}
+function timingLabel(){return errandMode==='now'?'立即跑腿':`${$('#errandDate').value} ${$('#errandTime').value}`;}
+function petTypeList(){return Array.from(petTypes);}
+function petTypeLabel(){return petTypeList().join('＋');}
+function renderPetUi(){
+ $$('[data-pet-count]').forEach(b=>b.classList.toggle('active',Number(b.dataset.petCount)===petCount));
+ $$('[data-pet-type]').forEach(b=>b.classList.toggle('active',petTypes.has(b.dataset.petType)));
+}
+function taskSpecific(){
+ const amount=advanceNeeded?advanceAmountValue():null;
+ const o={
+  taskType:TASK_CODES[taskType],
+  taskLabel:TASKS[taskType],
+  taskContent:nullable($('#taskContent').value),
+  contact:contactInfo(),
+  otherNeeds:otherNeedsInfo(),
+  delivery:deliveryInfo(),
+  photoReturn:photoInfo(),
+  advanceRequired:advanceNeeded,
+  advanceAmount:amount,
+  prepaymentRequired:advanceNeeded&&!isPostpaid()&&Number(amount||0)>2000
+ };
+ if(taskType==='purchase')o.purchaseLocationMode=purchaseLocationMode==='unspecified'?'near_dropoff':'specified';
+ if(taskType==='pet'){
+  o.petCount=petCount;
+  o.petTypes=petTypeList();
+  o.petType=petTypeLabel();
+  o.petName=nullable($('#petName').value);
+  o.petCarrier=petCarrier;
+ }
+ if(taskType==='move'){
+  o.movePlan=movePlan;
+  o.movePlanLabel=movePlan==='driver'?'司機協助搬運':'自行搬運';
+  o.moveServiceFee=movePlan==='driver'?600:300;
+  o.moveLift=movePlan==='driver'?moveLift:null;
+  o.moveFloor=movePlan==='driver'&&moveLift==='no'?(Number($('#moveFloor').value)||null):null;
+  o.movePhoto=movePhotoDataUrl?{name:movePhotoName||'moving-photo.jpg',dataUrl:movePhotoDataUrl,url:movePhotoRemoteUrl}:null;
+ }
+ return o;
+}
+function orderPoint(s){if(!s)return null;const data=s.place?placeToData(s.place):normalizeAddress(s.data||{address:addressValue(s.key)});return orderAddress(data);}
+async function buildOrderData(){
+ const id=ensureIdentity(),q=quote();
+ let pickup=null;
+ if(taskType==='purchase'&&purchaseLocationMode==='unspecified'){
+  pickup={name:null,displayName:'送達地點附近購買',address:null,city:null,district:null,areaLabel:null,placeId:null,lat:null,lng:null};
+ }else{
+  const rawPickup=addressSlots.p1.place?placeToData(addressSlots.p1.place):normalizeAddress(addressSlots.p1.data||{address:addressValue('p1')});
+  pickup=orderAddress(await enrichAddress(rawPickup));
+ }
+ const finalExists=!!addressValue('final');
+ let final=null;
+ if(finalExists){
+  const raw=addressSlots.final.place?placeToData(addressSlots.final.place):normalizeAddress(addressSlots.final.data||{address:addressValue('final')});
+  final=orderAddress(await enrichAddress(raw));
+ }
+ const waypointSlots=Object.keys(addressSlots)
+  .filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual&&addressValue(k))
+  .sort()
+  .map(k=>addressSlots[k]);
+ const waypoints=[];
+ for(const slot of waypointSlots){
+  const raw=slot.place?placeToData(slot.place):normalizeAddress(slot.data||{address:addressValue(slot.key)});
+  waypoints.push(orderAddress(await enrichAddress(raw)));
+ }
+ const paymentLabel=selectedPayment();
+ const paymentMode=paymentLabel===POSTPAID_PAYMENT?'postpaid':'cash';
+ const specific=taskSpecific();
+ return{
+  schemaVersion:1,
+  orderId:id.orderId,
+  createdAt:id.createdAt,
+  orderStatus:'submitted',
+  orderType:'errand',
+  serviceType:TASK_CODES[taskType],
+  sourceEntry:'errand',
+  sourceOA:'TOP Taxi | 24H多元化平台',
+  sourceOAId:null,
+  tenantId:'top-taxi',
+  customer:{
+   lineUserId:nullable(lineUserId),
+   lineDisplayName:nullable(lineDisplayName),
+   phone:null,
+   email:null,
+   customerId:null
+  },
+  pickupTime:pickupTimeIso(),
+  trip:{pickup,waypoints,dropoff:final},
+  route:{
+   routeMode:currentEstimate?currentEstimate.routeMode:null,
+   routeStrategy:currentEstimate?'WHOLE_TRIP':null,
+   distanceKm:currentEstimate?Math.round(currentEstimate.distanceKm*1000)/1000:null,
+   durationMin:currentEstimate?Number(currentEstimate.minutes):null
+  },
+  pricing:{
+   quotedAmount:q.total==null?null:Number(q.total),
+   finalAmount:null,
+   currency:'TWD',
+   pricingType:'normal',
+   minimumFare:taskType==='move'?null:220,
+   meterFare:currentEstimate?Number(currentEstimate.meterFare):null,
+   extraAmount:Number(q.extras.amount||0),
+   estimateIsStarting:!!q.isStarting
+  },
+  needs:{
+   passengers:null,
+   luggage:null,
+   vehicleType:null,
+   smokingMode:null,
+   petMode:null,
+   wheelchair:null,
+   receipt:null,
+   otherNote:nullable($('#otherNote')?.value)
+  },
+  payment:{
+   mode:paymentMode,
+   status:null,
+   provider:null,
+   transactionId:null,
+   label:paymentLabel,
+   isPostpaid:paymentMode==='postpaid'
+  },
+  delivery:{
+   lineStatus:'pending',
+   backendStatus:'pending',
+   lastUpdatedAt:null
+  },
+  taskSpecific:specific
+ };
+}
+
+
+function validate(){
+ cleanTaskWarnings();const cfg=taskConfig();if(errandMode==='reserve'&&(!$('#errandDate').value||!$('#errandTime').value)){alert('請選擇預約日期與時間。');return false;}
+ const keys=[];if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified'))keys.push('p1');keys.push(...Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual).sort(),'final');
+ for(const key of keys){const s=addressSlots[key];if(!s)continue;if(s.required&&!addressValue(key)){alert(`請填寫${s.label}。`);$(`#${key}Input`)?.focus();return false;}if(addressValue(key)&&!s.place&&!s.data?.lat){alert(`${s.label}請從 Google 地址建議中選擇。`);$(`#${key}Input`)?.focus();return false;}}
+ const taskContent=$('#taskContent').value.trim();
+ if(!taskContent){alert(`請填寫${cfg.content}。`);$('#taskContent').focus();return false;}
+ if(prohibitedErrandTask(taskContent)){alert('此跑腿需求涉及違法、暴力、危害他人或禁止承接內容，TOP Taxi 無法受理。');$('#taskContent').focus();return false;}
+ const c=contactInfo(),rawPhone=$('#globalContactPhone')?.value.trim()||'';$('#globalContactPhone')?.classList.remove('invalid');if(c){if(!c.name||!rawPhone||!isValidTaiwanMobile(rawPhone)){$('#globalContactPhone')?.classList.add('invalid');alert('聯絡人請完整填寫姓名與台灣手機號碼（09xxxxxxxx）。');$('#globalContactPhone')?.focus();return false;}}
+ const advanceAmount=Number($('#advanceAmount')?.value||0);
+ if(advanceNeeded&&advanceAmount>10000){alert('單筆代墊金額上限為 NT$10,000，如有較高金額需求請聯繫客服。');$('#advanceAmount')?.focus();return false;}
+ if(advanceNeeded&&advanceAmount<0){alert('代墊金額不可小於 0。');$('#advanceAmount')?.focus();return false;}
+ if(taskType==='pet'&&(!Number.isInteger(petCount)||petCount<1||petCount>3)){alert('請選擇寵物數量（1～3 隻）。');return false;}
+ if(taskType==='pet'&&!petTypes.size){alert('請至少選擇一種寵物種類。');return false;}
+ if(taskType==='move'&&!movePhotoDataUrl){alert('請先選擇或拍攝搬家物品照片。');$('#movePhoto')?.click();return false;}
+ if(taskType==='move'&&movePlan==='driver'&&moveLift==='no'&&!(Number($('#moveFloor').value)>0)){alert('請填寫無電梯樓層。');$('#moveFloor').focus();return false;}
+ if(floorMode==='stairs'&&!(Number($('#stairsFloors').value)>0)){alert('請填寫爬樓梯樓層數。');$('#stairsFloors').focus();return false;}
+ return true;
+}
+function confirmAddressRows(){
+ const items=[];if(taskType==='purchase'&&purchaseLocationMode==='unspecified')items.push({label:'購買地點',value:'⚠️ 送達地點附近購買',type:'pickup',unspecified:true});else if(addressValue('p1'))items.push({label:addressSlots.p1.label,value:addressValue('p1'),type:'pickup'});
+ Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual&&addressValue(k)).sort().forEach(k=>items.push({label:addressSlots[k].label,value:addressValue(k),type:'waypoint'}));if(addressValue('final'))items.push({label:addressSlots.final.label,value:addressValue('final'),type:'dropoff'});
+ return items.map((x,i)=>`${i?'<div class="booking-confirm-line"></div>':''}<div class="booking-confirm-location-row"><div class="booking-confirm-dot ${x.type==='pickup'?'booking-confirm-pickup-dot':x.type==='dropoff'?'booking-confirm-dropoff-dot':'booking-confirm-waypoint-dot'}"></div><div><div class="booking-confirm-location-label">${escapeHtml(x.label)}</div><div class="booking-confirm-address ${x.unspecified?'errand-confirm-unspecified':''}">${escapeHtml(x.value)}</div></div></div>`).join('');
+}
+function needsLabel(){const x=otherNeedsInfo(),arr=[];if(x.floorMode==='elevator')arr.push('有電梯上樓');if(x.floorMode==='stairs')arr.push(`爬樓梯 ${x.stairsFloors} 層`);if(x.heavyItem)arr.push('搬運重物');if(x.note)arr.push(x.note);if(taskType==='pet'&&petCarrier==='no')arr.push('無提籠／提袋');return arr.join('、')||'無';}
+function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function openConfirm(){
+ if(!validate())return;const q=quote();$('#confirmTaskType').textContent=TASKS[taskType];$('#confirmTiming').textContent=timingLabel();$('#confirmAddressList').innerHTML=confirmAddressRows();$('#confirmTaskContent').textContent=$('#taskContent').value.trim();
+ const c=contactInfo();$('#confirmContactRow').hidden=!c;if(c)$('#confirmContact').textContent=`${c.name||''}${c.name&&c.phone?'・':''}${c.phone||''}`;
+ $('#confirmPetRow').hidden=taskType!=='pet';if(taskType==='pet')$('#confirmPet').textContent=`${petCount} 隻・${petTypeLabel()}${$('#petName').value.trim()?`・${$('#petName').value.trim()}`:''}`;
+ const amount=Number($('#advanceAmount').value||0);$('#confirmAdvanceRow').hidden=!advanceNeeded;if(advanceNeeded)$('#confirmAdvance').textContent=amount>0?`約 NT$${amount.toLocaleString('zh-TW')}${isPostpaid()?'・後結客戶':''}`:`需要${isPostpaid()?'・後結客戶':''}`;
+ const d=deliveryInfo();$('#confirmDeliveryRow').hidden=!d;if(d)$('#confirmDelivery').textContent=`${d.label}${d.locationNote?`・${d.locationNote}`:''}`;
+ const need=needsLabel();$('#confirmNeedsRow').hidden=false;$('#confirmNeeds').textContent=need;const p=photoInfo();$('#confirmPhotoRow').hidden=!p.required;if(p.required)$('#confirmPhoto').textContent='需要';
+ const hasFareEstimate=!!currentEstimate||(taskType==='purchase'&&purchaseLocationMode==='unspecified');
+ $('#confirmPayment').textContent=selectedPayment();$('#confirmFareLabel').textContent=taskType==='move'?'預估搬家費':'預估跑腿費';$('#confirmFareLabel').dataset.note=hasFareEstimate&&q.isStarting?'最低消費起算，實際依執行路線與等待時間計費':'';$('#confirmFareBox').hidden=!hasFareEstimate||q.total==null;$('#confirmFare').textContent=hasFareEstimate&&q.total!=null?`NT$${q.total.toLocaleString('zh-TW')}${q.isStarting?' 起':''}`:'';
+ const extraNote=$('#confirmFareExtraNote'),estimateNote=$('#confirmEstimateNote');
+ if(taskType!=='move'&&hasFareEstimate&&q.total!=null&&advanceNeeded){extraNote.hidden=false;extraNote.textContent=amount>0?`預估跑腿費不含代墊款 NT$${amount.toLocaleString('zh-TW')}，代墊款將另行計入應付金額。`:'預估跑腿費不含代墊款，代墊款將另行計入應付金額。';}else{extraNote.hidden=true;extraNote.textContent='';}
+ estimateNote.hidden=!hasFareEstimate||q.total==null;estimateNote.textContent=currentEstimate?'預估路線、時間與金額僅供參考，實際內容仍以執行狀況與客服最終確認為準。':'預估金額僅供參考，實際內容仍以執行狀況與客服最終確認為準。';
+ $('#confirmMoveRow').hidden=taskType!=='move';if(taskType==='move')$('#confirmMove').textContent=`${movePlan==='driver'?'司機協助搬運 +NT$600':'自行搬運 +NT$300'}${movePlan==='driver'?`・${moveLift==='yes'?'有電梯':`無電梯 ${Number($('#moveFloor').value)||0} 樓`}`:''}・物品照片已選擇`;
+ const rb=$('#confirmRouteBox');rb.hidden=!currentEstimate;if(currentEstimate){$('#confirmRouteName').textContent=currentEstimate.routeMode==='SURFACE'?'平面道路':'推薦快速';$('#confirmDistance').textContent=`${currentEstimate.distanceKm.toFixed(1)} km`;$('#confirmDuration').textContent=`約 ${currentEstimate.minutes} 分鐘`;}
+ sendState='idle';const card=$('.errand-confirm-card');card?.classList.remove('errand-result-mode');$('#resultState').hidden=true;$('#confirmSend').disabled=false;$('#confirmSend').textContent='確認送出跑腿單 →';$('#confirmOverlay').hidden=false;document.body.style.overflow='hidden';
+}
+function closeConfirm(){if(sendState!=='idle')return;$('#confirmOverlay').hidden=true;document.body.style.overflow='';}
+
+function dispatchMessage(orderData){
+ const lines=["🛵 TOP Taxi｜24H 跑腿服務","","📋 服務類型：跑腿服務"];
+ if(errandMode==='reserve'){
+   lines.push(`📅 預約日期：${$('#errandDate').value}`);
+   lines.push(`⏰ 預約時間：${$('#errandTime').value}`);
+ }
+ lines.push(`🛵 任務類型：${TASKS[taskType]}`);
+ lines.push('');
+ if(taskType==='purchase'&&purchaseLocationMode==='unspecified'){lines.push('⚠️ 購買地點｜送達地點附近購買');lines.push('請於送達地點附近就近購買，實際店家依商品供應狀況選擇。');lines.push('');}
+ const slotList=[];if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified'))slotList.push(addressSlots.p1);Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual&&addressValue(k)).sort().forEach(k=>slotList.push(addressSlots[k]));if(addressValue('final'))slotList.push(addressSlots.final);
+ let wi=0;slotList.forEach(s=>{let data;if(s.key==='p1')data=orderData.trip.pickup;else if(s.key==='final')data=orderData.trip.dropoff;else data=orderData.trip.waypoints[wi++];if(!data)return;lines.push(dispatchHeader(data,s.role));lines.push(dispatchText(data));if(s.key==='final'&&taskType!=='move'){const d=deliveryInfo();if(d){lines.push(`送達方式｜${d.label}`);if(d.locationNote)lines.push(`放置位置｜${d.locationNote}`);}}lines.push('');});
+ lines.push('💡 任務內容');
+ lines.push($('#taskContent').value.trim());
+ const globalContact=contactInfo();if(globalContact)lines.push(`聯絡人｜${globalContact.name||''}${globalContact.name&&globalContact.phone?'・':''}${globalContact.phone||''}`);
+ if(taskType==='pet'){lines.push(`寵物｜${petCount} 隻・${petTypeLabel()}${$('#petName').value.trim()?`・${$('#petName').value.trim()}`:''}`);lines.push(`提籠／提袋｜${petCarrier==='yes'?'有':'無 +$50'}`);}
+ if(taskType==='move'){lines.push(`搬運方式｜${movePlan==='driver'?'司機協助搬運 +$600':'自行搬運 +$300'}`);if(movePlan==='driver')lines.push(`電梯｜${moveLift==='yes'?'有':'無'+(moveLift==='no'&&Number($('#moveFloor').value)>0?`・${Number($('#moveFloor').value)} 樓`:'')}`);lines.push(`搬家物品照片｜${movePhotoRemoteUrl?'已附 LINE 圖片':'客人已上傳'}`);}
+ if(taskType==='queue')lines.push('等待計費｜持續跳表；符合條件時須回報調度申請包車');
+ if(advanceNeeded){const av=Number($('#advanceAmount').value||0);lines.push(`需要代墊｜${av>0?`約 NT$${av.toLocaleString('zh-TW')}`:'金額未填'}${isPostpaid()?'・後結客戶':''}`);}
+ const need=needsLabel();if(need!=='無')lines.push(`其他需求｜${need}`);const photo=photoInfo();if(photo.required)lines.push('📷 拍照回報｜需要');
+ if(currentEstimate){lines.push('');lines.push(`🛣️ 行車路線：${currentEstimate.routeMode==='SURFACE'?'平面道路':'推薦快速'}`);lines.push(`📏 距離：${currentEstimate.distanceKm.toFixed(1)} km`);lines.push(`⏱️ 預估時間：${currentEstimate.minutes} 分鐘`);}
+ const q=quote(),hasFareEstimate=!!currentEstimate||(taskType==='purchase'&&purchaseLocationMode==='unspecified');if(hasFareEstimate&&q.total!=null){lines.push(`💰 ${taskType==='move'?'預估搬家費':'預估跑腿費'}：NT$${q.total.toLocaleString('zh-TW')}${q.isStarting?' 起':''}`);if(advanceNeeded)lines.push('※ 跑腿服務費不含商品／代墊款');}
+ lines.push('');lines.push(`💳 付款方式：${selectedPayment()}`);lines.push('');lines.push('📡 TOP Taxi｜跑腿服務');lines.push('');lines.push('━━━━━━━━━━━━━');lines.push('跑腿需求已送出！客服確認後會立刻幫您安排！');return lines.join('\n');
+}
+
+
+function returnToLine(){if(window.liff&&typeof liff.isInClient==='function'&&liff.isInClient()){try{liff.closeWindow();return;}catch(e){console.error('LIFF CLOSE ERROR:',e);}}alert('請返回 TOP Taxi LINE 聊天室。');}
+function showResult(mode){const card=$('.errand-confirm-card'),state=$('#resultState');if(!card||!state)return;const uncertain=mode==='uncertain',sync=mode==='sync-warning';$('#resultIcon').textContent=uncertain?'!':'✓';$('#resultTitle').textContent=uncertain?'訂單送出狀態待確認':sync?'訂單已傳送成功':'訂單已成功送出';$('#resultCopy').innerHTML=uncertain?'系統目前無法確認訂單是否成功送達，<strong>請勿重複送出</strong>。':sync?'客服已收到您的訂單，<strong>不需要重新送出</strong>。':'TOP Taxi 已收到您的跑腿需求，客服確認後將為您安排。';$('#resultSubcopy').textContent=uncertain?'請返回 LINE 聊天室聯繫客服，我們會協助您確認訂單狀態。':sync?'系統紀錄同步暫時異常；如需協助，可返回 LINE 聊天室聯繫客服。':'即將返回 TOP Taxi LINE 聊天室；如未自動返回，也可使用下方按鈕。';$('#resultReturnText').textContent=uncertain||sync?'返回聊天室聯繫客服':'返回 LINE 聊天室';state.className='top-line-result-state '+(uncertain?'warning':sync?'sync-warning':'success');state.hidden=false;card.classList.add('errand-result-mode');if(!uncertain&&!sync&&SEND_TEST_MODE!=='success'){clearTimeout(returnTimer);returnTimer=setTimeout(returnToLine,1100);}}
+async function sendErrand(){
+ if(sendInProgress||['sending','success','uncertain','sync-warning'].includes(sendState))return;
+ const b=$('#confirmSend'),main=$('#submitBtn'),original='確認送出跑腿單 →';sendInProgress=true;sendState='sending';b.disabled=true;b.textContent='正在送出…';main.disabled=true;main.textContent='正在送出…';let orderData=null;
+ try{
+   if(SEND_TEST_MODE==='uncertain'){sendInProgress=false;sendState='uncertain';showResult('uncertain');return;}if(SEND_TEST_MODE==='success'){sendInProgress=false;sendState='success';showResult('success');return;}if(SEND_TEST_MODE==='backendfail'){sendInProgress=false;sendState='sync-warning';showResult('sync-warning');return;}
+   if(BROWSER_TEST_MODE){orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState='success';showResult('success');return;}
+   if(!(window.liff&&LIFF_ID))throw new Error('LIFF unavailable');
+   await liff.init({liffId:LIFF_ID});liffInitialized=true;
+   if(!liff.isLoggedIn()){sendInProgress=false;sendState='idle';b.disabled=false;b.textContent=original;main.disabled=false;main.textContent='確認跑腿 →';liff.login();return;}
+   if(!liff.isInClient())throw new Error('Not inside LINE LIFF client');
+   try{const p=await liff.getProfile();lineDisplayName=p?.displayName||lineDisplayName||'';lineUserId=p?.userId||lineUserId||'';}catch(e){console.warn('ERRAND PROFILE READ FAILED:',e);}
+   orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;const message=dispatchMessage(orderData);
+   await liff.sendMessages([{type:'text',text:message}]);
+   orderData.delivery.lineStatus='success';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;
+   let ok=true;try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok){ok=false;console.warn('ERRAND n8n HTTP:',r.status);}else{try{const payload=await r.clone().json();const candidate=payload?.movePhotoUrl||payload?.photoUrl||payload?.data?.movePhotoUrl||payload?.data?.photoUrl;if(taskType==='move'&&typeof candidate==='string'&&/^https:\/\//i.test(candidate)){movePhotoRemoteUrl=candidate;orderData.taskSpecific.movePhoto={...(orderData.taskSpecific.movePhoto||{}),url:candidate,dataUrl:null};try{await liff.sendMessages([{type:'image',originalContentUrl:candidate,previewImageUrl:candidate}]);}catch(photoSendError){console.warn('ERRAND MOVE PHOTO LINE SEND FAILED:',photoSendError);}}}catch(parseError){/* Existing n8n may not return JSON/photo URL yet. */}}}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}
+   orderData.delivery.backendStatus=ok?'success':'failed';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState=ok?'success':'sync-warning';b.textContent='✅ 已送出';main.textContent='✅ 跑腿已送出';showResult(sendState);
+ }catch(e){console.error('ERRAND SEND STATUS UNCERTAIN:',e);if(orderData){orderData.delivery.lineStatus='uncertain';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;}sendInProgress=false;sendState='uncertain';b.textContent='⚠️ 狀態待確認';main.textContent='⚠️ 狀態待確認';showResult('uncertain');}
+}
+
+
+async function initLiff(){
+ if(BROWSER_TEST_MODE){lineDisplayName='瀏覽器測試';return;}
+ try{await liff.init({liffId:LIFF_ID});liffInitialized=true;if(!liff.isLoggedIn()){liff.login();return;}const p=await liff.getProfile();lineDisplayName=p.displayName||'';lineUserId=p.userId||'';}catch(e){console.error('LIFF INIT ERROR:',e);const c=$('#connectionStatus');if(c){c.style.display='flex';$('#connectionText').textContent='LINE 連線失敗，請返回聊天室後重新開啟';}}
+}
+
+async function initMaps(){
+ try{
+   const places=await google.maps.importLibrary('places');AutocompleteSuggestion=places.AutocompleteSuggestion;AutocompleteSessionToken=places.AutocompleteSessionToken;PlaceClass=places.Place||null;
+   const routes=await google.maps.importLibrary('routes');RouteClass=routes.Route;
+   try{const maps=await google.maps.importLibrary('maps');GeocoderClass=maps.Geocoder;}catch(e){}
+   navigator.geolocation?.getCurrentPosition(p=>{searchCenter={lat:p.coords.latitude,lng:p.coords.longitude};},()=>{}, {enableHighAccuracy:false,timeout:4000,maximumAge:300000});
+   initAutocompleteForVisibleSlots();updateEstimate();
+ }catch(e){console.error('GOOGLE MAPS INIT ERROR:',e);}
+}
+function initAutocompleteForVisibleSlots(){Object.values(addressSlots).filter(s=>(s.key==='p1'&&!(taskType==='purchase'&&purchaseLocationMode==='unspecified'))||s.key==='final'||s.active).forEach(initAutocompleteForSlot);}
+function initAutocompleteForSlot(slot){
+ const box=$(`#${slot.key}Box`),input=$(`#${slot.key}Input`),clear=$(`#${slot.key}Clear`),sug=$(`#${slot.key}Suggestions`);if(!box||!input||!sug||box.dataset.ready==='1'||!AutocompleteSuggestion)return;box.dataset.ready='1';let token=new AutocompleteSessionToken(),timer=null,req=0;
+ function hide(){sug.classList.remove('show');sug.innerHTML='';}
+ async function choose(pred){suppressAddStopUntil=Date.now()+900;const fallback=pred.text?.toString?.()||'';input.value=fallback;if(clear)clear.hidden=false;hide();try{const place=pred.toPlace();await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});slot.place=place;slot.data=placeToData(place);input.value=displayAddress(slot.data)||fallback;syncDeliveryVisibility();renderPhoto();updateEstimate();}catch(e){console.warn('PLACE DETAIL ERROR',e);}token=new AutocompleteSessionToken();}
+ function render(items){sug.innerHTML='';const preds=(items||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);if(!preds.length){sug.innerHTML='<div class="address-no-results">找不到相符地點，請輸入更完整的名稱或地址</div>';sug.classList.add('show');return;}preds.forEach(pred=>{const r=document.createElement('button');r.type='button';r.className='address-suggestion';const ic=document.createElement('span');ic.className='address-suggestion-icon';ic.textContent='📍';const tx=document.createElement('span'),m=document.createElement('strong'),ss=document.createElement('span');m.className='address-suggestion-main';ss.className='address-suggestion-secondary';m.textContent=pred.mainText?.toString?.()||pred.text?.toString?.()||'';ss.textContent=pred.secondaryText?.toString?.()||'';tx.append(m,ss);r.append(ic,tx);r.addEventListener('pointerdown',e=>{suppressAddStopUntil=Date.now()+900;e.preventDefault();e.stopPropagation();choose(pred);});sug.append(r);});const a=document.createElement('div');a.className='address-google-attribution';a.textContent='Google Maps';sug.append(a);sug.classList.add('show');}
+ async function fetchSug(q){const n=++req;try{const res=await AutocompleteSuggestion.fetchAutocompleteSuggestions({input:q,includedRegionCodes:['tw'],language:'zh-TW',region:'TW',locationBias:{center:searchCenter,radius:50000},origin:searchCenter,sessionToken:token});if(n===req)render(res.suggestions||[]);}catch(e){if(n===req)hide();}}
+ input.addEventListener('input',()=>{const q=input.value.trim();clearTimeout(timer);if(!q){req++;hide();return;}timer=setTimeout(()=>fetchSug(q),220);});input.addEventListener('focus',()=>{if(input.value.trim())fetchSug(input.value.trim());});document.addEventListener('pointerdown',e=>{if(!box.contains(e.target))hide();});
+}
+
+function setMinDate(){const now=new Date(),p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);$('#errandDate').min=p;}
+function bind(){
+ $$('[data-mode]').forEach(b=>b.addEventListener('click',()=>{errandMode=b.dataset.mode;$$('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));$('#reserveFields').classList.toggle('errand-hidden',errandMode!=='reserve');}));
+ $$('[data-task]').forEach(b=>b.addEventListener('click',()=>{taskType=b.dataset.task;purchaseLocationMode='specified';deliveryMethod='handoff';renderTaskUi();pendingIdentity=null;}));
+ $$('[data-pet-count]').forEach(b=>b.addEventListener('click',()=>{petCount=Math.min(3,Math.max(1,Number(b.dataset.petCount)||1));renderPetUi();}));
+ $$('[data-pet-type]').forEach(b=>b.addEventListener('click',()=>{const type=b.dataset.petType;if(petTypes.has(type))petTypes.delete(type);else petTypes.add(type);renderPetUi();}));
+ $$('[data-pet-carrier]').forEach(b=>b.addEventListener('click',()=>{petCarrier=b.dataset.petCarrier;$$('[data-pet-carrier]').forEach(x=>x.classList.toggle('active',x===b));updateEstimate();}));
+ $$('[data-advance]').forEach(b=>b.addEventListener('click',()=>{advanceNeeded=b.dataset.advance==='yes';$$('[data-advance]').forEach(x=>x.classList.toggle('active',x===b));$('#advanceAmountWrap').classList.toggle('errand-hidden',!advanceNeeded);$('#advanceNote')?.classList.toggle('errand-hidden',!advanceNeeded);}));
+ $('#toggleGlobalContact').addEventListener('click',()=>{$('#globalContactFields').classList.toggle('errand-hidden');});$('#globalContactName').addEventListener('input',renderGlobalContactSummary);$('#globalContactPhone').addEventListener('input',()=>{$('#globalContactPhone').classList.remove('invalid');renderGlobalContactSummary();});$('#globalContactPhone').addEventListener('blur',()=>{const raw=$('#globalContactPhone').value.trim();if(raw){const normalized=normalizeTaiwanMobile(raw);if(isValidTaiwanMobile(normalized))$('#globalContactPhone').value=normalized;}renderGlobalContactSummary();});
+ $('#openOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=false;document.body.style.overflow='hidden';});$$('[data-close-sheet]').forEach(b=>b.addEventListener('click',()=>{document.getElementById(b.dataset.closeSheet).hidden=true;document.body.style.overflow='';}));
+ $$('[data-floor-mode]').forEach(b=>b.addEventListener('click',()=>{floorMode=floorMode===b.dataset.floorMode?'none':b.dataset.floorMode;$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode===floorMode));$('#stairsFloorWrap').classList.toggle('errand-hidden',floorMode!=='stairs');if(floorMode!=='stairs')$('#stairsFloors').value='';renderOtherNeeds();}));
+ $('#stairsFloors').addEventListener('input',renderOtherNeeds);$('#heavyItemToggle').addEventListener('click',()=>{const cb=$('#heavyItem');cb.checked=!cb.checked;renderOtherNeeds();});$('#heavyItem').addEventListener('change',renderOtherNeeds);$('#otherNote').addEventListener('input',renderOtherNeeds);$('#saveOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=true;document.body.style.overflow='';renderOtherNeeds();});
+ $$('[data-photo-return]').forEach(b=>b.addEventListener('click',()=>{const forced=deliveryMethod!=='handoff'&&!!addressValue('final');if(forced)return;photoReturn=b.dataset.photoReturn==='yes';renderPhoto();}));
+ $$('[data-move-plan]').forEach(b=>b.addEventListener('click',()=>{movePlan=b.dataset.movePlan;renderMoveUi();}));
+ $$('[data-move-lift]').forEach(b=>b.addEventListener('click',()=>{moveLift=b.dataset.moveLift;renderMoveUi();}));
+ $('#moveFloor').addEventListener('input',updateEstimate);
+ $('#movePhoto').addEventListener('change',e=>handleMovePhoto(e.target.files?.[0]||null));
+ $('#clearMovePhoto').addEventListener('click',()=>{$('#movePhoto').value='';handleMovePhoto(null);$('#movePhoto').click();});
+ $('#surfaceBtn').addEventListener('click',()=>selectRoute('SURFACE'));$('#fastBtn').addEventListener('click',()=>selectRoute('FAST'));
+ $$('[data-payment-set-default]').forEach(b=>b.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();savePaymentPreference(b.dataset.paymentSetDefault);}));
+ $$('[data-payment-option]').forEach(el=>el.addEventListener('click',e=>{if(e.target.closest('[data-payment-set-default]'))return;const r=el.querySelector('input[name=\"errandPayment\"]');if(r){r.checked=true;r.dispatchEvent(new Event('change',{bubbles:true}));}}));
+ $$('input[name=\"errandPayment\"]').forEach(r=>r.addEventListener('change',()=>{renderPayment();updateEstimate();}));
+ $('#submitBtn').addEventListener('click',openConfirm);$('#backToEdit').addEventListener('click',closeConfirm);$('#confirmSend').addEventListener('click',sendErrand);$('#resultReturn').addEventListener('click',returnToLine);$('#confirmOverlay').addEventListener('click',e=>{if(e.target===$('#confirmOverlay'))closeConfirm();});
+}
+
+document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();setMinDate();renderPayment();renderTaskUi();renderOtherNeeds();renderPhoto();if(BROWSER_TEST_MODE){const b=$('#messageBox');b.style.display='block';b.style.margin='0 auto 14px';b.style.maxWidth='720px';b.innerHTML='🧪 瀏覽器測試模式｜LINE sendMessages 與 n8n 已停用';}const mapsPromise=initMaps();await initLiff();await mapsPromise;});
+</script>
+<script>
+(function (g) {
+    var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window;
+    b = b[c] || (b[c] = {});
+    var d = b.maps || (b.maps = {}), r = new Set(), e = new URLSearchParams(), u = function () {
+        return h || (h = new Promise(async function (f, n) {
+            await (a = m.createElement("script"));
+            e.set("libraries", Array.from(r) + "");
+            for (k in g) e.set(k.replace(/[A-Z]/g, function (t) { return "_" + t[0].toLowerCase(); }), g[k]);
+            e.set("callback", c + ".maps." + q);
+            a.src = "https://maps." + c + "apis.com/maps/api/js?" + e;
+            d[q] = f;
+            a.onerror = function () { h = n(Error(p + " could not load.")); };
+            a.nonce = m.querySelector("script[nonce]")?.nonce || "";
+            m.head.append(a);
+        }));
+    };
+    d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = function (f) {
+        for (var n = arguments.length, t = new Array(n > 1 ? n - 1 : 0), i = 1; i < n; i++) t[i - 1] = arguments[i];
+        r.add(f);
+        return u().then(function () { return d[l].apply(d, [f].concat(t)); });
+    };
+})({
+    key: "AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw",
+    v: "weekly",
+    language: "zh-TW",
+    region: "TW"
+});
+</script>
+
+
+
+
+<script id="topTaxiAddressUxV2">
+(function () {
+  const ADDRESS_INPUT_SELECTOR =
+    '.autocomplete input, .address-autocomplete input, input[id^="sharedAddress"]';
+
+  function panelFor(input) {
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    return parent
+      ? parent.querySelector('.suggestions, .address-suggestions')
+      : null;
+  }
+
+  function existingClearFor(input) {
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    return parent
+      ? parent.querySelector('.address-clear-btn, .top-taxi-address-clear')
+      : null;
+  }
+
+  function syncClear(input) {
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const clear = existingClearFor(input);
+    if (clear) clear.hidden = !input.value.trim();
+  }
+
+  function ensureClear(input) {
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    if (!parent) return;
+
+    let clear = existingClearFor(input);
+    if (!clear) {
+      clear = document.createElement('button');
+      clear.type = 'button';
+      clear.className = 'top-taxi-address-clear';
+      clear.textContent = '×';
+      clear.setAttribute('aria-label', '清除地址');
+      const panel = panelFor(input);
+      if (panel) parent.insertBefore(clear, panel);
+      else parent.appendChild(clear);
+
+      clear.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        syncClear(input);
+        input.focus();
+      });
+    }
+
+    if (input.dataset.topTaxiClearReady !== '1') {
+      input.dataset.topTaxiClearReady = '1';
+      input.addEventListener('input', function () { syncClear(input); });
+      input.addEventListener('change', function () { syncClear(input); });
+      input.addEventListener('focus', function () { syncClear(input); });
+    }
+    syncClear(input);
+  }
+
+  function ensureAllClearButtons(root) {
+    (root || document)
+      .querySelectorAll(ADDRESS_INPUT_SELECTOR)
+      .forEach(ensureClear);
+  }
+
+  function isPanelVisible(panel) {
+    if (!panel) return false;
+    if (panel.hidden) return false;
+    if (panel.classList.contains('address-suggestions')) {
+      return panel.classList.contains('show');
+    }
+    return true;
+  }
+
+  function fitPanel(panel) {
+    if (!isPanelVisible(panel)) return;
+    const parent = panel.parentElement;
+    const input = parent ? parent.querySelector('input') : null;
+    if (!input) return;
+
+    const vv = window.visualViewport;
+    const viewportTop = vv ? vv.offsetTop : 0;
+    const viewportHeight = vv ? vv.height : window.innerHeight;
+    const viewportBottom = viewportTop + viewportHeight;
+    const rect = input.getBoundingClientRect();
+
+    const below = Math.max(0, viewportBottom - rect.bottom - 10);
+    const above = Math.max(0, rect.top - viewportTop - 10);
+    const openUp = below < 150 && above > below;
+    const available = openUp ? above : below;
+    const maxHeight = Math.max(104, Math.min(330, available));
+
+    panel.style.maxHeight = maxHeight + 'px';
+    panel.classList.toggle('top-taxi-open-up', openUp);
+  }
+
+  function refreshOpenPanels() {
+    document
+      .querySelectorAll('.suggestions, .address-suggestions')
+      .forEach(fitPanel);
+  }
+
+  let scrollTimer = null;
+  function keepFocusedAddressVisible() {
+    const input = document.activeElement;
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const rect = input.getBoundingClientRect();
+    const viewportBottom = vv.offsetTop + vv.height;
+    const viewportTop = vv.offsetTop;
+    if (rect.bottom > viewportBottom - 96 || rect.top < viewportTop + 16) {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(function () {
+        input.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+      }, 60);
+    }
+  }
+
+  function refreshAll() {
+    ensureAllClearButtons(document);
+    refreshOpenPanels();
+    keepFocusedAddressVisible();
+  }
+
+  const observer = new MutationObserver(function (mutations) {
+    let needsRefresh = false;
+    for (const m of mutations) {
+      if (
+        m.type === 'childList' ||
+        (m.type === 'attributes' && (m.attributeName === 'class' || m.attributeName === 'hidden'))
+      ) {
+        needsRefresh = true;
+        break;
+      }
+    }
+    if (needsRefresh) requestAnimationFrame(refreshAll);
+  });
+
+  function boot() {
+    ensureAllClearButtons(document);
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['class', 'hidden']
+    });
+
+    document.addEventListener('focusin', function (event) {
+      if (!event.target.matches?.(ADDRESS_INPUT_SELECTOR)) return;
+      ensureClear(event.target);
+      setTimeout(refreshAll, 40);
+      setTimeout(refreshAll, 220);
+    });
+
+    document.addEventListener('click', function () {
+      setTimeout(function () {
+        ensureAllClearButtons(document);
+        document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+      }, 0);
+      setTimeout(function () {
+        document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+      }, 700);
+    }, true);
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', refreshAll);
+      window.visualViewport.addEventListener('scroll', refreshAll);
+    }
+    window.addEventListener('resize', refreshAll);
+    window.TOP_TAXI_REFRESH_ADDRESS_SUGGESTIONS = refreshAll;
+    window.TOP_TAXI_SYNC_ADDRESS_CLEAR = function () {
+      ensureAllClearButtons(document);
+      document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+})();
+</script>
+
+</body>
+</html>
