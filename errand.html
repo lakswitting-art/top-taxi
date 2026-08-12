@@ -3054,21 +3054,61 @@ function dispatchMessage(orderData){
 }
 
 
-function returnToLine(){if(window.liff&&typeof liff.isInClient==='function'&&liff.isInClient()){try{liff.closeWindow();return;}catch(e){console.error('LIFF CLOSE ERROR:',e);}}alert('請返回 TOP Taxi LINE 聊天室。');}
-function showResult(mode){const card=$('.errand-confirm-card'),state=$('#resultState');if(!card||!state)return;const uncertain=mode==='uncertain',sync=mode==='sync-warning';$('#resultIcon').textContent=uncertain?'!':'✓';$('#resultTitle').textContent=uncertain?'訂單送出狀態待確認':sync?'訂單已傳送成功':'訂單已成功送出';$('#resultCopy').innerHTML=uncertain?'系統目前無法確認訂單是否成功送達，<strong>請勿重複送出</strong>。':sync?'客服已收到您的訂單，<strong>不需要重新送出</strong>。':'TOP Taxi 已收到您的跑腿需求，客服確認後將為您安排。';$('#resultSubcopy').textContent=uncertain?'請返回 LINE 聊天室聯繫客服，我們會協助您確認訂單狀態。':sync?'系統紀錄同步暫時異常；如需協助，可返回 LINE 聊天室聯繫客服。':'即將返回 TOP Taxi LINE 聊天室；如未自動返回，也可使用下方按鈕。';$('#resultReturnText').textContent=uncertain||sync?'返回聊天室聯繫客服':'返回 LINE 聊天室';state.className='top-line-result-state '+(uncertain?'warning':sync?'sync-warning':'success');state.hidden=false;card.classList.add('errand-result-mode');if(!uncertain&&!sync&&SEND_TEST_MODE!=='success'){clearTimeout(returnTimer);returnTimer=setTimeout(returnToLine,1100);}}
+async function getErrandLiffDiagnostics(){
+ const d={href:location.href,isInClient:false,isLoggedIn:false,contextType:'unknown',viewType:'unknown',permissionState:'unknown',grantedScopes:[]};
+ if(!(window.liff&&LIFF_ID)){d.error='LIFF SDK unavailable';return d;}
+ try{d.isInClient=typeof liff.isInClient==='function'?!!liff.isInClient():false;}catch(e){}
+ try{d.isLoggedIn=typeof liff.isLoggedIn==='function'?!!liff.isLoggedIn():false;}catch(e){}
+ try{const c=typeof liff.getContext==='function'?liff.getContext():null;d.contextType=c?.type||'unknown';d.viewType=c?.viewType||'unknown';d.endpointUrl=c?.endpointUrl||'';}catch(e){}
+ try{if(liff.permission&&typeof liff.permission.query==='function'){const p=await liff.permission.query('chat_message.write');d.permissionState=p?.state||'unknown';}}catch(e){d.permissionError=e?.code||e?.message||String(e);}
+ try{if(liff.permission&&typeof liff.permission.getGrantedAll==='function'){d.grantedScopes=await liff.permission.getGrantedAll();}}catch(e){}
+ return d;
+}
+function renderErrandLiffDiagnostic(error,diag){
+ const state=$('#resultState');if(!state)return;
+ let box=$('#errandLiffDiagnostic');
+ if(!box){box=document.createElement('div');box.id='errandLiffDiagnostic';box.style.cssText='margin-top:12px;padding:12px;border:1px solid #f1c6cb;border-radius:12px;background:#fff7f8;color:#7f1d1d;font-size:11px;line-height:1.65;text-align:left;word-break:break-word;';state.appendChild(box);}
+ const code=error?.code??'—',message=error?.message||String(error||'未知錯誤');
+ const granted=Array.isArray(diag?.grantedScopes)&&diag.grantedScopes.length?diag.grantedScopes.join(', '):'—';
+ box.innerHTML='<strong>LIFF 送單診斷</strong><br>'+
+   '錯誤碼：'+escapeHtml(code)+'<br>'+
+   '錯誤訊息：'+escapeHtml(message)+'<br>'+
+   'LIFF Client：'+escapeHtml(String(diag?.isInClient))+'<br>'+
+   '啟動來源：'+escapeHtml(diag?.contextType||'unknown')+'<br>'+
+   '畫面模式：'+escapeHtml(diag?.viewType||'unknown')+'<br>'+
+   'chat_message.write：'+escapeHtml(diag?.permissionState||'unknown')+'<br>'+
+   '已授權 scopes：'+escapeHtml(granted);
+}
+function returnToLine(){
+ if(window.liff&&typeof liff.isInClient==='function'&&liff.isInClient()){try{liff.closeWindow();return;}catch(e){console.error('LIFF CLOSE ERROR:',e);}}
+ alert('目前不是可關閉的 LINE LIFF 視窗，請使用 LINE 左上角返回聊天室。');
+}
+function showResult(mode){const card=$('.errand-confirm-card'),state=$('#resultState');if(!card||!state)return;const uncertain=mode==='uncertain',sync=mode==='sync-warning';$('#resultIcon').textContent=uncertain?'!':'✓';$('#resultTitle').textContent=uncertain?'訂單送出狀態待確認':sync?'訂單已傳送成功':'訂單已成功送出';$('#resultCopy').innerHTML=uncertain?'系統目前無法確認訂單是否成功送達，<strong>請勿重複送出</strong>。':sync?'客服已收到您的訂單，<strong>不需要重新送出</strong>。':'TOP Taxi 已收到您的跑腿需求，客服確認後將為您安排。';$('#resultSubcopy').textContent=uncertain?'下方會顯示本次 LIFF 診斷資訊，請截圖保留。':sync?'系統紀錄同步暫時異常；如需協助，可返回 LINE 聊天室聯繫客服。':'即將返回 TOP Taxi LINE 聊天室；如未自動返回，也可使用下方按鈕。';$('#resultReturnText').textContent=uncertain||sync?'返回聊天室聯繫客服':'返回 LINE 聊天室';state.className='top-line-result-state '+(uncertain?'warning':sync?'sync-warning':'success');state.hidden=false;card.classList.add('errand-result-mode');const old=$('#errandLiffDiagnostic');if(old&&!uncertain)old.remove();if(!uncertain&&!sync&&SEND_TEST_MODE!=='success'){clearTimeout(returnTimer);returnTimer=setTimeout(returnToLine,1100);}}
 async function sendErrand(){
  if(sendInProgress||['sending','success','uncertain','sync-warning'].includes(sendState))return;
  const b=$('#confirmSend'),main=$('#submitBtn'),original='確認送出跑腿單 →';sendInProgress=true;sendState='sending';b.disabled=true;b.textContent='正在送出…';main.disabled=true;main.textContent='正在送出…';let orderData=null;
  try{
    if(SEND_TEST_MODE==='uncertain'){sendInProgress=false;sendState='uncertain';showResult('uncertain');return;}if(SEND_TEST_MODE==='success'){sendInProgress=false;sendState='success';showResult('success');return;}if(SEND_TEST_MODE==='backendfail'){sendInProgress=false;sendState='sync-warning';showResult('sync-warning');return;}
    if(BROWSER_TEST_MODE){orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState='success';showResult('success');return;}
-   if(!(window.liff&&LIFF_ID))throw new Error('LIFF unavailable');await liff.init({liffId:LIFF_ID});liffInitialized=true;if(!liff.isLoggedIn()){sendInProgress=false;sendState='idle';b.disabled=false;b.textContent=original;main.disabled=false;main.textContent='確認跑腿 →';liff.login();return;}if(!liff.isInClient())throw new Error('Not inside LINE LIFF client');
+   if(!(window.liff&&LIFF_ID)){const e=new Error('LIFF SDK unavailable');e.code='LIFF_UNAVAILABLE';throw e;}
+   await liff.init({liffId:LIFF_ID});liffInitialized=true;
+   if(!liff.isLoggedIn()){sendInProgress=false;sendState='idle';b.disabled=false;b.textContent=original;main.disabled=false;main.textContent='確認跑腿 →';liff.login();return;}
+   const diag=await getErrandLiffDiagnostics();window.TOP_TAXI_LIFF_DIAGNOSTICS=diag;
+   if(!diag.isInClient){const e=new Error('Not inside LINE LIFF client');e.code='NOT_IN_LIFF_CLIENT';throw e;}
+   if(diag.permissionState==='prompt'||diag.permissionState==='unavailable'){const e=new Error('chat_message.write permission is '+diag.permissionState);e.code='CHAT_MESSAGE_WRITE_'+diag.permissionState.toUpperCase();throw e;}
    try{const p=await liff.getProfile();lineDisplayName=p?.displayName||lineDisplayName||'';lineUserId=p?.userId||lineUserId||'';}catch(e){console.warn('ERRAND PROFILE READ FAILED:',e);}
-   orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;const message=dispatchMessage(orderData);await liff.sendMessages([{type:'text',text:message}]);
+   orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;const message=dispatchMessage(orderData);
+   await liff.sendMessages([{type:'text',text:message}]);
    orderData.delivery.lineStatus='success';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;
    let ok=true;try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok){ok=false;console.warn('ERRAND n8n HTTP:',r.status);}}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}
    orderData.delivery.backendStatus=ok?'success':'failed';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState=ok?'success':'sync-warning';b.textContent='✅ 已送出';main.textContent='✅ 跑腿已送出';showResult(sendState);
- }catch(e){console.error('ERRAND SEND STATUS UNCERTAIN:',e);if(orderData){orderData.delivery.lineStatus='uncertain';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;}sendInProgress=false;sendState='uncertain';b.textContent='⚠️ 狀態待確認';main.textContent='⚠️ 狀態待確認';showResult('uncertain');}
+ }catch(e){
+   console.error('ERRAND SEND STATUS UNCERTAIN:',e);
+   if(orderData){orderData.delivery.lineStatus='uncertain';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;}
+   let diag=null;try{diag=await getErrandLiffDiagnostics();}catch(_){}
+   window.TOP_TAXI_LAST_LIFF_ERROR={code:e?.code||'',message:e?.message||String(e),diagnostics:diag};
+   sendInProgress=false;sendState='uncertain';b.textContent='⚠️ 狀態待確認';main.textContent='⚠️ 狀態待確認';showResult('uncertain');renderErrandLiffDiagnostic(e,diag);
+ }
 }
 
 
