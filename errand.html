@@ -2577,9 +2577,22 @@ body{
 #petFields .input-group{margin-bottom:10px;}
 #petFields [data-pet-count],#petFields [data-pet-type]{min-width:72px;}
 .errand-fare-extra-note{margin-top:8px!important;padding:10px 12px;border-radius:12px;background:#fff8f0;color:#86500b!important;font-size:11.5px!important;font-weight:700;line-height:1.55!important;}
-.errand-floor-actions{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px!important;flex-wrap:nowrap!important;}
+.errand-floor-actions{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important;flex-wrap:nowrap!important;width:100%;}
 .errand-floor-actions .errand-pill{min-width:0;padding:9px 4px;font-size:11.5px;white-space:nowrap;}
 #heavyItemToggle.active{border-color:#ff1f2d;background:#fff2f3;color:#c90012;}
+/* ROUND 4｜conditional confirmation rows must truly disappear */
+.booking-confirm-detail-row[hidden],
+.booking-confirm-route-box[hidden],
+.booking-confirm-price[hidden],
+.booking-confirm-note[hidden],
+.errand-fare-extra-note[hidden]{display:none!important;}
+/* ROUND 4｜other-needs sheet must stay inside the phone viewport */
+#otherNeedsSheet{box-sizing:border-box;padding-left:8px;padding-right:8px;overflow:hidden;}
+#otherNeedsSheet .booking-bottom-sheet{box-sizing:border-box;width:100%!important;max-width:560px!important;margin:0 auto;max-height:min(86dvh,720px);overflow-x:hidden!important;overflow-y:auto!important;padding:10px 14px max(18px,env(safe-area-inset-bottom))!important;}
+#otherNeedsSheet .booking-sheet-head,#otherNeedsSheet .errand-sheet-grid{box-sizing:border-box;width:100%;min-width:0;}
+#otherNeedsSheet .booking-sheet-title{min-width:0;}
+#otherNeedsSheet input,#otherNeedsSheet textarea{box-sizing:border-box;max-width:100%;width:100%;}
+@media(max-width:390px){#otherNeedsSheet{padding-left:6px;padding-right:6px;}#otherNeedsSheet .booking-bottom-sheet{padding-left:12px!important;padding-right:12px!important}.errand-floor-actions .errand-pill{font-size:11px;padding-left:3px;padding-right:3px;}}
 </style>
 </head>
 <body>
@@ -2718,7 +2731,7 @@ body{
           <button type="button" class="errand-pill" data-advance="yes">需要</button>
         </div>
         <div id="advanceAmountWrap" class="errand-small-input errand-hidden"><input id="advanceAmount" type="number" min="0" max="10000" step="1" inputmode="numeric" placeholder="代墊金額（選填，上限 NT$10,000）"></div>
-        <div class="errand-inline-note">代墊金額超過 NT$2,000，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。</div>
+        <div id="advanceNote" class="errand-inline-note errand-hidden">代墊金額超過 NT$2,000，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。</div>
       </div>
 
       <div class="input-group">
@@ -2731,7 +2744,7 @@ body{
           <button type="button" class="errand-pill active" data-photo-return="no">不需要</button>
           <button type="button" class="errand-pill" data-photo-return="yes">需要</button>
         </div>
-        <div id="photoForcedNote" class="errand-section-note">拍照回報不另外收費；選擇外送桌或管理室時，系統會自動設為需要。</div>
+
       </div>
 
       <div id="fareEstimate" class="fare-estimate" aria-live="polite">
@@ -2785,7 +2798,7 @@ body{
     <div class="booking-sheet-handle"></div>
     <div class="booking-sheet-head"><div class="booking-sheet-title">其他需求</div><button type="button" class="booking-sheet-close" data-close-sheet="otherNeedsSheet">×</button></div>
     <div class="errand-sheet-grid">
-      <div id="floorModeGroup"><div class="errand-section-note" style="margin:0 0 7px">上樓／搬運需求</div><div class="errand-row-toggle errand-floor-actions"><button type="button" class="errand-pill active" data-floor-mode="none">不上樓</button><button type="button" class="errand-pill" data-floor-mode="elevator">有電梯 +$50</button><button type="button" class="errand-pill" data-floor-mode="stairs">爬樓梯</button><button type="button" id="heavyItemToggle" class="errand-pill">搬重物 +$100</button></div><input id="heavyItem" type="checkbox" hidden></div>
+      <div id="floorModeGroup"><div class="errand-section-note" style="margin:0 0 7px">上樓／搬運需求</div><div class="errand-row-toggle errand-floor-actions"><button type="button" class="errand-pill" data-floor-mode="elevator">有電梯 +$50</button><button type="button" class="errand-pill" data-floor-mode="stairs">爬樓梯</button><button type="button" id="heavyItemToggle" class="errand-pill">搬重物 +$100</button></div><input id="heavyItem" type="checkbox" hidden></div>
       <div id="stairsFloorWrap" class="errand-hidden"><label for="stairsFloors">爬樓梯樓層數 <span class="field-tag required-tag">必填</span></label><input id="stairsFloors" type="number" min="1" max="99" step="1" inputmode="numeric" placeholder="每層 +$50"></div>
       <div><label for="otherNote">其他備註 <span class="field-tag optional-tag">選填</span></label><textarea id="otherNote" class="errand-textarea" style="min-height:76px" placeholder="其他需要司機注意的事項"></textarea></div>
       <button type="button" id="saveOtherNeeds" class="saved-address-save">完成</button>
@@ -2870,7 +2883,7 @@ const $$=s=>Array.from(document.querySelectorAll(s));
 let lineDisplayName="",lineUserId="",liffInitialized=false;
 let errandMode="now",taskType="purchase",petCarrier="yes",petCount=1,petTypes=new Set(["貓"]),advanceNeeded=false,photoReturn=false,purchaseLocationMode="specified";
 let movePlan="self",moveLift="yes",movePhotoDataUrl=null,movePhotoName="",movePhotoRemoteUrl=null;
-let floorMode="none",routeMode="FAST",sendState="idle",sendInProgress=false,returnTimer=null;
+let floorMode="none",routeMode="FAST",sendState="idle",sendInProgress=false,returnTimer=null,suppressAddStopUntil=0;
 let RouteClass=null,AutocompleteSuggestion=null,AutocompleteSessionToken=null,PlaceClass=null;
 let currentEstimate=null,routeOptions={FAST:null,SURFACE:null},routeRequestNo=0;
 let pendingIdentity=null;
@@ -2986,7 +2999,7 @@ function renderAddresses(){
  if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified')){activeSlotKeys.push('p1');root.appendChild(addressBlock(addressSlots.p1));}
  if(cfg.p2Max>0){
    const wrap=document.createElement('div');wrap.id='extraStopsWrap';root.appendChild(wrap);
-   const add=document.createElement('button');add.type='button';add.className='booking-add-waypoint';add.id='addStopBtn';add.textContent='＋ 新增停靠點';add.addEventListener('click',addStop);root.appendChild(add);
+   const add=document.createElement('button');add.type='button';add.className='booking-add-waypoint';add.id='addStopBtn';add.textContent='＋ 新增停靠點';add.addEventListener('click',e=>addStop(e));root.appendChild(add);
    const help=document.createElement('div');help.className='booking-waypoint-help';help.textContent='最多新增 2 個停靠點；每增加 1 個停靠點 +NT$50';root.appendChild(help);
    Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual).sort().forEach(k=>activateStop(k,false));
    if(Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active).length>=cfg.p2Max)add.hidden=true;
@@ -3008,7 +3021,7 @@ function deliveryModuleHtml(){if(taskType==='move')return '';const tableOption=t
 let deliveryMethod='handoff';
 function syncDeliveryVisibility(){const module=$('#deliveryModule');if(!module)return;if(taskType==='move'){module.classList.add('errand-hidden');return;}const cfg=taskConfig(),hasFinal=!!addressValue('final');module.classList.toggle('errand-hidden',!cfg.finalRequired&&!hasFinal);}
 function updateDeliveryModule(){const module=$('#deliveryModule');if(!module)return;$$('[data-delivery]').forEach(b=>{b.addEventListener('click',()=>{deliveryMethod=b.dataset.delivery;$$('[data-delivery]').forEach(x=>x.classList.toggle('active',x===b));const forced=deliveryMethod!=='handoff';$('#deliveryLocationWrap')?.classList.toggle('errand-hidden',!forced);$('#deliveryPhotoNote')?.classList.toggle('errand-hidden',!forced);renderPhoto();updateEstimate();});});syncDeliveryVisibility();}
-function addStop(){const cfg=taskConfig();const keys=Object.keys(addressSlots).filter(k=>k.startsWith('p2_'));const k=keys.find(x=>!addressSlots[x].active);if(!k)return;addressSlots[k].manual=true;activateStop(k,false);if(keys.filter(x=>addressSlots[x].active&&addressSlots[x].manual).length>=cfg.p2Max)$('#addStopBtn')?.setAttribute('hidden','');updateEstimate();}
+function addStop(e){if(Date.now()<suppressAddStopUntil){e?.preventDefault?.();e?.stopPropagation?.();return;}const cfg=taskConfig();const keys=Object.keys(addressSlots).filter(k=>k.startsWith('p2_'));const k=keys.find(x=>!addressSlots[x].active);if(!k)return;addressSlots[k].manual=true;activateStop(k,false);if(keys.filter(x=>addressSlots[x].active&&addressSlots[x].manual).length>=cfg.p2Max)$('#addStopBtn')?.setAttribute('hidden','');updateEstimate();}
 function activateStop(key,focus=false){const s=addressSlots[key];if(!s||!s.manual)return;s.active=true;if(!activeSlotKeys.includes(key))activeSlotKeys.push(key);const wrap=$('#extraStopsWrap');if(!wrap)return;const node=addressBlock(s);node.querySelector('.errand-address-head').insertAdjacentHTML('beforeend',`<button type="button" class="errand-text-btn" data-remove-stop="${key}">移除</button>`);wrap.appendChild(node);node.querySelector(`[data-remove-stop="${key}"]`).addEventListener('click',()=>removeStop(key));initAutocompleteForSlot(s);}
 function removeStop(key){const s=addressSlots[key];s.active=false;s.manual=false;s.place=null;s.data=null;document.querySelector(`[data-slot="${key}"]`)?.remove();activeSlotKeys=activeSlotKeys.filter(x=>x!==key);$('#addStopBtn')?.removeAttribute('hidden');updateEstimate();}
 function renderTaskUi(){
@@ -3018,7 +3031,7 @@ function renderTaskUi(){
  $('#petFields').classList.toggle('errand-hidden',taskType!=='pet');
  $('#moveFields').classList.toggle('errand-hidden',taskType!=='move');
  $('#queueCharterNotice').classList.toggle('errand-hidden',taskType!=='queue');
- const advanceEligible=['purchase','delivery','pet','other'].includes(taskType);$('#advanceGroup').classList.toggle('errand-hidden',!advanceEligible);if(!advanceEligible){advanceNeeded=false;$$('[data-advance]').forEach(x=>x.classList.toggle('active',x.dataset.advance==='no'));$('#advanceAmountWrap').classList.add('errand-hidden');$('#advanceAmount').value='';}
+ const advanceEligible=['purchase','delivery','pet','other'].includes(taskType);$('#advanceGroup').classList.toggle('errand-hidden',!advanceEligible);if(!advanceEligible){advanceNeeded=false;$$('[data-advance]').forEach(x=>x.classList.toggle('active',x.dataset.advance==='no'));$('#advanceAmountWrap').classList.add('errand-hidden');$('#advanceNote')?.classList.add('errand-hidden');$('#advanceAmount').value='';}else{$('#advanceAmountWrap').classList.toggle('errand-hidden',!advanceNeeded);$('#advanceNote')?.classList.toggle('errand-hidden',!advanceNeeded);}
  const moveMode=taskType==='move';
  const policySummary=$('#policySummary'),policyCopy=$('#policyCopy');
  if(moveMode){
@@ -3041,7 +3054,6 @@ function cleanTaskWarnings(){if(taskType!=='delivery')$('#deliverySafetyNote')?.
 function renderPhoto(){
  const forced=taskType!=='move'&&deliveryMethod!=='handoff'&&!!addressValue('final');
  $$('[data-photo-return]').forEach(b=>{const yes=b.dataset.photoReturn==='yes';b.classList.toggle('active',yes===(photoReturn||forced));b.disabled=forced&&!yes;});
- $('#photoForcedNote').textContent=forced?'非當面交付需拍照回報，已自動設為「需要」。':taskType==='move'?'拍照回報不另外收費。':'拍照回報不另外收費；選擇外送桌或管理室時，系統會自動設為需要。';
 }
 function renderMoveUi(){
  const isMove=taskType==='move';if(!isMove)return;
@@ -3061,7 +3073,7 @@ async function handleMovePhoto(file){
  try{movePhotoDataUrl=await compressMovePhoto(file);movePhotoName=file.name||'moving-photo.jpg';movePhotoRemoteUrl=null;$('#movePhotoPreview').src=movePhotoDataUrl;$('#movePhotoPreviewWrap').classList.remove('errand-hidden');$('#movePhotoStatus').textContent='已選擇 1 張搬家物品照片';}
  catch(e){console.error('MOVE PHOTO ERROR',e);movePhotoDataUrl=null;movePhotoName='';$('#movePhoto').value='';$('#movePhotoStatus').textContent='照片處理失敗，請重新拍攝';alert('照片無法處理，請重新拍攝或改用 JPG／PNG 照片。');}
 }
-function renderOtherNeeds(){const items=[];if(taskType!=='move'){if(floorMode==='elevator')items.push('有電梯上樓 +$50');if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);items.push(`爬樓梯 ${n||'?'} 層`);}if($('#heavyItem')?.checked)items.push('搬運重物 +$100');}$('#heavyItemToggle')?.classList.toggle('active',!!$('#heavyItem')?.checked);if($('#otherNote')?.value.trim())items.push('其他備註');$('#otherNeedsSummary').textContent=(items.length?items.join('・'):(taskType==='move'?'其他備註・選填':'上樓／樓梯／搬重物／其他備註・選填'))+' ›';updateEstimate();}
+function renderOtherNeeds(){const items=[];$$('[data-floor-mode]').forEach(b=>b.classList.toggle('active',b.dataset.floorMode===floorMode));if(taskType!=='move'){if(floorMode==='elevator')items.push('有電梯上樓 +$50');if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);items.push(`爬樓梯 ${n||'?'} 層`);}if($('#heavyItem')?.checked)items.push('搬運重物 +$100');}$('#heavyItemToggle')?.classList.toggle('active',!!$('#heavyItem')?.checked);if($('#otherNote')?.value.trim())items.push('其他備註');$('#otherNeedsSummary').textContent=(items.length?items.join('・'):(taskType==='move'?'其他備註・選填':'上樓／樓梯／搬重物／其他備註・選填'))+' ›';updateEstimate();}
 function extraFees(){let amount=0,items=[];const activeStops=Object.values(addressSlots).filter(s=>s.key.startsWith('p2_')&&s.active&&s.manual&&addressValue(s.key)).length;if(activeStops){amount+=activeStops*50;items.push(`停靠點 ${activeStops} 個 +$${activeStops*50}`);}if(taskType==='move'){const service=movePlan==='driver'?600:300;amount+=service;items.push(`${movePlan==='driver'?'司機協助搬運':'自行搬運'} +$${service}`);if(movePlan==='driver'&&moveLift==='no'){const n=Math.max(0,parseInt($('#moveFloor')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`無電梯 ${n} 樓 +$${n*50}`);}return{amount,items};}if(floorMode==='elevator'){amount+=50;items.push('有電梯上樓 +$50');}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`爬樓梯 ${n} 層 +$${n*50}`);}if($('#heavyItem')?.checked){amount+=100;items.push('搬運重物 +$100');}if(taskType==='pet'&&petCarrier==='no'){amount+=50;items.push('寵物無提籠／提袋 +$50');}return{amount,items};}
 function addressValue(key){const s=addressSlots[key];if(!s)return'';const input=$(`#${key}Input`);return input?.value.trim()||displayAddress(s.data)||'';}
 function activeRouteSlots(){const arr=[];if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified'))arr.push(addressSlots.p1);Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual&&addressValue(k)).sort().forEach(k=>arr.push(addressSlots[k]));if(addressValue('final'))arr.push(addressSlots.final);return arr;}
@@ -3148,7 +3160,7 @@ function openConfirm(){
  const hasFareEstimate=!!currentEstimate||(taskType==='purchase'&&purchaseLocationMode==='unspecified');
  $('#confirmPayment').textContent=selectedPayment();$('#confirmFareLabel').textContent=taskType==='move'?'預估搬家費':'預估跑腿費';$('#confirmFareLabel').dataset.note=hasFareEstimate&&q.isStarting?'最低消費起算，實際依執行路線與等待時間計費':'';$('#confirmFareBox').hidden=!hasFareEstimate||q.total==null;$('#confirmFare').textContent=hasFareEstimate&&q.total!=null?`NT$${q.total.toLocaleString('zh-TW')}${q.isStarting?' 起':''}`:'';
  const extraNote=$('#confirmFareExtraNote'),estimateNote=$('#confirmEstimateNote');
- if(taskType!=='move'&&hasFareEstimate&&q.total!=null){extraNote.hidden=false;extraNote.textContent=advanceNeeded&&amount>0?`以上為跑腿服務費預估，不含代墊款 NT$${amount.toLocaleString('zh-TW')}；代墊款將另行計入應付金額。`:'以上為跑腿服務費預估，不含商品費、代墊款及現場可能產生的其他費用。';}else{extraNote.hidden=true;extraNote.textContent='';}
+ if(taskType!=='move'&&hasFareEstimate&&q.total!=null&&advanceNeeded){extraNote.hidden=false;extraNote.textContent=amount>0?`預估跑腿費不含代墊款 NT$${amount.toLocaleString('zh-TW')}，代墊款將另行計入應付金額。`:'預估跑腿費不含代墊款，代墊款將另行計入應付金額。';}else{extraNote.hidden=true;extraNote.textContent='';}
  estimateNote.hidden=!hasFareEstimate||q.total==null;estimateNote.textContent=currentEstimate?'預估路線、時間與金額僅供參考，實際內容仍以執行狀況與客服最終確認為準。':'預估金額僅供參考，實際內容仍以執行狀況與客服最終確認為準。';
  $('#confirmMoveRow').hidden=taskType!=='move';if(taskType==='move')$('#confirmMove').textContent=`${movePlan==='driver'?'司機協助搬運 +NT$600':'自行搬運 +NT$300'}${movePlan==='driver'?`・${moveLift==='yes'?'有電梯':`無電梯 ${Number($('#moveFloor').value)||0} 樓`}`:''}・物品照片已選擇`;
  const rb=$('#confirmRouteBox');rb.hidden=!currentEstimate;if(currentEstimate){$('#confirmRouteName').textContent=currentEstimate.routeMode==='SURFACE'?'平面道路':'推薦快速';$('#confirmDistance').textContent=`${currentEstimate.distanceKm.toFixed(1)} km`;$('#confirmDuration').textContent=`約 ${currentEstimate.minutes} 分鐘`;}
@@ -3221,8 +3233,8 @@ function initAutocompleteForVisibleSlots(){Object.values(addressSlots).filter(s=
 function initAutocompleteForSlot(slot){
  const box=$(`#${slot.key}Box`),input=$(`#${slot.key}Input`),clear=$(`#${slot.key}Clear`),sug=$(`#${slot.key}Suggestions`);if(!box||!input||!sug||box.dataset.ready==='1'||!AutocompleteSuggestion)return;box.dataset.ready='1';let token=new AutocompleteSessionToken(),timer=null,req=0;
  function hide(){sug.classList.remove('show');sug.innerHTML='';}
- async function choose(pred){const fallback=pred.text?.toString?.()||'';input.value=fallback;if(clear)clear.hidden=false;hide();try{const place=pred.toPlace();await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});slot.place=place;slot.data=placeToData(place);input.value=displayAddress(slot.data)||fallback;syncDeliveryVisibility();renderPhoto();updateEstimate();}catch(e){console.warn('PLACE DETAIL ERROR',e);}token=new AutocompleteSessionToken();}
- function render(items){sug.innerHTML='';const preds=(items||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);if(!preds.length){sug.innerHTML='<div class="address-no-results">找不到相符地點，請輸入更完整的名稱或地址</div>';sug.classList.add('show');return;}preds.forEach(pred=>{const r=document.createElement('button');r.type='button';r.className='address-suggestion';const ic=document.createElement('span');ic.className='address-suggestion-icon';ic.textContent='📍';const tx=document.createElement('span'),m=document.createElement('strong'),ss=document.createElement('span');m.className='address-suggestion-main';ss.className='address-suggestion-secondary';m.textContent=pred.mainText?.toString?.()||pred.text?.toString?.()||'';ss.textContent=pred.secondaryText?.toString?.()||'';tx.append(m,ss);r.append(ic,tx);r.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();choose(pred);});sug.append(r);});const a=document.createElement('div');a.className='address-google-attribution';a.textContent='Google Maps';sug.append(a);sug.classList.add('show');}
+ async function choose(pred){suppressAddStopUntil=Date.now()+900;const fallback=pred.text?.toString?.()||'';input.value=fallback;if(clear)clear.hidden=false;hide();try{const place=pred.toPlace();await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});slot.place=place;slot.data=placeToData(place);input.value=displayAddress(slot.data)||fallback;syncDeliveryVisibility();renderPhoto();updateEstimate();}catch(e){console.warn('PLACE DETAIL ERROR',e);}token=new AutocompleteSessionToken();}
+ function render(items){sug.innerHTML='';const preds=(items||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);if(!preds.length){sug.innerHTML='<div class="address-no-results">找不到相符地點，請輸入更完整的名稱或地址</div>';sug.classList.add('show');return;}preds.forEach(pred=>{const r=document.createElement('button');r.type='button';r.className='address-suggestion';const ic=document.createElement('span');ic.className='address-suggestion-icon';ic.textContent='📍';const tx=document.createElement('span'),m=document.createElement('strong'),ss=document.createElement('span');m.className='address-suggestion-main';ss.className='address-suggestion-secondary';m.textContent=pred.mainText?.toString?.()||pred.text?.toString?.()||'';ss.textContent=pred.secondaryText?.toString?.()||'';tx.append(m,ss);r.append(ic,tx);r.addEventListener('pointerdown',e=>{suppressAddStopUntil=Date.now()+900;e.preventDefault();e.stopPropagation();choose(pred);});sug.append(r);});const a=document.createElement('div');a.className='address-google-attribution';a.textContent='Google Maps';sug.append(a);sug.classList.add('show');}
  async function fetchSug(q){const n=++req;try{const res=await AutocompleteSuggestion.fetchAutocompleteSuggestions({input:q,includedRegionCodes:['tw'],language:'zh-TW',region:'TW',locationBias:{center:searchCenter,radius:50000},origin:searchCenter,sessionToken:token});if(n===req)render(res.suggestions||[]);}catch(e){if(n===req)hide();}}
  input.addEventListener('input',()=>{const q=input.value.trim();clearTimeout(timer);if(!q){req++;hide();return;}timer=setTimeout(()=>fetchSug(q),220);});input.addEventListener('focus',()=>{if(input.value.trim())fetchSug(input.value.trim());});document.addEventListener('pointerdown',e=>{if(!box.contains(e.target))hide();});
 }
@@ -3234,10 +3246,10 @@ function bind(){
  $$('[data-pet-count]').forEach(b=>b.addEventListener('click',()=>{petCount=Math.min(3,Math.max(1,Number(b.dataset.petCount)||1));renderPetUi();}));
  $$('[data-pet-type]').forEach(b=>b.addEventListener('click',()=>{const type=b.dataset.petType;if(petTypes.has(type))petTypes.delete(type);else petTypes.add(type);renderPetUi();}));
  $$('[data-pet-carrier]').forEach(b=>b.addEventListener('click',()=>{petCarrier=b.dataset.petCarrier;$$('[data-pet-carrier]').forEach(x=>x.classList.toggle('active',x===b));updateEstimate();}));
- $$('[data-advance]').forEach(b=>b.addEventListener('click',()=>{advanceNeeded=b.dataset.advance==='yes';$$('[data-advance]').forEach(x=>x.classList.toggle('active',x===b));$('#advanceAmountWrap').classList.toggle('errand-hidden',!advanceNeeded);}));
+ $$('[data-advance]').forEach(b=>b.addEventListener('click',()=>{advanceNeeded=b.dataset.advance==='yes';$$('[data-advance]').forEach(x=>x.classList.toggle('active',x===b));$('#advanceAmountWrap').classList.toggle('errand-hidden',!advanceNeeded);$('#advanceNote')?.classList.toggle('errand-hidden',!advanceNeeded);}));
  $('#toggleGlobalContact').addEventListener('click',()=>{$('#globalContactFields').classList.toggle('errand-hidden');});$('#globalContactName').addEventListener('input',renderGlobalContactSummary);$('#globalContactPhone').addEventListener('input',()=>{$('#globalContactPhone').classList.remove('invalid');renderGlobalContactSummary();});$('#globalContactPhone').addEventListener('blur',()=>{const raw=$('#globalContactPhone').value.trim();if(raw){const normalized=normalizeTaiwanMobile(raw);if(isValidTaiwanMobile(normalized))$('#globalContactPhone').value=normalized;}renderGlobalContactSummary();});
  $('#openOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=false;document.body.style.overflow='hidden';});$$('[data-close-sheet]').forEach(b=>b.addEventListener('click',()=>{document.getElementById(b.dataset.closeSheet).hidden=true;document.body.style.overflow='';}));
- $$('[data-floor-mode]').forEach(b=>b.addEventListener('click',()=>{floorMode=b.dataset.floorMode;$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x===b));$('#stairsFloorWrap').classList.toggle('errand-hidden',floorMode!=='stairs');renderOtherNeeds();}));
+ $$('[data-floor-mode]').forEach(b=>b.addEventListener('click',()=>{floorMode=floorMode===b.dataset.floorMode?'none':b.dataset.floorMode;$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode===floorMode));$('#stairsFloorWrap').classList.toggle('errand-hidden',floorMode!=='stairs');if(floorMode!=='stairs')$('#stairsFloors').value='';renderOtherNeeds();}));
  $('#stairsFloors').addEventListener('input',renderOtherNeeds);$('#heavyItemToggle').addEventListener('click',()=>{const cb=$('#heavyItem');cb.checked=!cb.checked;renderOtherNeeds();});$('#heavyItem').addEventListener('change',renderOtherNeeds);$('#otherNote').addEventListener('input',renderOtherNeeds);$('#saveOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=true;document.body.style.overflow='';renderOtherNeeds();});
  $$('[data-photo-return]').forEach(b=>b.addEventListener('click',()=>{const forced=deliveryMethod!=='handoff'&&!!addressValue('final');if(forced)return;photoReturn=b.dataset.photoReturn==='yes';renderPhoto();}));
  $$('[data-move-plan]').forEach(b=>b.addEventListener('click',()=>{movePlan=b.dataset.movePlan;renderMoveUi();}));
