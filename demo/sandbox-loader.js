@@ -52,6 +52,13 @@
         .replace(/topTaxiCustomerPreferences/g, "topTaxiDemoCustomerPreferences")
         .replace(/<title>([\s\S]*?)<\/title>/i, "<title>$1｜DEMO</title>");
 
+      if (String(cfg.type) === "fare") {
+        html = html.replace(
+          /showStatus\(\s*"Google 地址搜尋載入失敗，請確認 API Key 與 API 設定。"\s*,\s*true\s*\);/,
+          'showStatus("DEMO Google 初始化失敗：" + (error?.name ? error.name + "｜" : "") + (error?.message || String(error)), true);'
+        );
+      }
+
       const remaining = forbiddenAfterTransform.find(re => re.test(html));
       if (remaining) throw new Error("偵測到未隔離的正式環境識別，已阻止執行：" + remaining);
       if (!html.includes(String(cfg.liffId))) throw new Error("Demo LIFF ID 未成功套用");
