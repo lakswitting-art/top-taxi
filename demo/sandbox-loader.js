@@ -57,6 +57,16 @@
           /showStatus\(\s*"Google 地址搜尋載入失敗，請確認 API Key 與 API 設定。"\s*,\s*true\s*\);/,
           'showStatus("DEMO Google 初始化失敗：" + (error?.name ? error.name + "｜" : "") + (error?.message || String(error)), true);'
         );
+
+        const fareBeforeGoogleBootPatch = html;
+        html = html.replace(
+          /window\.addEventListener\(\s*["']load["']\s*,\s*initGoogle\s*\);/,
+          '(function(){let attempts=0;function startDemoFareGoogle(){attempts+=1;if(typeof window.google?.maps?.importLibrary==="function"){initGoogle();return;}if(attempts>=400){showStatus("DEMO Google loader 等待逾時，請重新開啟頁面。",true);return;}setTimeout(startDemoFareGoogle,25);}startDemoFareGoogle();})();'
+        );
+
+        if (html === fareBeforeGoogleBootPatch) {
+          throw new Error("Demo Fare 找不到 Google 啟動鉤子，已停止載入");
+        }
       }
 
       const remaining = forbiddenAfterTransform.find(re => re.test(html));
