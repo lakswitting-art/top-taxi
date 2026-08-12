@@ -1770,30 +1770,49 @@ gmp-place-autocomplete:focus-within {
 }
 
 .confirm-price {
-    margin-top: 16px;
-    padding: 17px 18px;
-    border: 1px solid #f1f1f3;
-    border-radius: 18px;
-    background: #fff;
-    box-shadow: 0 7px 20px rgba(25, 25, 35, .06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 18px;
+    border: 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg,#fff4f5,#fffafa);
+    box-shadow: none;
 }
 
 .confirm-price span {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    font-size: 16px;
-    color: #26262a;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: block;
+    color: #555;
+    font-size: 14px;
+    font-weight: 700;
+    white-space: nowrap;
 }
 
 .confirm-price span::after {
     content: attr(data-note);
+    display: block;
+    max-width: 220px;
+    margin-top: 3px;
+    color: #8e8e94;
     font-size: 12px;
     font-weight: 500;
-    color: #8e8e94;
+    line-height: 1.35;
+    white-space: normal;
 }
 
-.confirm-price strong { font-size: 32px; }
+.confirm-price span[data-note=""]::after { display: none; }
+
+.confirm-price strong {
+    flex: 0 0 auto;
+    color: #f20d27;
+    font-size: 30px;
+    font-weight: 900;
+    white-space: nowrap;
+}
 
 .confirm-submit {
     margin-top: 18px;
@@ -2189,6 +2208,63 @@ body{
 
 </style>
 
+<style>
+/* ===== TOP TAXI ADDRESS UX V2 ===== */
+.autocomplete,
+.address-autocomplete {
+  position: relative;
+}
+.autocomplete .input,
+.address-autocomplete > input {
+  padding-right: 44px;
+}
+.top-taxi-address-clear,
+.address-clear-btn {
+  touch-action: manipulation;
+}
+.top-taxi-address-clear {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  z-index: 5200;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #85858b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.top-taxi-address-clear[hidden],
+.address-clear-btn[hidden] {
+  display: none !important;
+}
+.suggestions,
+.address-suggestions {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-gutter: stable;
+}
+.suggestions.top-taxi-open-up,
+.address-suggestions.top-taxi-open-up {
+  top: auto !important;
+  bottom: calc(100% + 7px) !important;
+}
+</style>
+
+<style id="topTaxiTripResetStyle">
+/* TOP Taxi｜清除本次行程：只重設本次表單，不動常用地址 / 固定偏好 */
+.form-header-actions{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
+.trip-reset-btn{border:0;background:transparent;color:#8d8d94;padding:2px 0;font-size:11px;font-weight:750;line-height:1.35;cursor:pointer;white-space:nowrap}
+.trip-reset-btn:active{opacity:.55}
+@media(max-width:390px){.trip-reset-btn{font-size:10.5px}.form-header-actions{gap:2px}}
+</style>
 </head>
 
 
@@ -2231,15 +2307,11 @@ body{
 
 
     <div class="form-header">
-
-        <div id="serviceTitle" class="form-title">
-            💰 車資試算
+        <div id="serviceTitle" class="form-title">💰 車資試算</div>
+        <div class="form-header-actions">
+            <div id="serviceCode" class="form-label-small">TOP TAXI FARE</div>
+            <button id="clearFareTrip" class="trip-reset-btn" type="button">清除本次行程</button>
         </div>
-
-        <div id="serviceCode" class="form-label-small">
-            TOP TAXI FARE
-        </div>
-
     </div>
 
     <div class="service-switch" role="group" aria-label="選擇服務類型">
@@ -2723,6 +2795,7 @@ let waypointAddressData = [null, null];
 let waypointActive = [false, false];
 let waypointControllers = [null, null];
 let pickupController = null;
+let dropoffController = null;
 
 let routeResults = {
     FAST: null,
@@ -3176,8 +3249,8 @@ function fareAddressDisplayText(data = {}) {
 
 /*
    全系統派車單正式顯示規格（Ride / Booking / Fare / 未來跑腿）：
-   第一行：縣市＋行政區＋角色
-       📍 台中市北屯區｜上車
+   第一行：角色＋縣市行政區
+       📍 上車｜台中市北屯區
    第二行：地標＋精簡路名門牌，不重複第一行縣市行政區
        超級巨星自助式KTV 洲際崇德店｜崇德十路一段430號
 
@@ -3224,7 +3297,7 @@ function fareDispatchNodeHeader(
             : role + " " + index;
 
     return area
-        ? icon + " " + area + "｜" + suffix
+        ? icon + " " + suffix + "｜" + area
         : icon + " " + suffix;
 }
 
@@ -3810,8 +3883,8 @@ async function buildFareOrderDataV1() {
 
 /*
    已拍板的全系統派車單規格：
-   1) 上車第一行顯示「縣市＋行政區｜上車」
-      例：📍 台中市北屯區｜上車
+   1) 上車第一行顯示「上車｜縣市＋行政區」
+      例：📍 上車｜台中市北屯區
    2) 第二行顯示「地標｜精簡路名門牌」，不重複縣市行政區
       例：超級巨星自助式KTV 洲際崇德店｜崇德十路一段430號
    3) 顯示文字統一「臺」→「台」
@@ -4207,6 +4280,7 @@ async function initGoogle() {
                 "aria-label",
                 "清除地址"
             );
+            clearButton.hidden = !input.value.trim();
 
             const suggestionsBox =
                 document.createElement(
@@ -4286,6 +4360,7 @@ async function initGoogle() {
                             )
                             ||
                             "";
+                        clearButton.hidden = !input.value.trim();
 
                         sessionToken =
                             new AutocompleteSessionToken();
@@ -4508,6 +4583,7 @@ async function initGoogle() {
                 "input",
                 () => {
 
+                    clearButton.hidden = !input.value.trim();
                     onReset();
                     hideResults();
 
@@ -4582,6 +4658,7 @@ async function initGoogle() {
                 getValue: () => input.value.trim(),
                 setValue: (value) => {
                     input.value = value || "";
+                    clearButton.hidden = !input.value.trim();
                 },
                 focus: () => input.focus(),
                 hideSuggestions
@@ -4643,7 +4720,7 @@ async function initGoogle() {
 
         updateWaypointUi();
 
-        createAddressAutocomplete({
+        dropoffController = createAddressAutocomplete({
             containerId: "dropoffBox",
             placeholder:
                 "請輸入目的地地址或地標",
@@ -6403,6 +6480,41 @@ function hideResults() {
 
 
 
+function resetFareTrip() {
+
+    if (!window.confirm("確定清除本次填寫內容？\n常用地址與固定偏好不會被刪除。")) {
+        return;
+    }
+
+    pickupPlace = null;
+    dropoffPlace = null;
+    pickupAddressData = null;
+    dropoffAddressData = null;
+
+    pickupController?.setValue("");
+    dropoffController?.setValue("");
+
+    for (let index = 0; index < MAX_WAYPOINTS; index++) {
+        clearWaypointSlot(index);
+        waypointActive[index] = false;
+    }
+    updateWaypointUi();
+
+    farePendingOrderIdentity = null;
+    hideResults();
+    hideStatus();
+    setFarePickupStatus("");
+    setServiceMode("taxi");
+
+    pickupController?.hideSuggestions();
+    dropoffController?.hideSuggestions();
+    waypointControllers.forEach(controller => controller?.hideSuggestions());
+    window.TOP_TAXI_SYNC_ADDRESS_CLEAR?.();
+    pickupController?.focus();
+}
+
+document.getElementById("clearFareTrip")?.addEventListener("click", resetFareTrip);
+
 /* =========================================
    START
 ========================================= */
@@ -6604,6 +6716,200 @@ window.addEventListener(
 
 </script>
 
+
+
+<script id="topTaxiAddressUxV2">
+(function () {
+  const ADDRESS_INPUT_SELECTOR =
+    '.autocomplete input, .address-autocomplete input, input[id^="sharedAddress"]';
+
+  function panelFor(input) {
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    return parent
+      ? parent.querySelector('.suggestions, .address-suggestions')
+      : null;
+  }
+
+  function existingClearFor(input) {
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    return parent
+      ? parent.querySelector('.address-clear-btn, .top-taxi-address-clear')
+      : null;
+  }
+
+  function syncClear(input) {
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const clear = existingClearFor(input);
+    if (clear) clear.hidden = !input.value.trim();
+  }
+
+  function ensureClear(input) {
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    if (!parent) return;
+
+    let clear = existingClearFor(input);
+    if (!clear) {
+      clear = document.createElement('button');
+      clear.type = 'button';
+      clear.className = 'top-taxi-address-clear';
+      clear.textContent = '×';
+      clear.setAttribute('aria-label', '清除地址');
+      const panel = panelFor(input);
+      if (panel) parent.insertBefore(clear, panel);
+      else parent.appendChild(clear);
+
+      clear.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        syncClear(input);
+        input.focus();
+      });
+    }
+
+    if (input.dataset.topTaxiClearReady !== '1') {
+      input.dataset.topTaxiClearReady = '1';
+      input.addEventListener('input', function () { syncClear(input); });
+      input.addEventListener('change', function () { syncClear(input); });
+      input.addEventListener('focus', function () { syncClear(input); });
+    }
+    syncClear(input);
+  }
+
+  function ensureAllClearButtons(root) {
+    (root || document)
+      .querySelectorAll(ADDRESS_INPUT_SELECTOR)
+      .forEach(ensureClear);
+  }
+
+  function isPanelVisible(panel) {
+    if (!panel) return false;
+    if (panel.hidden) return false;
+    if (panel.classList.contains('address-suggestions')) {
+      return panel.classList.contains('show');
+    }
+    return true;
+  }
+
+  function fitPanel(panel) {
+    if (!isPanelVisible(panel)) return;
+    const parent = panel.parentElement;
+    const input = parent ? parent.querySelector('input') : null;
+    if (!input) return;
+
+    const vv = window.visualViewport;
+    const viewportTop = vv ? vv.offsetTop : 0;
+    const viewportHeight = vv ? vv.height : window.innerHeight;
+    const viewportBottom = viewportTop + viewportHeight;
+    const rect = input.getBoundingClientRect();
+
+    const below = Math.max(0, viewportBottom - rect.bottom - 10);
+    const above = Math.max(0, rect.top - viewportTop - 10);
+    const openUp = below < 150 && above > below;
+    const available = openUp ? above : below;
+    const maxHeight = Math.max(104, Math.min(330, available));
+
+    panel.style.maxHeight = maxHeight + 'px';
+    panel.classList.toggle('top-taxi-open-up', openUp);
+  }
+
+  function refreshOpenPanels() {
+    document
+      .querySelectorAll('.suggestions, .address-suggestions')
+      .forEach(fitPanel);
+  }
+
+  let scrollTimer = null;
+  function keepFocusedAddressVisible() {
+    const input = document.activeElement;
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const rect = input.getBoundingClientRect();
+    const viewportBottom = vv.offsetTop + vv.height;
+    const viewportTop = vv.offsetTop;
+    if (rect.bottom > viewportBottom - 96 || rect.top < viewportTop + 16) {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(function () {
+        input.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+      }, 60);
+    }
+  }
+
+  function refreshAll() {
+    ensureAllClearButtons(document);
+    refreshOpenPanels();
+    keepFocusedAddressVisible();
+  }
+
+  const observer = new MutationObserver(function (mutations) {
+    let needsRefresh = false;
+    for (const m of mutations) {
+      if (
+        m.type === 'childList' ||
+        (m.type === 'attributes' && (m.attributeName === 'class' || m.attributeName === 'hidden'))
+      ) {
+        needsRefresh = true;
+        break;
+      }
+    }
+    if (needsRefresh) requestAnimationFrame(refreshAll);
+  });
+
+  function boot() {
+    ensureAllClearButtons(document);
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['class', 'hidden']
+    });
+
+    document.addEventListener('focusin', function (event) {
+      if (!event.target.matches?.(ADDRESS_INPUT_SELECTOR)) return;
+      ensureClear(event.target);
+      setTimeout(refreshAll, 40);
+      setTimeout(refreshAll, 220);
+    });
+
+    document.addEventListener('click', function () {
+      setTimeout(function () {
+        ensureAllClearButtons(document);
+        document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+      }, 0);
+      setTimeout(function () {
+        document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+      }, 700);
+    }, true);
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', refreshAll);
+      window.visualViewport.addEventListener('scroll', refreshAll);
+    }
+    window.addEventListener('resize', refreshAll);
+    window.TOP_TAXI_REFRESH_ADDRESS_SUGGESTIONS = refreshAll;
+    window.TOP_TAXI_SYNC_ADDRESS_CLEAR = function () {
+      ensureAllClearButtons(document);
+      document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+})();
+</script>
 
 </body>
 
