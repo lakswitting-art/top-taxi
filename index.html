@@ -14,7 +14,134 @@
 <!-- LINE LIFF SDK -->
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
+<!--
+TOP Taxi LIFF primary-redirect guard
+When the shared LIFF URL targets ride / fare / errand (or another non-booking path),
+LINE first lands on this Endpoint URL before liff.init() performs the secondary redirect.
+Mark that first hop before the first paint so the booking page never flashes on screen.
+-->
+<script>
+(function () {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const rawState = params.get("liff.state");
+        if (!rawState) return;
+
+        let state = rawState;
+        try {
+            state = decodeURIComponent(rawState);
+        } catch (error) {}
+
+        state = String(state || "").trim();
+        if (!state) return;
+
+        let path = state;
+        try {
+            path = new URL(state, window.location.href).pathname || state;
+        } catch (error) {}
+
+        path = String(path || "").split("?")[0].split("#")[0];
+        const normalizedPath = path.replace(/\/+$/, "");
+        const basename = normalizedPath.split("/").filter(Boolean).pop() || "";
+        const isBookingTarget = !normalizedPath || basename.toLowerCase() === "index.html";
+
+        if (isBookingTarget) return;
+
+        window.TOP_TAXI_LIFF_TRANSIT = {
+            active: true,
+            state: state
+        };
+        document.documentElement.classList.add("top-taxi-liff-transit");
+    } catch (error) {
+        // Never block the normal booking page if detection itself fails.
+        console.warn("TOP Taxi LIFF transit detection failed", error);
+    }
+})();
+</script>
+
 <style>
+
+/* =========================================
+   LIFF PRIMARY REDIRECT GUARD
+   Shared LIFF ID: hide booking UI only on the first hop
+   when liff.state points to another TOP Taxi service page.
+========================================= */
+
+#topTaxiLiffTransitScreen {
+    display: none;
+}
+
+html.top-taxi-liff-transit,
+html.top-taxi-liff-transit body {
+    min-height: 100%;
+    background: #070709 !important;
+}
+
+html.top-taxi-liff-transit body {
+    overflow: hidden !important;
+}
+
+html.top-taxi-liff-transit body > *:not(#topTaxiLiffTransitScreen) {
+    visibility: hidden !important;
+}
+
+html.top-taxi-liff-transit #topTaxiLiffTransitScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 24px;
+    visibility: visible !important;
+    color: #fff;
+    text-align: center;
+    background:
+        radial-gradient(circle at 50% 36%, rgba(255,31,45,.20), transparent 34%),
+        linear-gradient(180deg, #070709 0%, #101014 100%);
+    font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI",
+        "Noto Sans TC", "PingFang TC", Arial, sans-serif;
+}
+
+.top-taxi-liff-transit-brand {
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 950;
+    letter-spacing: .4px;
+}
+
+.top-taxi-liff-transit-brand strong {
+    color: #ff1f2d;
+}
+
+.top-taxi-liff-transit-spinner {
+    width: 30px;
+    height: 30px;
+    border: 3px solid rgba(255,255,255,.18);
+    border-top-color: #ff1f2d;
+    border-radius: 50%;
+    animation: topTaxiLiffTransitSpin .72s linear infinite;
+}
+
+.top-taxi-liff-transit-text {
+    color: #b8b8be;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .6px;
+}
+
+.top-taxi-liff-transit-text.is-error {
+    max-width: 300px;
+    color: #ffd6d9;
+    line-height: 1.65;
+}
+
+@keyframes topTaxiLiffTransitSpin {
+    to { transform: rotate(360deg); }
+}
 
 /* =========================================
    TOP Taxi Design System
@@ -2443,6 +2570,12 @@ body{
 
 
 <body>
+
+<div id="topTaxiLiffTransitScreen" aria-live="polite" aria-busy="true">
+    <div class="top-taxi-liff-transit-brand"><strong>TOP</strong> Taxi</div>
+    <div class="top-taxi-liff-transit-spinner" aria-hidden="true"></div>
+    <div id="topTaxiLiffTransitText" class="top-taxi-liff-transit-text">正在開啟服務…</div>
+</div>
 
 
 <!-- =========================================
@@ -5407,14 +5540,24 @@ async function initializeLiff() {
 
 
 
-        showMessage(
+        if (window.TOP_TAXI_LIFF_TRANSIT?.active) {
+            const transitText = document.getElementById("topTaxiLiffTransitText");
+            const transitSpinner = document.querySelector(".top-taxi-liff-transit-spinner");
+            if (transitSpinner) transitSpinner.style.display = "none";
+            if (transitText) {
+                transitText.textContent = "服務開啟失敗，請返回 LINE 圖文選單後重新點選。";
+                transitText.classList.add("is-error");
+            }
+        } else {
+            showMessage(
 
-            "LINE 系統初始化失敗。<br>" +
-            "請從 TOP Taxi 官方帳號的「預約叫車」重新開啟。",
+                "LINE 系統初始化失敗。<br>" +
+                "請從 TOP Taxi 官方帳號的「預約叫車」重新開啟。",
 
-            "error"
+                "error"
 
-        );
+            );
+        }
 
 
     }
