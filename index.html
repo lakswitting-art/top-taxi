@@ -6998,7 +6998,12 @@ window.addEventListener(
             saveSaved.addEventListener("click", saveSharedAddressesFromBooking);
         }
 
-        document.getElementById("useBookingLocation")?.addEventListener("click", useBookingCurrentLocation);
+        document.getElementById("useBookingLocation")?.addEventListener("click", function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (isBookingCompactTapSuppressed()) return;
+            useBookingCurrentLocation();
+        });
 
         document.getElementById("addBookingWaypointBtn")?.addEventListener("click", function(event) {
             event.preventDefault();
