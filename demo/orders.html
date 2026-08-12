@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TOP Taxi｜Demo 測試訂單</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f2f3f5;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}.wrap{width:min(100%,720px);margin:auto;padding:20px 14px 40px}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.head h1{margin:0;font-size:22px}.head a{color:#c90012;text-decoration:none;font-size:12px;font-weight:900}.notice{padding:12px 14px;border-radius:13px;background:#111114;color:#fff;font-size:11.5px;line-height:1.6}.toolbar{display:flex;gap:8px;margin:12px 0}.toolbar button{min-height:40px;border:0;border-radius:11px;padding:0 13px;font-weight:850;cursor:pointer}.clear{background:#e4e4e7;color:#555}.refresh{background:#17171b;color:#fff}.list{display:grid;gap:10px}.empty{padding:34px 16px;text-align:center;color:#999}.order{background:#fff;border:1px solid #e6e6e9;border-radius:16px;padding:14px;box-shadow:0 7px 18px rgba(0,0,0,.045)}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.type{font-size:15px;font-weight:950}.badge{padding:4px 8px;border-radius:999px;background:#fff0f1;color:#b20b1b;font-size:10px;font-weight:900}.meta{margin-top:5px;color:#929298;font-size:10.5px;line-height:1.5}.route{margin-top:11px;padding-top:10px;border-top:1px solid #eee;color:#555;font-size:12px;line-height:1.65}.route strong{color:#222}details{margin-top:10px}summary{cursor:pointer;color:#777;font-size:11px;font-weight:800}pre{overflow:auto;max-height:360px;margin:8px 0 0;padding:10px;border-radius:10px;background:#111114;color:#ddd;font:10px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+</style>
+</head>
+<body><main class="wrap">
+<div class="head"><h1>📋 Demo 測試訂單</h1><a href="./index.html">← Demo 首頁</a></div>
+<div class="notice">這裡只顯示目前瀏覽器的 Sandbox 測試資料。它不代表正式訂單，也不會同步到 TOP Taxi 正式後台。</div>
+<div class="toolbar"><button class="refresh" onclick="render()">重新整理</button><button class="clear" onclick="clearOrders()">清除全部</button></div>
+<div id="list" class="list"></div>
+</main>
+<script>
+const KEY="topTaxiDemoOrders";
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
+function label(t){return ({ride:"即時叫車",booking:"預約叫車",fare:"車資試算",errand:"跑腿服務"})[t]||t||"Demo 訂單";}
+function place(x){if(!x)return"";return x.displayName||x.name||x.address||"";}
+function render(){
+ let orders=[];try{orders=JSON.parse(localStorage.getItem(KEY)||"[]");if(!Array.isArray(orders))orders=[];}catch(_){orders=[];}
+ const box=document.getElementById("list");
+ if(!orders.length){box.innerHTML='<div class="empty">目前還沒有 Demo 測試訂單。</div>';return;}
+ box.innerHTML=orders.map(o=>{
+  const type=o.orderType||o.demo?.source||"demo";
+  const when=o.demo?.capturedAt||o.createdAt||"";
+  const pickup=place(o.trip?.pickup);
+  const dropoff=place(o.trip?.dropoff);
+  const price=o.pricing?.quotedAmount;
+  const route=[pickup&&('上車：'+pickup),dropoff&&('下車：'+dropoff),price!=null&&('預估：NT$ '+price)].filter(Boolean).join('<br>');
+  return '<article class="order"><div class="top"><div><div class="type">'+esc(label(type))+'</div><div class="meta">environment: demo<br>'+esc(when)+'</div></div><span class="badge">SANDBOX</span></div>'+(route?'<div class="route">'+route+'</div>':'')+'<details><summary>查看 Order Data</summary><pre>'+esc(JSON.stringify(o,null,2))+'</pre></details></article>';
+ }).join("");
+}
+function clearOrders(){if(!confirm("清除目前瀏覽器的全部 Demo 測試訂單？"))return;localStorage.removeItem(KEY);render();}
+render();
+</script></body></html>
