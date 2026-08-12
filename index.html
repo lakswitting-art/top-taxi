@@ -2119,7 +2119,10 @@ body{
     line-height: 1.45;
 }
 .booking-confirm-pickup-note[hidden],
-.booking-confirm-waypoint-wrap[hidden] {
+.booking-confirm-waypoint-wrap[hidden],
+.booking-confirm-route-box[hidden],
+.booking-confirm-price[hidden],
+.booking-confirm-note[hidden] {
     display: none !important;
 }
 
@@ -4709,6 +4712,9 @@ function updateBookingWaypointUi() {
 }
 
 function addBookingWaypoint() {
+    // 防止手機選完 Google 停靠點建議後，殘留的 click 穿透到「＋新增停靠點」
+    if (isBookingCompactTapSuppressed()) return;
+
     const index = bookingWaypointActive.findIndex(function(active) { return !active; });
     if (index < 0) return;
 
