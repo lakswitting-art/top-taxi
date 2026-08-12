@@ -835,6 +835,7 @@ main{
     overflow-wrap:anywhere;
 }
 
+.ride-confirm-price[hidden]{display:none!important}
 .ride-confirm-price{
     display:flex;
     align-items:center;
@@ -3418,7 +3419,10 @@ main{
       }
     };
 
-    $("#useLocation").onclick=async()=>{
+    $("#useLocation").onclick=async(event)=>{
+      event?.preventDefault();
+      event?.stopPropagation();
+      if(isRideAddressSelectionSuppressed())return;
       const text=$("#useLocationText");
       const original=text.textContent;
       text.textContent="定位中…";
