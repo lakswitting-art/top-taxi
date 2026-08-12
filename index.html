@@ -2379,6 +2379,63 @@ body{
 
 </style>
 
+<style>
+/* ===== TOP TAXI ADDRESS UX V2 ===== */
+.autocomplete,
+.address-autocomplete {
+  position: relative;
+}
+.autocomplete .input,
+.address-autocomplete > input {
+  padding-right: 44px;
+}
+.top-taxi-address-clear,
+.address-clear-btn {
+  touch-action: manipulation;
+}
+.top-taxi-address-clear {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  z-index: 5200;
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #85858b;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.top-taxi-address-clear[hidden],
+.address-clear-btn[hidden] {
+  display: none !important;
+}
+.suggestions,
+.address-suggestions {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  scrollbar-gutter: stable;
+}
+.suggestions.top-taxi-open-up,
+.address-suggestions.top-taxi-open-up {
+  top: auto !important;
+  bottom: calc(100% + 7px) !important;
+}
+</style>
+
+<style id="topTaxiTripResetStyle">
+/* TOP Taxi｜清除本次行程：只重設本次表單，不動常用地址 / 固定偏好 */
+.form-header-actions{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:0}
+.trip-reset-btn{border:0;background:transparent;color:#8d8d94;padding:2px 0;font-size:11px;font-weight:750;line-height:1.35;cursor:pointer;white-space:nowrap}
+.trip-reset-btn:active{opacity:.55}
+@media(max-width:390px){.trip-reset-btn{font-size:10.5px}.form-header-actions{gap:2px}}
+</style>
 </head>
 
 
@@ -2456,20 +2513,11 @@ body{
     <!-- FORM HEADER -->
 
     <div class="form-header">
-
-        <div class="form-title" id="bookingTitle">
-
-            🚕 預約叫車
-
+        <div class="form-title" id="bookingTitle">🚕 預約叫車</div>
+        <div class="form-header-actions">
+            <div class="form-label-small">TOP TAXI BOOKING</div>
+            <button id="clearBookingTrip" class="trip-reset-btn" type="button">清除本次行程</button>
         </div>
-
-
-        <div class="form-label-small">
-
-            TOP TAXI BOOKING
-
-        </div>
-
     </div>
 
 
@@ -2895,18 +2943,20 @@ body{
                     </div>
                 </div>
 
-                <div class="booking-confirm-line"></div>
+                <div id="bookingConfirmDropoffWrap">
+                    <div class="booking-confirm-line"></div>
 
-                <div class="booking-confirm-location-row">
-                    <div class="booking-confirm-dot booking-confirm-dropoff-dot"></div>
-                    <div>
-                        <div class="booking-confirm-location-label">下車地點</div>
-                        <div id="bookingConfirmDropoffValue" class="booking-confirm-address"></div>
+                    <div class="booking-confirm-location-row">
+                        <div class="booking-confirm-dot booking-confirm-dropoff-dot"></div>
+                        <div>
+                            <div class="booking-confirm-location-label">下車地點</div>
+                            <div id="bookingConfirmDropoffValue" class="booking-confirm-address"></div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="booking-confirm-route-box">
+            <div id="bookingConfirmRouteBox" class="booking-confirm-route-box">
                 <div class="booking-confirm-route-icon" aria-hidden="true">🚕</div>
                 <div class="booking-confirm-route-name">
                     <span>🛣️ 路線</span>
@@ -2939,12 +2989,12 @@ body{
                 </div>
             </div>
 
-            <div class="booking-confirm-price">
+            <div id="bookingConfirmPriceBox" class="booking-confirm-price">
                 <span id="bookingConfirmPriceLabel" data-note="">預估車資</span>
                 <strong id="bookingConfirmFareValue"></strong>
             </div>
 
-            <div class="booking-confirm-note">
+            <div id="bookingConfirmEstimateNote" class="booking-confirm-note">
                 預估路線、時間與金額僅供參考，實際內容仍以行駛狀況與客服最終確認為準。
             </div>
 
@@ -4023,7 +4073,7 @@ function addressDisplayText(item = {}) {
       const suffix = index == null ? role : role + " " + index;
 
       return area
-        ? icon + " " + area + "｜" + suffix
+        ? icon + " " + suffix + "｜" + area
         : icon + " " + suffix;
     }
 
@@ -5587,9 +5637,8 @@ function openBookingConfirmation() {
         (passengerSelect?.value === "9人座" || luggageSelect?.value === "5件以上");
 
     const fareQuote = getBookingFareQuote();
-    const fareText = fareQuote
-        ? fareQuote.display
-        : "未試算";
+    const hasFareEstimate = !!currentFareEstimate;
+    const fareText = fareQuote ? fareQuote.display : "";
 
     bookingConfirmationSetText("bookingConfirmServiceValue", serviceType);
     bookingConfirmationSetText(
@@ -5618,24 +5667,28 @@ function openBookingConfirmation() {
         );
     }
 
-    bookingConfirmationSetText("bookingConfirmDropoffValue", dropoff || "未提供");
+    const dropoffWrap = document.getElementById("bookingConfirmDropoffWrap");
+    if (dropoffWrap) dropoffWrap.hidden = !dropoff;
+    bookingConfirmationSetText("bookingConfirmDropoffValue", dropoff);
+
+    const routeBox = document.getElementById("bookingConfirmRouteBox");
+    const priceBox = document.getElementById("bookingConfirmPriceBox");
+    const estimateNote = document.getElementById("bookingConfirmEstimateNote");
+    if (routeBox) routeBox.hidden = !hasFareEstimate;
+    if (priceBox) priceBox.hidden = !hasFareEstimate;
+    if (estimateNote) estimateNote.hidden = !hasFareEstimate;
 
     bookingConfirmationSetText(
         "bookingConfirmRouteValue",
-        currentFareEstimate?.routeName ||
-            (dropoff ? "未完成試算" : "未提供下車地點")
+        hasFareEstimate ? (currentFareEstimate.routeName || "") : ""
     );
     bookingConfirmationSetText(
         "bookingConfirmDistanceValue",
-        currentFareEstimate
-            ? currentFareEstimate.distanceKm.toFixed(1) + " km"
-            : "未試算"
+        hasFareEstimate ? currentFareEstimate.distanceKm.toFixed(1) + " km" : ""
     );
     bookingConfirmationSetText(
         "bookingConfirmDurationValue",
-        currentFareEstimate
-            ? "約 " + currentFareEstimate.minutes + " 分鐘"
-            : "未試算"
+        hasFareEstimate ? "約 " + currentFareEstimate.minutes + " 分鐘" : ""
     );
 
     bookingConfirmationSetText(
@@ -6840,6 +6893,75 @@ async function initGoogle() {
 }
 
 
+function resetBookingTrip() {
+    if (!window.confirm("確定清除本次填寫內容？\n常用地址與固定偏好不會被刪除。")) return;
+
+    bookingPickupPlace = null;
+    bookingDropoffPlace = null;
+    bookingWaypointPlaces = [null, null];
+    bookingWaypointAddressData = [null, null];
+    bookingWaypointActive = [false, false];
+
+    ["pickup", "dropoff", "waypoint1", "waypoint2"].forEach(function(id) {
+        const input = document.getElementById(id);
+        if (input) input.value = "";
+    });
+    updateBookingWaypointUi();
+
+    const pickupNote = document.getElementById("pickupNote");
+    if (pickupNote) pickupNote.value = "";
+    updateBookingPickupNoteUi(false);
+
+    dateInput.value = localDate();
+    dateInput.min = localDate();
+    timeInput.value = "";
+
+    document.getElementById("passengerCount").value = "1人";
+    document.getElementById("luggageCount").value = "無行李";
+
+    bookingPetMode = "";
+    bookingOtherNeeds.clear();
+    bookingSmokingMode = savedBookingSmokingPreference || "不限";
+    document.querySelectorAll("[data-booking-note].active").forEach(function(button) {
+        button.classList.remove("active");
+    });
+    document.querySelectorAll("[data-booking-pet]").forEach(function(button) {
+        button.classList.remove("active");
+    });
+    const memo = document.getElementById("memo");
+    if (memo) memo.value = "";
+    const remember = document.getElementById("rememberBookingSmokingPreference");
+    if (remember) remember.checked = false;
+
+    selectedBookingRouteMode = "FAST";
+    resetFareEstimate();
+    selectBookingRouteMode("FAST");
+    setBookingService("taxi");
+    applyBookingPaymentPreferenceOnLoad();
+
+    updateBookingRideNeedsSummary();
+    updateBookingSmokingPreferenceUi();
+    updateBookingOtherNeedsSummary();
+
+    bookingPendingOrderIdentity = null;
+    bookingSendState = "idle";
+
+    const messageBox = document.getElementById("messageBox");
+    if (messageBox) {
+        messageBox.innerHTML = "";
+        messageBox.className = "message-box";
+    }
+
+    document.querySelectorAll("#bookingSavedAddressChips .active").forEach(function(chip) {
+        chip.classList.remove("active");
+    });
+    document.querySelectorAll(".address-suggestions.show").forEach(function(box) {
+        box.classList.remove("show");
+    });
+    window.TOP_TAXI_SYNC_ADDRESS_CLEAR?.();
+    document.getElementById("pickup")?.focus();
+}
+
 /* ======================================================
    START
 ====================================================== */
@@ -6855,6 +6977,7 @@ window.addEventListener(
         const savedEditor = document.getElementById("bookingSavedAddressEditor");
         const saveSaved = document.getElementById("saveSharedAddresses");
         const savedSettingsLabel = document.getElementById("savedSettingsLabel");
+        document.getElementById("clearBookingTrip")?.addEventListener("click", resetBookingTrip);
 
         if (toggleSaved && savedEditor) {
             toggleSaved.addEventListener("click", function(){
@@ -7119,6 +7242,200 @@ window.addEventListener(
 });
 </script>
 
+
+
+<script id="topTaxiAddressUxV2">
+(function () {
+  const ADDRESS_INPUT_SELECTOR =
+    '.autocomplete input, .address-autocomplete input, input[id^="sharedAddress"]';
+
+  function panelFor(input) {
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    return parent
+      ? parent.querySelector('.suggestions, .address-suggestions')
+      : null;
+  }
+
+  function existingClearFor(input) {
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    return parent
+      ? parent.querySelector('.address-clear-btn, .top-taxi-address-clear')
+      : null;
+  }
+
+  function syncClear(input) {
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const clear = existingClearFor(input);
+    if (clear) clear.hidden = !input.value.trim();
+  }
+
+  function ensureClear(input) {
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const parent =
+      input.closest('.autocomplete, .address-autocomplete') ||
+      input.parentElement;
+    if (!parent) return;
+
+    let clear = existingClearFor(input);
+    if (!clear) {
+      clear = document.createElement('button');
+      clear.type = 'button';
+      clear.className = 'top-taxi-address-clear';
+      clear.textContent = '×';
+      clear.setAttribute('aria-label', '清除地址');
+      const panel = panelFor(input);
+      if (panel) parent.insertBefore(clear, panel);
+      else parent.appendChild(clear);
+
+      clear.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        input.value = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        syncClear(input);
+        input.focus();
+      });
+    }
+
+    if (input.dataset.topTaxiClearReady !== '1') {
+      input.dataset.topTaxiClearReady = '1';
+      input.addEventListener('input', function () { syncClear(input); });
+      input.addEventListener('change', function () { syncClear(input); });
+      input.addEventListener('focus', function () { syncClear(input); });
+    }
+    syncClear(input);
+  }
+
+  function ensureAllClearButtons(root) {
+    (root || document)
+      .querySelectorAll(ADDRESS_INPUT_SELECTOR)
+      .forEach(ensureClear);
+  }
+
+  function isPanelVisible(panel) {
+    if (!panel) return false;
+    if (panel.hidden) return false;
+    if (panel.classList.contains('address-suggestions')) {
+      return panel.classList.contains('show');
+    }
+    return true;
+  }
+
+  function fitPanel(panel) {
+    if (!isPanelVisible(panel)) return;
+    const parent = panel.parentElement;
+    const input = parent ? parent.querySelector('input') : null;
+    if (!input) return;
+
+    const vv = window.visualViewport;
+    const viewportTop = vv ? vv.offsetTop : 0;
+    const viewportHeight = vv ? vv.height : window.innerHeight;
+    const viewportBottom = viewportTop + viewportHeight;
+    const rect = input.getBoundingClientRect();
+
+    const below = Math.max(0, viewportBottom - rect.bottom - 10);
+    const above = Math.max(0, rect.top - viewportTop - 10);
+    const openUp = below < 150 && above > below;
+    const available = openUp ? above : below;
+    const maxHeight = Math.max(104, Math.min(330, available));
+
+    panel.style.maxHeight = maxHeight + 'px';
+    panel.classList.toggle('top-taxi-open-up', openUp);
+  }
+
+  function refreshOpenPanels() {
+    document
+      .querySelectorAll('.suggestions, .address-suggestions')
+      .forEach(fitPanel);
+  }
+
+  let scrollTimer = null;
+  function keepFocusedAddressVisible() {
+    const input = document.activeElement;
+    if (!input || !input.matches(ADDRESS_INPUT_SELECTOR)) return;
+    const vv = window.visualViewport;
+    if (!vv) return;
+
+    const rect = input.getBoundingClientRect();
+    const viewportBottom = vv.offsetTop + vv.height;
+    const viewportTop = vv.offsetTop;
+    if (rect.bottom > viewportBottom - 96 || rect.top < viewportTop + 16) {
+      clearTimeout(scrollTimer);
+      scrollTimer = setTimeout(function () {
+        input.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+      }, 60);
+    }
+  }
+
+  function refreshAll() {
+    ensureAllClearButtons(document);
+    refreshOpenPanels();
+    keepFocusedAddressVisible();
+  }
+
+  const observer = new MutationObserver(function (mutations) {
+    let needsRefresh = false;
+    for (const m of mutations) {
+      if (
+        m.type === 'childList' ||
+        (m.type === 'attributes' && (m.attributeName === 'class' || m.attributeName === 'hidden'))
+      ) {
+        needsRefresh = true;
+        break;
+      }
+    }
+    if (needsRefresh) requestAnimationFrame(refreshAll);
+  });
+
+  function boot() {
+    ensureAllClearButtons(document);
+    observer.observe(document.body, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ['class', 'hidden']
+    });
+
+    document.addEventListener('focusin', function (event) {
+      if (!event.target.matches?.(ADDRESS_INPUT_SELECTOR)) return;
+      ensureClear(event.target);
+      setTimeout(refreshAll, 40);
+      setTimeout(refreshAll, 220);
+    });
+
+    document.addEventListener('click', function () {
+      setTimeout(function () {
+        ensureAllClearButtons(document);
+        document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+      }, 0);
+      setTimeout(function () {
+        document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+      }, 700);
+    }, true);
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', refreshAll);
+      window.visualViewport.addEventListener('scroll', refreshAll);
+    }
+    window.addEventListener('resize', refreshAll);
+    window.TOP_TAXI_REFRESH_ADDRESS_SUGGESTIONS = refreshAll;
+    window.TOP_TAXI_SYNC_ADDRESS_CLEAR = function () {
+      ensureAllClearButtons(document);
+      document.querySelectorAll(ADDRESS_INPUT_SELECTOR).forEach(syncClear);
+    };
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+})();
+</script>
 
 </body>
 
