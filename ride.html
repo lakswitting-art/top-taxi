@@ -1504,6 +1504,9 @@ main{
     const CONFIG={googleKey:"AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw",liffId:"2011008197-NjirAoUX"};
     const $=s=>document.querySelector(s);
     let RouteClass=null,pickupPlace=null,dropoffPlace=null,petMode="",smokingMode="不限",savedSmokingPreference="",savedPaymentPreference="",routeData=null,calcSeq=0;
+    let rideAddressSelectionGuardUntil=0;
+    function armRideAddressSelectionGuard(){rideAddressSelectionGuardUntil=Date.now()+700}
+    function isRideAddressSelectionSuppressed(){return Date.now()<rideAddressSelectionGuardUntil}
     let rideService="taxi";
     const MAX_RIDE_WAYPOINTS=2;
     let rideWaypointPlaces=[null,null];
@@ -2332,6 +2335,8 @@ main{
       $("#addRideWaypoint").hidden=rideWaypointActive.filter(Boolean).length>=MAX_RIDE_WAYPOINTS;
     }
     function addRideWaypoint(){
+      // 防止手機選完 Google 停靠點建議後，殘留的 click 穿透到「＋新增停靠點」
+      if(isRideAddressSelectionSuppressed())return;
       const index=rideWaypointActive.findIndex(x=>!x);
       if(index<0)return;
       rideWaypointActive[index]=true;
@@ -2492,6 +2497,7 @@ main{
       const getText=value=>value?(value.text||value.toString?.()||""):"";
       const hide=()=>{box.hidden=true};
       async function choose(prediction){
+        armRideAddressSelectionGuard();
         input.disabled=true;
         try{
           const place=prediction.toPlace();
@@ -2513,7 +2519,7 @@ main{
             const button=document.createElement("button");button.type="button";button.className="suggestion";
             const main=document.createElement("strong");main.textContent=getText(prediction.mainText)||getText(prediction.text);
             const secondary=document.createElement("small");secondary.textContent=getText(prediction.secondaryText);
-            button.append(main,secondary);button.addEventListener("pointerdown",event=>{event.preventDefault();choose(prediction)});box.appendChild(button);
+            button.append(main,secondary);button.addEventListener("pointerdown",event=>{event.preventDefault();event.stopPropagation();armRideAddressSelectionGuard();choose(prediction)});box.appendChild(button);
           });
         }
         box.hidden=false;
