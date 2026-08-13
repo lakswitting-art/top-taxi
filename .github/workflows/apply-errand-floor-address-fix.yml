@@ -1,0 +1,106 @@
+name: Apply errand floor and address stability fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/apply-errand-floor-address-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch errand html
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('errand.html')
+          s = p.read_text(encoding='utf-8')
+
+          replacements = []
+
+          replacements.append((
+            '<div id="stairsFloorWrap" class="errand-hidden"><label for="stairsFloors">爬樓梯樓層數 <span class="field-tag required-tag">必填</span></label><input id="stairsFloors" type="number" min="1" max="99" step="1" inputmode="numeric" placeholder="每層 +$50"></div>',
+            '<div id="elevatorFloorWrap" class="errand-hidden"><label for="elevatorFloor">送達樓層 <span class="field-tag required-tag">必填</span></label><input id="elevatorFloor" type="number" min="2" max="99" step="1" inputmode="numeric" placeholder="2～99 樓｜有電梯固定 +$50"></div>\n      <div id="stairsFloorWrap" class="errand-hidden"><label for="stairsFloors">送達樓層 <span class="field-tag required-tag">必填</span></label><input id="stairsFloors" type="number" min="2" max="12" step="1" inputmode="numeric" placeholder="2～12 樓｜2樓 +$50，每增加1樓 +$50"></div>'
+          ))
+
+          replacements.append((
+            '・有電梯需上樓 +NT$50\n・無電梯爬樓梯，每層 +NT$50',
+            '・有電梯上樓：2～99 樓，固定 +NT$50\n・無電梯爬樓梯：2～12 樓，2 樓 +NT$50，每增加 1 樓 +NT$50'
+          ))
+
+          replacements.append((
+            "if(policyCopy)policyCopy.textContent='跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。\\n\\n・每增加 1 個停靠點 +NT$50\\n・有電梯需上樓 +NT$50\\n・無電梯爬樓梯，每層 +NT$50\\n・搬運重物 +NT$100\\n・拍照回報不另收費\\n\\n代墊金額超過 NT$2,000 時，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。單筆代墊金額上限為 NT$10,000，超過上限恕不承接。\\n\\n司機接單並開始前往後，如因客人取消、店家未營業或商品缺貨而取消任務，酌收 NT$100 取消費。\\n\\n現場等待期間持續計時；符合包車申請條件時，將由調度確認並於變更計費方式前告知客人。';",
+            "if(policyCopy)policyCopy.textContent='跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。\\n\\n・每增加 1 個停靠點 +NT$50\\n・有電梯上樓：2～99 樓，固定 +NT$50\\n・無電梯爬樓梯：2～12 樓，2 樓 +NT$50，每增加 1 樓 +NT$50\\n・搬運重物 +NT$100\\n・拍照回報不另收費\\n\\n代墊金額超過 NT$2,000 時，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。單筆代墊金額上限為 NT$10,000，超過上限恕不承接。\\n\\n司機接單並開始前往後，如因客人取消、店家未營業或商品缺貨而取消任務，酌收 NT$100 取消費。\\n\\n現場等待期間持續計時；符合包車申請條件時，將由調度確認並於變更計費方式前告知客人。';"
+          ))
+
+          replacements.append((
+            "if(moveMode){floorMode='none';$('#heavyItem').checked=false;$('#heavyItemToggle')?.classList.remove('active');$('#stairsFloors').value='';$('#stairsFloorWrap').classList.add('errand-hidden');$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode==='none'));}",
+            "if(moveMode){floorMode='none';$('#heavyItem').checked=false;$('#heavyItemToggle')?.classList.remove('active');if($('#elevatorFloor'))$('#elevatorFloor').value='';$('#stairsFloors').value='';$('#elevatorFloorWrap')?.classList.add('errand-hidden');$('#stairsFloorWrap').classList.add('errand-hidden');$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode==='none'));}"
+          ))
+
+          replacements.append((
+            "function renderOtherNeeds(){const items=[];$$('[data-floor-mode]').forEach(b=>b.classList.toggle('active',b.dataset.floorMode===floorMode));if(taskType!=='move'){if(floorMode==='elevator')items.push('有電梯上樓 +$50');if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);items.push(`爬樓梯 ${n||'?'} 層`);}if($('#heavyItem')?.checked)items.push('搬運重物 +$100');}$('#heavyItemToggle')?.classList.toggle('active',!!$('#heavyItem')?.checked);if($('#otherNote')?.value.trim())items.push('其他備註');$('#otherNeedsSummary').textContent=(items.length?items.join('・'):(taskType==='move'?'其他備註・選填':'上樓／樓梯／搬重物／其他備註・選填'))+' ›';updateEstimate();}",
+            "function renderOtherNeeds(){const items=[];$$('[data-floor-mode]').forEach(b=>b.classList.toggle('active',b.dataset.floorMode===floorMode));if(taskType!=='move'){if(floorMode==='elevator'){const n=Math.max(0,parseInt($('#elevatorFloor')?.value||'0',10)||0);items.push(`有電梯 ${n||'?'} 樓 +$50`);}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);const fee=n>=2?(n-1)*50:0;items.push(`爬樓梯 ${n||'?'} 樓${fee?` +$${fee}`:''}`);}if($('#heavyItem')?.checked)items.push('搬運重物 +$100');}$('#heavyItemToggle')?.classList.toggle('active',!!$('#heavyItem')?.checked);if($('#otherNote')?.value.trim())items.push('其他備註');$('#otherNeedsSummary').textContent=(items.length?items.join('・'):(taskType==='move'?'其他備註・選填':'上樓／樓梯／搬重物／其他備註・選填'))+' ›';updateEstimate();}"
+          ))
+
+          replacements.append((
+            "if(floorMode==='elevator'){amount+=50;items.push('有電梯上樓 +$50');}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`爬樓梯 ${n} 層 +$${n*50}`);}",
+            "if(floorMode==='elevator'){const n=Math.max(0,parseInt($('#elevatorFloor')?.value||'0',10)||0);amount+=50;items.push(`有電梯 ${n||'?'} 樓 +$50`);}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);const stairFee=n>=2?(n-1)*50:0;amount+=stairFee;if(n)items.push(`爬樓梯 ${n} 樓 +$${stairFee}`);}"
+          ))
+
+          replacements.append((
+            "function otherNeedsInfo(){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);return{floorMode:taskType==='move'?'none':floorMode,stairsFloors:taskType==='move'?0:(floorMode==='stairs'?n:0),heavyItem:taskType==='move'?false:!!$('#heavyItem')?.checked,note:nullable($('#otherNote')?.value),items:taskType==='move'?[]:extraFees().items};}",
+            "function otherNeedsInfo(){const stairs=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0),elevator=Math.max(0,parseInt($('#elevatorFloor')?.value||'0',10)||0);return{floorMode:taskType==='move'?'none':floorMode,elevatorFloor:taskType==='move'?0:(floorMode==='elevator'?elevator:0),stairsFloors:taskType==='move'?0:(floorMode==='stairs'?stairs:0),heavyItem:taskType==='move'?false:!!$('#heavyItem')?.checked,note:nullable($('#otherNote')?.value),items:taskType==='move'?[]:extraFees().items};}"
+          ))
+
+          replacements.append((
+            "if(floorMode==='stairs'&&!(Number($('#stairsFloors').value)>0)){alert('請填寫爬樓梯樓層數。');$('#stairsFloors').focus();return false;}",
+            "if(floorMode==='elevator'){const n=Number($('#elevatorFloor')?.value);if(!Number.isInteger(n)||n<2||n>99){alert('有電梯請填寫 2～99 樓。');$('#elevatorFloor')?.focus();return false;}}if(floorMode==='stairs'){const n=Number($('#stairsFloors').value);if(!Number.isInteger(n)||n<2||n>12){alert('爬樓梯請填寫 2～12 樓。');$('#stairsFloors').focus();return false;}}"
+          ))
+
+          replacements.append((
+            "function needsLabel(){const x=otherNeedsInfo(),arr=[];if(x.floorMode==='elevator')arr.push('有電梯上樓');if(x.floorMode==='stairs')arr.push(`爬樓梯 ${x.stairsFloors} 層`);if(x.heavyItem)arr.push('搬運重物');if(x.note)arr.push(x.note);if(taskType==='pet'&&petCarrier==='no')arr.push('無提籠／提袋');return arr.join('、')||'無';}",
+            "function needsLabel(){const x=otherNeedsInfo(),arr=[];if(x.floorMode==='elevator')arr.push(`有電梯・${x.elevatorFloor}樓 +NT$50`);if(x.floorMode==='stairs')arr.push(`爬樓梯・${x.stairsFloors}樓 +NT$${Math.max(0,(x.stairsFloors-1)*50)}`);if(x.heavyItem)arr.push('搬運重物');if(x.note)arr.push(x.note);if(taskType==='pet'&&petCarrier==='no')arr.push('無提籠／提袋');return arr.join('、')||'無';}"
+          ))
+
+          replacements.append((
+            "$$('[data-floor-mode]').forEach(b=>b.addEventListener('click',()=>{floorMode=floorMode===b.dataset.floorMode?'none':b.dataset.floorMode;$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode===floorMode));$('#stairsFloorWrap').classList.toggle('errand-hidden',floorMode!=='stairs');if(floorMode!=='stairs')$('#stairsFloors').value='';renderOtherNeeds();}));\n $('#stairsFloors').addEventListener('input',renderOtherNeeds);",
+            "$$('[data-floor-mode]').forEach(b=>b.addEventListener('click',()=>{floorMode=floorMode===b.dataset.floorMode?'none':b.dataset.floorMode;$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode===floorMode));$('#elevatorFloorWrap')?.classList.toggle('errand-hidden',floorMode!=='elevator');$('#stairsFloorWrap').classList.toggle('errand-hidden',floorMode!=='stairs');if(floorMode!=='elevator'&&$('#elevatorFloor'))$('#elevatorFloor').value='';if(floorMode!=='stairs')$('#stairsFloors').value='';renderOtherNeeds();}));\n $('#elevatorFloor')?.addEventListener('input',renderOtherNeeds);$('#stairsFloors').addEventListener('input',renderOtherNeeds);"
+          ))
+
+          replacements.append((
+            "input.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });",
+            "const bottomLimit=viewportBottom-72,topLimit=viewportTop+12;let dy=0;if(rect.bottom>bottomLimit)dy=rect.bottom-bottomLimit;else if(rect.top<topLimit)dy=rect.top-topLimit;if(Math.abs(dy)>1)window.scrollBy({top:dy,left:0,behavior:'smooth'});"
+          ))
+
+          for old, new in replacements:
+            count = s.count(old)
+            assert count == 1, f'replacement count {count} for: {old[:90]}'
+            s = s.replace(old, new, 1)
+
+          marker = '<style id="topTaxiErrandAddressXFix">'
+          if marker not in s:
+            css = '''\n<style id="topTaxiErrandAddressXFix">\n.address-autocomplete{min-width:0;max-width:100%;overflow:visible;}\n.suggestions,.address-suggestions{box-sizing:border-box!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important;contain:paint;}\n.address-suggestion{box-sizing:border-box!important;max-width:100%!important;min-width:0!important;}\n.address-suggestion>span:last-child{min-width:0!important;max-width:100%!important;overflow:hidden;}\n</style>\n'''
+            assert '</head>' in s
+            s = s.replace('</head>', css + '\n</head>', 1)
+
+          p.write_text(s, encoding='utf-8')
+
+      - name: Verify and commit
+        run: |
+          set -euo pipefail
+          git diff --check
+          grep -q 'id="elevatorFloor"' errand.html
+          grep -q 'max="12"' errand.html
+          grep -q 'topTaxiErrandAddressXFix' errand.html
+          grep -q 'window.scrollBy({top:dy,left:0' errand.html
+          git config user.name "lakswitting-art"
+          git config user.email "lakswitting@gmail.com"
+          git add errand.html
+          git commit -m "fix errand floor pricing and address x drift"
+          git push origin main
