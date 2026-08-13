@@ -2677,6 +2677,17 @@ body{
 }
 </style>
 
+
+<style id="topTaxiAddressUxRound21">
+/* ===== TOP TAXI ADDRESS UX ROUND 2.1｜POLISHED SCROLL ===== */
+@media (max-width:520px){
+.suggestions,.address-suggestions{scrollbar-gutter:auto!important;scrollbar-color:rgba(20,20,24,.13) transparent;}
+.suggestions::-webkit-scrollbar,.address-suggestions::-webkit-scrollbar{width:2px!important;}
+.suggestions::-webkit-scrollbar-track,.address-suggestions::-webkit-scrollbar-track{background:transparent!important;}
+.suggestions::-webkit-scrollbar-thumb,.address-suggestions::-webkit-scrollbar-thumb{background:rgba(20,20,24,.13)!important;border-radius:999px!important;}
+}
+</style>
+
 </head>
 <body>
 <header class="hero">
@@ -3627,10 +3638,10 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
     const rect = input.getBoundingClientRect();
     const viewportBottom = vv.offsetTop + vv.height;
     const viewportTop = vv.offsetTop;
-    if (rect.bottom > viewportBottom - 96 || rect.top < viewportTop + 16) {
+    if (rect.bottom > viewportBottom - 72 || rect.top < viewportTop + 12) {
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(function () {
-        input.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+        input.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
       }, 60);
     }
   }
