@@ -59,10 +59,9 @@
         );
 
         /*
-          Demo Fare 只需要 Places ready 就先把上／下車輸入框建立起來。
-          Routes 改成背景載入，避免 LINE WebView 裡 routes library 較慢時，
-          整個地址 UI 都被卡住，連「使用目前位置」也誤判尚未載入。
-          Production fare.html 完全不修改；只改 Demo mirror 的執行內容。
+          Demo Fare：Places ready 後先建立地址 UI；Routes 改背景載入。
+          避免 LINE WebView 裡 routes library 較慢時卡住上／下車欄位。
+          Production fare.html 完全不修改。
         */
         const fareBeforeRoutesPatch = html;
         html = html.replace(
@@ -74,10 +73,15 @@
           throw new Error("Demo Fare 找不到 Routes 初始化區塊，已停止載入");
         }
 
+        /*
+          關鍵修正：不要在 fetch + document.write 還沒完成時搶跑 initGoogle。
+          先把正式頁原本的 window.load 啟動點改成 Demo marker，
+          等整份 mirror DOM parse 完、DOMContentLoaded 後，再由頁尾 bootstrap 啟動。
+        */
         const fareBeforeGoogleBootPatch = html;
         html = html.replace(
           /window\.addEventListener\(\s*["']load["']\s*,\s*initGoogle\s*\);/,
-          '(function(){let attempts=0;let running=false;function startDemoFareGoogle(){if(typeof pickupController!=="undefined"&&pickupController){return;}attempts+=1;if(typeof window.google?.maps?.importLibrary==="function"&&!running){running=true;Promise.resolve(initGoogle()).catch((error)=>{console.error("DEMO Fare initGoogle rejected:",error);}).finally(()=>{running=false;if((typeof pickupController==="undefined"||!pickupController)&&attempts<500){setTimeout(startDemoFareGoogle,120);}else if((typeof pickupController==="undefined"||!pickupController)&&attempts>=500){showStatus("DEMO Google 地址系統載入逾時，請重新開啟頁面。",true);}});return;}if(attempts>=500){showStatus("DEMO Google loader 等待逾時，請重新開啟頁面。",true);return;}setTimeout(startDemoFareGoogle,25);}startDemoFareGoogle();})();'
+          'window.__TOP_TAXI_DEMO_FARE_INIT_GOOGLE__ = initGoogle;'
         );
 
         if (html === fareBeforeGoogleBootPatch) {
@@ -111,6 +115,45 @@
         /(<script\b[^>]*src=["']https:\/\/static\.line-scdn\.net\/liff\/[^"']+["'][^>]*><\/script>)/i,
         '$1<script>window.__TOP_TAXI_DEMO_PATCH_LIFF__&&window.__TOP_TAXI_DEMO_PATCH_LIFF__();<\/script>'
       );
+
+      if (String(cfg.type) === "fare") {
+        if (!/<\/body>/i.test(html)) throw new Error("Demo Fare source 缺少 body 結尾");
+
+        const fareEndBoot =
+          '<script>(function(){' +
+          'let tries=0;let busy=false;' +
+          'const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));' +
+          'async function start(){' +
+          'if(busy)return;busy=true;' +
+          'try{' +
+          'while(++tries<=120){' +
+          'if(typeof pickupController!=="undefined"&&pickupController){return;}' +
+          'if(!document.getElementById("pickupBox")){await sleep(100);continue;}' +
+          'try{' +
+          'if(typeof window.google?.maps?.importLibrary==="function"){' +
+          'await window.google.maps.importLibrary("places");' +
+          'if(typeof window.__TOP_TAXI_DEMO_FARE_INIT_GOOGLE__==="function"){' +
+          'await window.__TOP_TAXI_DEMO_FARE_INIT_GOOGLE__();' +
+          '}' +
+          'if(typeof pickupController!=="undefined"&&pickupController){return;}' +
+          '}' +
+          '}catch(error){' +
+          'console.error("DEMO Fare Google bootstrap error:",error);' +
+          'if(typeof showStatus==="function"){' +
+          'showStatus("DEMO Google 初始化失敗："+(error?.name?error.name+"｜":"")+(error?.message||String(error)),true);' +
+          '}' +
+          '}' +
+          'await sleep(250);' +
+          '}' +
+          'if(typeof showStatus==="function")showStatus("DEMO Google 地址系統載入逾時，請重新開啟頁面。",true);' +
+          '}finally{busy=false;}' +
+          '}' +
+          'const launch=()=>setTimeout(start,0);' +
+          'if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",launch,{once:true});else launch();' +
+          '})();<\/script>';
+
+        html = html.replace(/<\/body>/i, fareEndBoot + '</body>');
+      }
 
       document.open();
       document.write(html);
