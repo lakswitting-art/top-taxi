@@ -2696,6 +2696,14 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none
 .errand-price-main span,.errand-summary-btn span,.fare-estimate-distance{min-width:0;overflow-wrap:anywhere;}
 </style>
 
+
+<style id="topTaxiErrandAddressXFix">
+.address-autocomplete{min-width:0;max-width:100%;overflow:visible;}
+.suggestions,.address-suggestions{box-sizing:border-box!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important;contain:paint;}
+.address-suggestion{box-sizing:border-box!important;max-width:100%!important;min-width:0!important;}
+.address-suggestion>span:last-child{min-width:0!important;max-width:100%!important;overflow:hidden;}
+</style>
+
 </head>
 <body>
 <header class="hero">
@@ -2877,8 +2885,8 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none
         <div id="policyCopy" class="errand-policy-copy">跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。
 
 ・每增加 1 個停靠點 +NT$50
-・有電梯需上樓 +NT$50
-・無電梯爬樓梯，每層 +NT$50
+・有電梯上樓：2～99 樓，固定 +NT$50
+・無電梯爬樓梯：2～12 樓，2 樓 +NT$50，每增加 1 樓 +NT$50
 ・搬運重物 +NT$100
 ・拍照回報不另收費
 
@@ -2901,7 +2909,8 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none
     <div class="booking-sheet-head"><div class="booking-sheet-title">其他需求</div><button type="button" class="booking-sheet-close" data-close-sheet="otherNeedsSheet">×</button></div>
     <div class="errand-sheet-grid">
       <div id="floorModeGroup"><div class="errand-section-note" style="margin:0 0 7px">上樓／搬運需求</div><div class="errand-row-toggle errand-floor-actions"><button type="button" class="errand-pill" data-floor-mode="elevator">有電梯 +$50</button><button type="button" class="errand-pill" data-floor-mode="stairs">爬樓梯</button><button type="button" id="heavyItemToggle" class="errand-pill">搬重物 +$100</button></div><input id="heavyItem" type="checkbox" hidden></div>
-      <div id="stairsFloorWrap" class="errand-hidden"><label for="stairsFloors">爬樓梯樓層數 <span class="field-tag required-tag">必填</span></label><input id="stairsFloors" type="number" min="1" max="99" step="1" inputmode="numeric" placeholder="每層 +$50"></div>
+      <div id="elevatorFloorWrap" class="errand-hidden"><label for="elevatorFloor">送達樓層 <span class="field-tag required-tag">必填</span></label><input id="elevatorFloor" type="number" min="2" max="99" step="1" inputmode="numeric" placeholder="2～99 樓｜有電梯固定 +$50"></div>
+      <div id="stairsFloorWrap" class="errand-hidden"><label for="stairsFloors">送達樓層 <span class="field-tag required-tag">必填</span></label><input id="stairsFloors" type="number" min="2" max="12" step="1" inputmode="numeric" placeholder="2～12 樓｜2樓 +$50，每增加1樓 +$50"></div>
       <div><label for="otherNote">其他備註 <span class="field-tag optional-tag">選填</span></label><textarea id="otherNote" class="errand-textarea" style="min-height:76px" placeholder="其他需要司機注意的事項"></textarea></div>
       <button type="button" id="saveOtherNeeds" class="saved-address-save">完成</button>
     </div>
@@ -3155,10 +3164,10 @@ function renderTaskUi(){
    if(policyCopy)policyCopy.textContent='小型搬家依一般車資加搬運方案計費。\n\n・自行搬運：車資 +NT$300\n・司機協助搬運：車資 +NT$600\n・每增加 1 個停靠點 +NT$50\n・司機協助搬運且無電梯時，每樓 +NT$50\n\n送出前需提供本次搬運物品照片；預估金額僅供參考，實際仍依行程與現場狀況計費。';
  }else{
    if(policySummary)policySummary.textContent='跑腿收費說明 ›';
-   if(policyCopy)policyCopy.textContent='跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。\n\n・每增加 1 個停靠點 +NT$50\n・有電梯需上樓 +NT$50\n・無電梯爬樓梯，每層 +NT$50\n・搬運重物 +NT$100\n・拍照回報不另收費\n\n代墊金額超過 NT$2,000 時，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。單筆代墊金額上限為 NT$10,000，超過上限恕不承接。\n\n司機接單並開始前往後，如因客人取消、店家未營業或商品缺貨而取消任務，酌收 NT$100 取消費。\n\n現場等待期間持續計時；符合包車申請條件時，將由調度確認並於變更計費方式前告知客人。';
+   if(policyCopy)policyCopy.textContent='跑腿服務最低消費 NT$220，超過低消後依實際里程及時間計費。\n\n・每增加 1 個停靠點 +NT$50\n・有電梯上樓：2～99 樓，固定 +NT$50\n・無電梯爬樓梯：2～12 樓，2 樓 +NT$50，每增加 1 樓 +NT$50\n・搬運重物 +NT$100\n・拍照回報不另收費\n\n代墊金額超過 NT$2,000 時，一般客戶需先完成轉帳；具後結資格之客戶不受此限制。單筆代墊金額上限為 NT$10,000，超過上限恕不承接。\n\n司機接單並開始前往後，如因客人取消、店家未營業或商品缺貨而取消任務，酌收 NT$100 取消費。\n\n現場等待期間持續計時；符合包車申請條件時，將由調度確認並於變更計費方式前告知客人。';
  }
  $('#floorModeGroup')?.classList.toggle('errand-hidden',moveMode);
- if(moveMode){floorMode='none';$('#heavyItem').checked=false;$('#heavyItemToggle')?.classList.remove('active');$('#stairsFloors').value='';$('#stairsFloorWrap').classList.add('errand-hidden');$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode==='none'));}
+ if(moveMode){floorMode='none';$('#heavyItem').checked=false;$('#heavyItemToggle')?.classList.remove('active');if($('#elevatorFloor'))$('#elevatorFloor').value='';$('#stairsFloors').value='';$('#elevatorFloorWrap')?.classList.add('errand-hidden');$('#stairsFloorWrap').classList.add('errand-hidden');$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode==='none'));}
  rebuildSlots(true);
  cleanTaskWarnings();
  if(taskType==='delivery')ensureDeliveryWarning();
@@ -3189,8 +3198,8 @@ async function handleMovePhoto(file){
  try{movePhotoDataUrl=await compressMovePhoto(file);movePhotoName=file.name||'moving-photo.jpg';movePhotoRemoteUrl=null;$('#movePhotoPreview').src=movePhotoDataUrl;$('#movePhotoPreviewWrap').classList.remove('errand-hidden');$('#movePhotoStatus').textContent='已選擇 1 張搬家物品照片';}
  catch(e){console.error('MOVE PHOTO ERROR',e);movePhotoDataUrl=null;movePhotoName='';$('#movePhoto').value='';$('#movePhotoStatus').textContent='照片處理失敗，請重新拍攝';alert('照片無法處理，請重新拍攝或改用 JPG／PNG 照片。');}
 }
-function renderOtherNeeds(){const items=[];$$('[data-floor-mode]').forEach(b=>b.classList.toggle('active',b.dataset.floorMode===floorMode));if(taskType!=='move'){if(floorMode==='elevator')items.push('有電梯上樓 +$50');if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);items.push(`爬樓梯 ${n||'?'} 層`);}if($('#heavyItem')?.checked)items.push('搬運重物 +$100');}$('#heavyItemToggle')?.classList.toggle('active',!!$('#heavyItem')?.checked);if($('#otherNote')?.value.trim())items.push('其他備註');$('#otherNeedsSummary').textContent=(items.length?items.join('・'):(taskType==='move'?'其他備註・選填':'上樓／樓梯／搬重物／其他備註・選填'))+' ›';updateEstimate();}
-function extraFees(){let amount=0,items=[];const activeStops=Object.values(addressSlots).filter(s=>s.key.startsWith('p2_')&&s.active&&s.manual&&addressValue(s.key)).length;if(activeStops){amount+=activeStops*50;items.push(`停靠點 ${activeStops} 個 +$${activeStops*50}`);}if(taskType==='move'){const service=movePlan==='driver'?600:300;amount+=service;items.push(`${movePlan==='driver'?'司機協助搬運':'自行搬運'} +$${service}`);if(movePlan==='driver'&&moveLift==='no'){const n=Math.max(0,parseInt($('#moveFloor')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`無電梯 ${n} 樓 +$${n*50}`);}return{amount,items};}if(floorMode==='elevator'){amount+=50;items.push('有電梯上樓 +$50');}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`爬樓梯 ${n} 層 +$${n*50}`);}if($('#heavyItem')?.checked){amount+=100;items.push('搬運重物 +$100');}if(taskType==='pet'&&petCarrier==='no'){amount+=50;items.push('寵物無提籠／提袋 +$50');}return{amount,items};}
+function renderOtherNeeds(){const items=[];$$('[data-floor-mode]').forEach(b=>b.classList.toggle('active',b.dataset.floorMode===floorMode));if(taskType!=='move'){if(floorMode==='elevator'){const n=Math.max(0,parseInt($('#elevatorFloor')?.value||'0',10)||0);items.push(`有電梯 ${n||'?'} 樓 +$50`);}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);const fee=n>=2?(n-1)*50:0;items.push(`爬樓梯 ${n||'?'} 樓${fee?` +$${fee}`:''}`);}if($('#heavyItem')?.checked)items.push('搬運重物 +$100');}$('#heavyItemToggle')?.classList.toggle('active',!!$('#heavyItem')?.checked);if($('#otherNote')?.value.trim())items.push('其他備註');$('#otherNeedsSummary').textContent=(items.length?items.join('・'):(taskType==='move'?'其他備註・選填':'上樓／樓梯／搬重物／其他備註・選填'))+' ›';updateEstimate();}
+function extraFees(){let amount=0,items=[];const activeStops=Object.values(addressSlots).filter(s=>s.key.startsWith('p2_')&&s.active&&s.manual&&addressValue(s.key)).length;if(activeStops){amount+=activeStops*50;items.push(`停靠點 ${activeStops} 個 +$${activeStops*50}`);}if(taskType==='move'){const service=movePlan==='driver'?600:300;amount+=service;items.push(`${movePlan==='driver'?'司機協助搬運':'自行搬運'} +$${service}`);if(movePlan==='driver'&&moveLift==='no'){const n=Math.max(0,parseInt($('#moveFloor')?.value||'0',10)||0);amount+=n*50;if(n)items.push(`無電梯 ${n} 樓 +$${n*50}`);}return{amount,items};}if(floorMode==='elevator'){const n=Math.max(0,parseInt($('#elevatorFloor')?.value||'0',10)||0);amount+=50;items.push(`有電梯 ${n||'?'} 樓 +$50`);}if(floorMode==='stairs'){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);const stairFee=n>=2?(n-1)*50:0;amount+=stairFee;if(n)items.push(`爬樓梯 ${n} 樓 +$${stairFee}`);}if($('#heavyItem')?.checked){amount+=100;items.push('搬運重物 +$100');}if(taskType==='pet'&&petCarrier==='no'){amount+=50;items.push('寵物無提籠／提袋 +$50');}return{amount,items};}
 function addressValue(key){const s=addressSlots[key];if(!s)return'';const input=$(`#${key}Input`);return input?.value.trim()||displayAddress(s.data)||'';}
 function activeRouteSlots(){
  const stops=Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual&&addressValue(k)).sort().map(k=>addressSlots[k]);
@@ -3226,7 +3235,7 @@ function contactInfo(){const name=$('#globalContactName')?.value.trim()||'',raw=
 function renderGlobalContactSummary(){const c=contactInfo();$('#globalContactSummary').textContent=c?`${c.name||''}${c.name&&c.phone?'・':''}${c.phone||''} ›`:'選填 ›';}
 function deliveryInfo(){if(taskType==='move'||!addressValue('final'))return null;const forced=deliveryMethod!=='handoff';return{method:deliveryMethod,label:deliveryMethod==='handoff'?'當面交付':deliveryMethod==='table'?'放置外送桌':'放置管理室',locationNote:forced?nullable($('#deliveryLocation')?.value):null,photoRequired:forced||photoReturn};}
 function photoInfo(){const forced=taskType!=='move'&&deliveryMethod!=='handoff'&&!!addressValue('final');return{required:photoReturn||forced};}
-function otherNeedsInfo(){const n=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0);return{floorMode:taskType==='move'?'none':floorMode,stairsFloors:taskType==='move'?0:(floorMode==='stairs'?n:0),heavyItem:taskType==='move'?false:!!$('#heavyItem')?.checked,note:nullable($('#otherNote')?.value),items:taskType==='move'?[]:extraFees().items};}
+function otherNeedsInfo(){const stairs=Math.max(0,parseInt($('#stairsFloors')?.value||'0',10)||0),elevator=Math.max(0,parseInt($('#elevatorFloor')?.value||'0',10)||0);return{floorMode:taskType==='move'?'none':floorMode,elevatorFloor:taskType==='move'?0:(floorMode==='elevator'?elevator:0),stairsFloors:taskType==='move'?0:(floorMode==='stairs'?stairs:0),heavyItem:taskType==='move'?false:!!$('#heavyItem')?.checked,note:nullable($('#otherNote')?.value),items:taskType==='move'?[]:extraFees().items};}
 function pickupTimeIso(){if(errandMode!=='reserve')return null;const d=$('#errandDate').value,t=$('#errandTime').value;if(!d||!t)return null;return `${d}T${t}${t.length===5?':00':''}+08:00`;}
 function timingLabel(){return errandMode==='now'?'立即跑腿':`${$('#errandDate').value} ${$('#errandTime').value}`;}
 function petTypeList(){return Array.from(petTypes);}
@@ -3374,7 +3383,7 @@ function validate(){
  if(taskType==='pet'&&!petTypes.size){alert('請至少選擇一種寵物種類。');return false;}
  if(taskType==='move'&&!movePhotoDataUrl){alert('請先選擇或拍攝搬家物品照片。');$('#movePhoto')?.click();return false;}
  if(taskType==='move'&&movePlan==='driver'&&moveLift==='no'&&!(Number($('#moveFloor').value)>0)){alert('請填寫無電梯樓層。');$('#moveFloor').focus();return false;}
- if(floorMode==='stairs'&&!(Number($('#stairsFloors').value)>0)){alert('請填寫爬樓梯樓層數。');$('#stairsFloors').focus();return false;}
+ if(floorMode==='elevator'){const n=Number($('#elevatorFloor')?.value);if(!Number.isInteger(n)||n<2||n>99){alert('有電梯請填寫 2～99 樓。');$('#elevatorFloor')?.focus();return false;}}if(floorMode==='stairs'){const n=Number($('#stairsFloors').value);if(!Number.isInteger(n)||n<2||n>12){alert('爬樓梯請填寫 2～12 樓。');$('#stairsFloors').focus();return false;}}
  return true;
 }
 function confirmAddressRows(){
@@ -3382,7 +3391,7 @@ function confirmAddressRows(){
  Object.keys(addressSlots).filter(k=>k.startsWith('p2_')&&addressSlots[k].active&&addressSlots[k].manual&&addressValue(k)).sort().forEach(k=>items.push({label:addressSlots[k].label,value:addressValue(k),type:'waypoint'}));if(addressValue('final'))items.push({label:addressSlots.final.label,value:addressValue('final'),type:'dropoff'});
  return items.map((x,i)=>`${i?'<div class="booking-confirm-line"></div>':''}<div class="booking-confirm-location-row"><div class="booking-confirm-dot ${x.type==='pickup'?'booking-confirm-pickup-dot':x.type==='dropoff'?'booking-confirm-dropoff-dot':'booking-confirm-waypoint-dot'}"></div><div><div class="booking-confirm-location-label">${escapeHtml(x.label)}</div><div class="booking-confirm-address ${x.unspecified?'errand-confirm-unspecified':''}">${escapeHtml(x.value)}</div></div></div>`).join('');
 }
-function needsLabel(){const x=otherNeedsInfo(),arr=[];if(x.floorMode==='elevator')arr.push('有電梯上樓');if(x.floorMode==='stairs')arr.push(`爬樓梯 ${x.stairsFloors} 層`);if(x.heavyItem)arr.push('搬運重物');if(x.note)arr.push(x.note);if(taskType==='pet'&&petCarrier==='no')arr.push('無提籠／提袋');return arr.join('、')||'無';}
+function needsLabel(){const x=otherNeedsInfo(),arr=[];if(x.floorMode==='elevator')arr.push(`有電梯・${x.elevatorFloor}樓 +NT$50`);if(x.floorMode==='stairs')arr.push(`爬樓梯・${x.stairsFloors}樓 +NT$${Math.max(0,(x.stairsFloors-1)*50)}`);if(x.heavyItem)arr.push('搬運重物');if(x.note)arr.push(x.note);if(taskType==='pet'&&petCarrier==='no')arr.push('無提籠／提袋');return arr.join('、')||'無';}
 function escapeHtml(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 function openConfirm(){
  if(!validate())return;const q=quote();$('#confirmTaskType').textContent=TASKS[taskType];$('#confirmTiming').textContent=timingLabel();$('#confirmAddressList').innerHTML=confirmAddressRows();$('#confirmTaskContent').textContent=$('#taskContent').value.trim();
@@ -3483,8 +3492,8 @@ function bind(){
  $$('[data-advance]').forEach(b=>b.addEventListener('click',()=>{advanceNeeded=b.dataset.advance==='yes';$$('[data-advance]').forEach(x=>x.classList.toggle('active',x===b));$('#advanceAmountWrap').classList.toggle('errand-hidden',!advanceNeeded);$('#advanceNote')?.classList.toggle('errand-hidden',!advanceNeeded);}));
  $('#toggleGlobalContact').addEventListener('click',()=>{$('#globalContactFields').classList.toggle('errand-hidden');});$('#globalContactName').addEventListener('input',renderGlobalContactSummary);$('#globalContactPhone').addEventListener('input',()=>{$('#globalContactPhone').classList.remove('invalid');renderGlobalContactSummary();});$('#globalContactPhone').addEventListener('blur',()=>{const raw=$('#globalContactPhone').value.trim();if(raw){const normalized=normalizeTaiwanMobile(raw);if(isValidTaiwanMobile(normalized))$('#globalContactPhone').value=normalized;}renderGlobalContactSummary();});
  $('#openOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=false;document.body.style.overflow='hidden';});$$('[data-close-sheet]').forEach(b=>b.addEventListener('click',()=>{document.getElementById(b.dataset.closeSheet).hidden=true;document.body.style.overflow='';}));
- $$('[data-floor-mode]').forEach(b=>b.addEventListener('click',()=>{floorMode=floorMode===b.dataset.floorMode?'none':b.dataset.floorMode;$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode===floorMode));$('#stairsFloorWrap').classList.toggle('errand-hidden',floorMode!=='stairs');if(floorMode!=='stairs')$('#stairsFloors').value='';renderOtherNeeds();}));
- $('#stairsFloors').addEventListener('input',renderOtherNeeds);$('#heavyItemToggle').addEventListener('click',()=>{const cb=$('#heavyItem');cb.checked=!cb.checked;renderOtherNeeds();});$('#heavyItem').addEventListener('change',renderOtherNeeds);$('#otherNote').addEventListener('input',renderOtherNeeds);$('#saveOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=true;document.body.style.overflow='';renderOtherNeeds();});
+ $$('[data-floor-mode]').forEach(b=>b.addEventListener('click',()=>{floorMode=floorMode===b.dataset.floorMode?'none':b.dataset.floorMode;$$('[data-floor-mode]').forEach(x=>x.classList.toggle('active',x.dataset.floorMode===floorMode));$('#elevatorFloorWrap')?.classList.toggle('errand-hidden',floorMode!=='elevator');$('#stairsFloorWrap').classList.toggle('errand-hidden',floorMode!=='stairs');if(floorMode!=='elevator'&&$('#elevatorFloor'))$('#elevatorFloor').value='';if(floorMode!=='stairs')$('#stairsFloors').value='';renderOtherNeeds();}));
+ $('#elevatorFloor')?.addEventListener('input',renderOtherNeeds);$('#stairsFloors').addEventListener('input',renderOtherNeeds);$('#heavyItemToggle').addEventListener('click',()=>{const cb=$('#heavyItem');cb.checked=!cb.checked;renderOtherNeeds();});$('#heavyItem').addEventListener('change',renderOtherNeeds);$('#otherNote').addEventListener('input',renderOtherNeeds);$('#saveOtherNeeds').addEventListener('click',()=>{$('#otherNeedsSheet').hidden=true;document.body.style.overflow='';renderOtherNeeds();});
  $$('[data-photo-return]').forEach(b=>b.addEventListener('click',()=>{const forced=deliveryMethod!=='handoff'&&!!addressValue('final');if(forced)return;photoReturn=b.dataset.photoReturn==='yes';renderPhoto();}));
  $$('[data-move-plan]').forEach(b=>b.addEventListener('click',()=>{movePlan=b.dataset.movePlan;renderMoveUi();}));
  $$('[data-move-lift]').forEach(b=>b.addEventListener('click',()=>{moveLift=b.dataset.moveLift;renderMoveUi();}));
@@ -3656,7 +3665,7 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
     if (rect.bottom > viewportBottom - 72 || rect.top < viewportTop + 12) {
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(function () {
-        input.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+        const bottomLimit=viewportBottom-72,topLimit=viewportTop+12;let dy=0;if(rect.bottom>bottomLimit)dy=rect.bottom-bottomLimit;else if(rect.top<topLimit)dy=rect.top-topLimit;if(Math.abs(dy)>1)window.scrollBy({top:dy,left:0,behavior:'smooth'});
       }, 60);
     }
   }
