@@ -2571,10 +2571,28 @@ body{
 }
 .suggestions,
 .address-suggestions {
+  max-height: min(300px, 42vh) !important;
+  overflow-y: auto !important;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,.22) transparent;
+}
+.address-suggestion {
+  min-height: 60px;
+  padding-top: 13px !important;
+  padding-bottom: 13px !important;
+  text-align: left !important;
+  touch-action: pan-y;
+}
+.suggestions::-webkit-scrollbar,
+.address-suggestions::-webkit-scrollbar { width: 4px; }
+.suggestions::-webkit-scrollbar-thumb,
+.address-suggestions::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,.20);
+  border-radius: 999px;
 }
 .suggestions.top-taxi-open-up,
 .address-suggestions.top-taxi-open-up {
@@ -3320,7 +3338,7 @@ function dispatchMessage(orderData){
  lines.push($('#taskContent').value.trim());
  const globalContact=contactInfo();if(globalContact)lines.push(`聯絡人｜${globalContact.name||''}${globalContact.name&&globalContact.phone?'・':''}${globalContact.phone||''}`);
  if(taskType==='pet'){lines.push(`寵物｜${petCount} 隻・${petTypeLabel()}${$('#petName').value.trim()?`・${$('#petName').value.trim()}`:''}`);lines.push(`提籠／提袋｜${petCarrier==='yes'?'有':'無 +$50'}`);}
- if(taskType==='move'){lines.push(`搬運方式｜${movePlan==='driver'?'司機協助搬運 +$600':'自行搬運 +$300'}`);if(movePlan==='driver')lines.push(`電梯｜${moveLift==='yes'?'有':'無'+(moveLift==='no'&&Number($('#moveFloor').value)>0?`・${Number($('#moveFloor').value)} 樓`:'')}`);lines.push(`搬家物品照片｜${movePhotoRemoteUrl?'已附 LINE 圖片':'客人已上傳'}`);}
+ if(taskType==='move'){lines.push(`搬運方式｜${movePlan==='driver'?'司機協助搬運 +$600':'自行搬運 +$300'}`);if(movePlan==='driver')lines.push(`電梯｜${moveLift==='yes'?'有':'無'+(moveLift==='no'&&Number($('#moveFloor').value)>0?`・${Number($('#moveFloor').value)} 樓`:'')}`);lines.push(`搬家物品照片｜${movePhotoRemoteUrl?'已附 LINE 圖片':'已選擇，圖片傳送中'}`);}
  if(taskType==='queue')lines.push('等待計費｜持續跳表；符合條件時須回報調度申請包車');
  if(advanceNeeded){const av=Number($('#advanceAmount').value||0);lines.push(`需要代墊｜${av>0?`約 NT$${av.toLocaleString('zh-TW')}`:'金額未填'}${isPostpaid()?'・後結客戶':''}`);}
  const need=needsLabel();if(need!=='無')lines.push(`其他需求｜${need}`);const photo=photoInfo();if(photo.required)lines.push('📷 拍照回報｜需要');
@@ -3331,7 +3349,7 @@ function dispatchMessage(orderData){
 
 
 function returnToLine(){if(window.liff&&typeof liff.isInClient==='function'&&liff.isInClient()){try{liff.closeWindow();return;}catch(e){console.error('LIFF CLOSE ERROR:',e);}}alert('請返回 TOP Taxi LINE 聊天室。');}
-function showResult(mode){const card=$('.errand-confirm-card'),state=$('#resultState');if(!card||!state)return;const uncertain=mode==='uncertain',sync=mode==='sync-warning';$('#resultIcon').textContent=uncertain?'!':'✓';$('#resultTitle').textContent=uncertain?'訂單送出狀態待確認':sync?'訂單已傳送成功':'訂單已成功送出';$('#resultCopy').innerHTML=uncertain?'系統目前無法確認訂單是否成功送達，<strong>請勿重複送出</strong>。':sync?'客服已收到您的訂單，<strong>不需要重新送出</strong>。':'TOP Taxi 已收到您的跑腿需求，客服確認後將為您安排。';$('#resultSubcopy').textContent=uncertain?'請返回 LINE 聊天室聯繫客服，我們會協助您確認訂單狀態。':sync?'系統紀錄同步暫時異常；如需協助，可返回 LINE 聊天室聯繫客服。':'即將返回 TOP Taxi LINE 聊天室；如未自動返回，也可使用下方按鈕。';$('#resultReturnText').textContent=uncertain||sync?'返回聊天室聯繫客服':'返回 LINE 聊天室';state.className='top-line-result-state '+(uncertain?'warning':sync?'sync-warning':'success');state.hidden=false;card.classList.add('errand-result-mode');if(!uncertain&&!sync&&SEND_TEST_MODE!=='success'){clearTimeout(returnTimer);returnTimer=setTimeout(returnToLine,1100);}}
+function showResult(mode){const card=$('.errand-confirm-card'),state=$('#resultState');if(!card||!state)return;const uncertain=mode==='uncertain',sync=mode==='sync-warning';$('#resultIcon').textContent=uncertain?'!':'✓';$('#resultTitle').textContent=uncertain?'訂單送出狀態待確認':sync?'訂單已傳送成功':'訂單已成功送出';$('#resultCopy').innerHTML=uncertain?'系統目前無法確認訂單是否成功送達，<strong>請勿重複送出</strong>。':sync?'客服已收到您的訂單，<strong>不需要重新送出</strong>。':'TOP Taxi 已收到您的跑腿需求，客服確認後將為您安排。';$('#resultSubcopy').textContent=uncertain?'請返回 LINE 聊天室聯繫客服，我們會協助您確認訂單狀態。':sync?'系統紀錄同步暫時異常；如需協助，可返回 LINE 聊天室聯繫客服。':'即將返回 TOP Taxi LINE 聊天室；如未自動返回，也可使用下方按鈕。';$('#resultReturnText').textContent=uncertain||sync?'返回聊天室聯繫客服':'返回 LINE 聊天室';state.className='top-line-result-state '+(uncertain?'warning':sync?'sync-warning':'success');state.hidden=false;card.classList.add('errand-result-mode');if(!uncertain&&SEND_TEST_MODE!=='success'){clearTimeout(returnTimer);returnTimer=setTimeout(returnToLine,900);}}
 async function sendErrand(){
  if(sendInProgress||['sending','success','uncertain','sync-warning'].includes(sendState))return;
  const b=$('#confirmSend'),main=$('#submitBtn'),original='確認送出跑腿單 →';sendInProgress=true;sendState='sending';b.disabled=true;b.textContent='正在送出…';main.disabled=true;main.textContent='正在送出…';let orderData=null;
@@ -3346,8 +3364,8 @@ async function sendErrand(){
    orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;const message=dispatchMessage(orderData);
    await liff.sendMessages([{type:'text',text:message}]);
    orderData.delivery.lineStatus='success';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;
-   let ok=true;try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok){ok=false;console.warn('ERRAND n8n HTTP:',r.status);}else{try{const payload=await r.clone().json();const candidate=payload?.movePhotoUrl||payload?.photoUrl||payload?.data?.movePhotoUrl||payload?.data?.photoUrl;if(taskType==='move'&&typeof candidate==='string'&&/^https:\/\//i.test(candidate)){movePhotoRemoteUrl=candidate;orderData.taskSpecific.movePhoto={...(orderData.taskSpecific.movePhoto||{}),url:candidate,dataUrl:null};try{await liff.sendMessages([{type:'image',originalContentUrl:candidate,previewImageUrl:candidate}]);}catch(photoSendError){console.warn('ERRAND MOVE PHOTO LINE SEND FAILED:',photoSendError);}}}catch(parseError){/* Existing n8n may not return JSON/photo URL yet. */}}}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}
-   orderData.delivery.backendStatus=ok?'success':'failed';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState=ok?'success':'sync-warning';b.textContent='✅ 已送出';main.textContent='✅ 跑腿已送出';showResult(sendState);
+   let ok=true,photoOk=taskType!=='move';try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok){ok=false;console.warn('ERRAND n8n HTTP:',r.status);}else{let payload=null;try{payload=await r.clone().json();}catch(parseError){console.warn('ERRAND n8n RESPONSE IS NOT JSON:',parseError);}const findPhotoUrl=(v,depth=0)=>{if(depth>5||v==null)return null;if(typeof v==='string')return /^https:\/\//i.test(v.trim())?v.trim():null;if(Array.isArray(v)){for(const item of v){const hit=findPhotoUrl(item,depth+1);if(hit)return hit;}return null;}if(typeof v==='object'){for(const key of ['movePhotoUrl','photoUrl','imageUrl','originalContentUrl','previewImageUrl']){const hit=findPhotoUrl(v[key],depth+1);if(hit)return hit;}for(const key of ['data','result','body','output']){const hit=findPhotoUrl(v[key],depth+1);if(hit)return hit;}}return null;};const candidate=findPhotoUrl(payload);if(taskType==='move'){if(candidate){movePhotoRemoteUrl=candidate;orderData.taskSpecific.movePhoto={...(orderData.taskSpecific.movePhoto||{}),url:candidate,dataUrl:null};try{await liff.sendMessages([{type:'image',originalContentUrl:candidate,previewImageUrl:candidate}]);photoOk=true;}catch(photoSendError){photoOk=false;ok=false;console.warn('ERRAND MOVE PHOTO LINE SEND FAILED:',photoSendError);}}else{photoOk=false;ok=false;console.warn('ERRAND MOVE PHOTO URL MISSING FROM n8n RESPONSE');}}}}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}
+   orderData.delivery.backendStatus=ok?'success':'failed';if(taskType==='move')orderData.delivery.photoLineStatus=photoOk?'success':'failed';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState=ok?'success':'sync-warning';b.textContent=ok?'✅ 已送出':'⚠️ 已送出・同步待確認';main.textContent=ok?'✅ 跑腿已送出':'⚠️ 跑腿已送出・同步待確認';showResult(sendState);
  }catch(e){console.error('ERRAND SEND STATUS UNCERTAIN:',e);if(orderData){orderData.delivery.lineStatus='uncertain';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;}sendInProgress=false;sendState='uncertain';b.textContent='⚠️ 狀態待確認';main.textContent='⚠️ 狀態待確認';showResult('uncertain');}
 }
 
@@ -3371,7 +3389,7 @@ function initAutocompleteForSlot(slot){
  const box=$(`#${slot.key}Box`),input=$(`#${slot.key}Input`),clear=$(`#${slot.key}Clear`),sug=$(`#${slot.key}Suggestions`);if(!box||!input||!sug||box.dataset.ready==='1'||!AutocompleteSuggestion)return;box.dataset.ready='1';let token=new AutocompleteSessionToken(),timer=null,req=0;
  function hide(){sug.classList.remove('show');sug.innerHTML='';}
  async function choose(pred){suppressAddStopUntil=Date.now()+900;const fallback=pred.text?.toString?.()||'';input.value=fallback;if(clear)clear.hidden=false;hide();try{const place=pred.toPlace();await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});slot.place=place;slot.data=placeToData(place);input.value=displayAddress(slot.data)||fallback;syncDeliveryVisibility();renderPhoto();updateEstimate();}catch(e){console.warn('PLACE DETAIL ERROR',e);}token=new AutocompleteSessionToken();}
- function render(items){sug.innerHTML='';const preds=(items||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);if(!preds.length){sug.innerHTML='<div class="address-no-results">找不到相符地點，請輸入更完整的名稱或地址</div>';sug.classList.add('show');return;}preds.forEach(pred=>{const r=document.createElement('button');r.type='button';r.className='address-suggestion';const ic=document.createElement('span');ic.className='address-suggestion-icon';ic.textContent='📍';const tx=document.createElement('span'),m=document.createElement('strong'),ss=document.createElement('span');m.className='address-suggestion-main';ss.className='address-suggestion-secondary';m.textContent=pred.mainText?.toString?.()||pred.text?.toString?.()||'';ss.textContent=pred.secondaryText?.toString?.()||'';tx.append(m,ss);r.append(ic,tx);r.addEventListener('pointerdown',e=>{suppressAddStopUntil=Date.now()+900;e.preventDefault();e.stopPropagation();choose(pred);});sug.append(r);});const a=document.createElement('div');a.className='address-google-attribution';a.textContent='Google Maps';sug.append(a);sug.classList.add('show');}
+ function render(items){sug.innerHTML='';const preds=(items||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);if(!preds.length){sug.innerHTML='<div class="address-no-results">找不到相符地點，請輸入更完整的名稱或地址</div>';sug.classList.add('show');return;}preds.forEach(pred=>{const r=document.createElement('button');r.type='button';r.className='address-suggestion';const ic=document.createElement('span');ic.className='address-suggestion-icon';ic.textContent='📍';const tx=document.createElement('span'),m=document.createElement('strong'),ss=document.createElement('span');m.className='address-suggestion-main';ss.className='address-suggestion-secondary';m.textContent=pred.mainText?.toString?.()||pred.text?.toString?.()||'';ss.textContent=pred.secondaryText?.toString?.()||'';tx.append(m,ss);r.append(ic,tx);r.addEventListener('click',e=>{suppressAddStopUntil=Date.now()+900;e.preventDefault();e.stopPropagation();choose(pred);});sug.append(r);});const a=document.createElement('div');a.className='address-google-attribution';a.textContent='Google Maps';sug.append(a);sug.classList.add('show');}
  async function fetchSug(q){const n=++req;try{const res=await AutocompleteSuggestion.fetchAutocompleteSuggestions({input:q,includedRegionCodes:['tw'],language:'zh-TW',region:'TW',locationBias:{center:searchCenter,radius:50000},origin:searchCenter,sessionToken:token});if(n===req)render(res.suggestions||[]);}catch(e){if(n===req)hide();}}
  input.addEventListener('input',()=>{const q=input.value.trim();clearTimeout(timer);if(!q){req++;hide();return;}timer=setTimeout(()=>fetchSug(q),220);});input.addEventListener('focus',()=>{if(input.value.trim())fetchSug(input.value.trim());});document.addEventListener('pointerdown',e=>{if(!box.contains(e.target))hide();});
 }
