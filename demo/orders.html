@@ -1,37 +1,155 @@
 <!doctype html>
 <html lang="zh-TW">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>TOP Taxi｜Demo 測試訂單</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f2f3f5;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}.wrap{width:min(100%,720px);margin:auto;padding:20px 14px 40px}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}.head h1{margin:0;font-size:22px}.head a{color:#c90012;text-decoration:none;font-size:12px;font-weight:900}.notice{padding:12px 14px;border-radius:13px;background:#111114;color:#fff;font-size:11.5px;line-height:1.6}.toolbar{display:flex;gap:8px;margin:12px 0}.toolbar button{min-height:40px;border:0;border-radius:11px;padding:0 13px;font-weight:850;cursor:pointer}.clear{background:#e4e4e7;color:#555}.refresh{background:#17171b;color:#fff}.list{display:grid;gap:10px}.empty{padding:34px 16px;text-align:center;color:#999}.order{background:#fff;border:1px solid #e6e6e9;border-radius:16px;padding:14px;box-shadow:0 7px 18px rgba(0,0,0,.045)}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.type{font-size:15px;font-weight:950}.badge{padding:4px 8px;border-radius:999px;background:#fff0f1;color:#b20b1b;font-size:10px;font-weight:900}.meta{margin-top:5px;color:#929298;font-size:10.5px;line-height:1.5}.route{margin-top:11px;padding-top:10px;border-top:1px solid #eee;color:#555;font-size:12px;line-height:1.65}.route strong{color:#222}details{margin-top:10px}summary{cursor:pointer;color:#777;font-size:11px;font-weight:800}pre{overflow:auto;max-height:360px;margin:8px 0 0;padding:10px;border-radius:10px;background:#111114;color:#ddd;font:10px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+*{box-sizing:border-box}
+body{margin:0;background:#f2f3f5;color:#222;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}
+.wrap{width:min(100%,720px);margin:auto;padding:20px 14px 40px}
+.head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.head h1{margin:0;font-size:22px}
+.head a{color:#c90012;text-decoration:none;font-size:12px;font-weight:900}
+.notice{padding:12px 14px;border-radius:13px;background:#111114;color:#fff;font-size:11.5px;line-height:1.6}
+.bot-notice{margin-top:9px;padding:12px 14px;border:1px solid #e7d8da;border-radius:13px;background:#fff7f8;color:#6f2a31;font-size:11.5px;line-height:1.6}
+.bot-notice strong{color:#b20b1b}
+.toolbar{display:flex;gap:8px;margin:12px 0}
+.toolbar button{min-height:40px;border:0;border-radius:11px;padding:0 13px;font-weight:850;cursor:pointer}
+.clear{background:#e4e4e7;color:#555}.refresh{background:#17171b;color:#fff}
+.list{display:grid;gap:12px}.empty{padding:34px 16px;text-align:center;color:#999}
+.order{background:#fff;border:1px solid #e6e6e9;border-radius:16px;padding:14px;box-shadow:0 7px 18px rgba(0,0,0,.045)}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.type{font-size:15px;font-weight:950}
+.badge{padding:4px 8px;border-radius:999px;background:#fff0f1;color:#b20b1b;font-size:10px;font-weight:900}
+.meta{margin-top:5px;color:#929298;font-size:10.5px;line-height:1.5}
+.route{margin-top:11px;padding-top:10px;border-top:1px solid #eee;color:#555;font-size:12px;line-height:1.65}.route strong{color:#222}
+.dispatch{margin-top:12px;border:1px solid #e5e5e8;border-radius:14px;overflow:hidden;background:#fafafa}
+.dispatch-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 12px;background:#17171b;color:#fff}
+.dispatch-title{font-size:12px;font-weight:950;letter-spacing:.1px}
+.dispatch-state{flex:0 0 auto;padding:3px 7px;border-radius:999px;background:#34343a;color:#cfcfd4;font-size:9px;font-weight:900}
+.dispatch-body{padding:12px}
+.dispatch-code{padding:10px 11px;border-radius:10px;background:#fff;border:1px solid #ececef;color:#17171b;font:800 13px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;word-break:break-word}
+.dispatch-lines{margin-top:10px;color:#4f4f55;font-size:11.5px;line-height:1.7}
+.dispatch-lines b{color:#222}
+.dispatch-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;padding-top:10px;border-top:1px dashed #ddd;color:#929298;font-size:10px;line-height:1.45}
+.copy-btn{flex:0 0 auto;min-height:32px;padding:0 10px;border:1px solid #dedee2;border-radius:9px;background:#fff;color:#444;font-size:10.5px;font-weight:850;cursor:pointer}
+details{margin-top:10px}summary{cursor:pointer;color:#777;font-size:11px;font-weight:800}
+pre{overflow:auto;max-height:360px;margin:8px 0 0;padding:10px;border-radius:10px;background:#111114;color:#ddd;font:10px/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+.toast{position:fixed;left:50%;bottom:max(22px,env(safe-area-inset-bottom));z-index:9999;transform:translate(-50%,18px);padding:10px 14px;border-radius:999px;background:#17171b;color:#fff;font-size:11px;font-weight:800;opacity:0;pointer-events:none;transition:.18s ease;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+.toast.show{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
-<body><main class="wrap">
+<body>
+<main class="wrap">
 <div class="head"><h1>📋 Demo 測試訂單</h1><a href="./index.html">← Demo 首頁</a></div>
 <div class="notice">這裡只顯示目前瀏覽器的 Sandbox 測試資料。它不代表正式訂單，也不會同步到 TOP Taxi 正式後台。</div>
+<div class="bot-notice"><strong>🤖 自動派單機器人｜展示模式</strong><br>每筆測試訂單下方會模擬正式版可產生的派單內容；Demo 只做預覽，不會傳送到任何 LINE 群組。</div>
 <div class="toolbar"><button class="refresh" onclick="render()">重新整理</button><button class="clear" onclick="clearOrders()">清除全部</button></div>
 <div id="list" class="list"></div>
 </main>
+<div id="toast" class="toast">已複製派單預覽</div>
 <script>
 const KEY="topTaxiDemoOrders";
+
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));}
 function label(t){return ({ride:"即時叫車",booking:"預約叫車",fare:"車資試算",errand:"跑腿服務"})[t]||t||"Demo 訂單";}
 function place(x){if(!x)return"";return x.displayName||x.name||x.address||"";}
+function value(){for(const v of arguments){if(v!==undefined&&v!==null&&String(v).trim()!=="")return v;}return"";}
+function money(v){if(v===undefined||v===null||v==="")return"";const n=Number(v);return Number.isFinite(n)?"NT$ "+Math.round(n):String(v);}
+function normalizeTw(s){return String(s||"").replace(/臺/g,"台").replace(/^\s*\d{3}(?:\d{2,3})?\s*/u,"").replace(/^台灣(?:省)?/u,"").trim();}
+function compactDispatchPlace(p){
+ if(!p)return"";
+ const district=normalizeTw(p.district||"");
+ let address=normalizeTw(p.address||p.formattedAddress||place(p));
+ address=address.replace(/^台中市|^台北市|^新北市|^桃園市|^台南市|^高雄市|^基隆市|^新竹市|^嘉義市/u,"");
+ if(district&&address.includes(district))address=address.slice(address.indexOf(district));
+ address=address.replace(/\s+/g,"");
+ return address||district||place(p);
+}
+function getTrip(o){return o.trip&&typeof o.trip==="object"?o.trip:{};}
+function getPickup(o){const t=getTrip(o);return t.pickup||o.pickup||o.origin||null;}
+function getDropoff(o){const t=getTrip(o);return t.dropoff||o.dropoff||o.destination||null;}
+function getWaypoints(o){const t=getTrip(o);const v=t.waypoints||t.stops||o.waypoints||o.stops||[];return Array.isArray(v)?v.filter(Boolean):[];}
+function routeName(o){
+ const t=getTrip(o),r=t.route||o.route||{};
+ return value(r.routeName,r.name,r.modeName,t.routeName,o.routeName,o.pricing?.routeName,o.routeMode);
+}
+function distanceText(o){const t=getTrip(o),r=t.route||o.route||{};const v=value(r.distanceKm,t.distanceKm,o.distanceKm,o.pricing?.distanceKm);return v===""?"":(String(v).match(/km/i)?String(v):Number.isFinite(Number(v))?Number(v).toFixed(1)+" km":String(v));}
+function durationText(o){const t=getTrip(o),r=t.route||o.route||{};const v=value(r.durationMinutes,t.durationMinutes,o.durationMinutes,o.pricing?.durationMinutes);return v===""?"":(String(v).match(/分|minute/i)?String(v):Number.isFinite(Number(v))?Math.round(Number(v))+" 分鐘":String(v));}
+function quotedPrice(o){return value(o.pricing?.finalAmount,o.pricing?.quotedAmount,o.finalAmount,o.quotedAmount);}
+function serviceName(o,type){
+ const t=getTrip(o);
+ const raw=String(value(o.serviceType,o.service?.type,t.serviceType,t.serviceMode,o.mode)||"").toLowerCase();
+ if(raw.includes("driver")||raw.includes("代駕"))return"代駕服務";
+ if(type==="errand")return"跑腿服務";
+ return"一般搭車";
+}
+function pickupTime(o){return value(o.pickupTime,o.schedule?.pickupTime,o.booking?.pickupTime,getTrip(o).pickupTime);}
+function dispatchCode(o,type){
+ const pickup=getPickup(o);
+ const shortAddress=compactDispatchPlace(pickup);
+ if(type==="errand")return"跑腿任務｜"+(shortAddress||"待確認地點");
+ return "+T/"+(shortAddress||"待確認上車地點")+"+20";
+}
+function dispatchText(o,type){
+ const pickup=getPickup(o),dropoff=getDropoff(o),waypoints=getWaypoints(o);
+ const lines=["🤖 TOP Taxi｜派單機器人預覽",dispatchCode(o,type),"","📋 服務："+label(type)+"｜"+serviceName(o,type)];
+ const time=pickupTime(o);if(time)lines.push("🕒 時間："+time);
+ if(pickup)lines.push("📍 上車："+(compactDispatchPlace(pickup)||place(pickup)));
+ waypoints.forEach((p,i)=>lines.push("🟡 停靠"+(i+1)+"："+(compactDispatchPlace(p)||place(p))));
+ if(dropoff)lines.push("🏁 下車："+(compactDispatchPlace(dropoff)||place(dropoff)));
+ const rn=routeName(o),dist=distanceText(o),dur=durationText(o),price=quotedPrice(o);
+ if(rn)lines.push("🛣️ 路線："+rn);
+ if(dist)lines.push("📏 距離："+dist);
+ if(dur)lines.push("⏱️ 時間："+dur);
+ if(price!=="")lines.push("💰 預估："+money(price));
+ lines.push("","DEMO 模擬｜正式版可依車隊、區域與派單規則自動送至指定 LINE 群組");
+ return lines.join("\n");
+}
+function dispatchHtml(o,type,index){
+ const pickup=getPickup(o),dropoff=getDropoff(o),waypoints=getWaypoints(o);
+ const rn=routeName(o),dist=distanceText(o),dur=durationText(o),price=quotedPrice(o),time=pickupTime(o);
+ const detail=[];
+ detail.push('<div><b>📋 服務：</b>'+esc(label(type)+'｜'+serviceName(o,type))+'</div>');
+ if(time)detail.push('<div><b>🕒 時間：</b>'+esc(time)+'</div>');
+ if(pickup)detail.push('<div><b>📍 上車：</b>'+esc(compactDispatchPlace(pickup)||place(pickup))+'</div>');
+ waypoints.forEach((p,i)=>detail.push('<div><b>🟡 停靠 '+(i+1)+'：</b>'+esc(compactDispatchPlace(p)||place(p))+'</div>'));
+ if(dropoff)detail.push('<div><b>🏁 下車：</b>'+esc(compactDispatchPlace(dropoff)||place(dropoff))+'</div>');
+ if(rn)detail.push('<div><b>🛣️ 路線：</b>'+esc(rn)+'</div>');
+ if(dist)detail.push('<div><b>📏 距離：</b>'+esc(dist)+'</div>');
+ if(dur)detail.push('<div><b>⏱️ 時間：</b>'+esc(dur)+'</div>');
+ if(price!=="")detail.push('<div><b>💰 預估：</b>'+esc(money(price))+'</div>');
+ return '<section class="dispatch"><div class="dispatch-head"><div class="dispatch-title">🤖 自動派單機器人｜輸出預覽</div><span class="dispatch-state">DEMO・未送出</span></div><div class="dispatch-body"><div class="dispatch-code">'+esc(dispatchCode(o,type))+'</div><div class="dispatch-lines">'+detail.join('')+'</div><div class="dispatch-foot"><span>正式版可依車隊／區域／服務規則，自動送至指定 LINE 群組。</span><button type="button" class="copy-btn" onclick="copyDispatch('+index+')">複製預覽</button></div></div></section>';
+}
+
+let currentOrders=[];
 function render(){
  let orders=[];try{orders=JSON.parse(localStorage.getItem(KEY)||"[]");if(!Array.isArray(orders))orders=[];}catch(_){orders=[];}
+ currentOrders=orders;
  const box=document.getElementById("list");
- if(!orders.length){box.innerHTML='<div class="empty">目前還沒有 Demo 測試訂單。</div>';return;}
- box.innerHTML=orders.map(o=>{
+ if(!orders.length){box.innerHTML='<div class="empty">目前還沒有 Demo 測試訂單。<br><span style="font-size:11px">完成一筆 Demo 測試後，這裡會同時顯示訂單與派單機器人預覽。</span></div>';return;}
+ box.innerHTML=orders.map((o,index)=>{
   const type=o.orderType||o.demo?.source||"demo";
   const when=o.demo?.capturedAt||o.createdAt||"";
-  const pickup=place(o.trip?.pickup);
-  const dropoff=place(o.trip?.dropoff);
-  const price=o.pricing?.quotedAmount;
-  const route=[pickup&&('上車：'+pickup),dropoff&&('下車：'+dropoff),price!=null&&('預估：NT$ '+price)].filter(Boolean).join('<br>');
-  return '<article class="order"><div class="top"><div><div class="type">'+esc(label(type))+'</div><div class="meta">environment: demo<br>'+esc(when)+'</div></div><span class="badge">SANDBOX</span></div>'+(route?'<div class="route">'+route+'</div>':'')+'<details><summary>查看 Order Data</summary><pre>'+esc(JSON.stringify(o,null,2))+'</pre></details></article>';
+  const pickup=place(getPickup(o));
+  const dropoff=place(getDropoff(o));
+  const price=quotedPrice(o);
+  const route=[pickup&&('上車：'+esc(pickup)),dropoff&&('下車：'+esc(dropoff)),price!==''&&('預估：'+esc(money(price)))].filter(Boolean).join('<br>');
+  return '<article class="order"><div class="top"><div><div class="type">'+esc(label(type))+'</div><div class="meta">environment: demo<br>'+esc(when)+'</div></div><span class="badge">SANDBOX</span></div>'+(route?'<div class="route">'+route+'</div>':'')+dispatchHtml(o,type,index)+'<details><summary>查看 Order Data</summary><pre>'+esc(JSON.stringify(o,null,2))+'</pre></details></article>';
  }).join("");
 }
+async function copyDispatch(index){
+ const o=currentOrders[index];if(!o)return;
+ const type=o.orderType||o.demo?.source||"demo";
+ const text=dispatchText(o,type);
+ try{await navigator.clipboard.writeText(text);showToast("已複製派單預覽");}
+ catch(_){
+  const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy");showToast("已複製派單預覽");}catch(__){showToast("無法複製，請手動選取");}ta.remove();
+ }
+}
+function showToast(text){const el=document.getElementById("toast");el.textContent=text;el.classList.add("show");clearTimeout(showToast.t);showToast.t=setTimeout(()=>el.classList.remove("show"),1800);}
 function clearOrders(){if(!confirm("清除目前瀏覽器的全部 Demo 測試訂單？"))return;localStorage.removeItem(KEY);render();}
 render();
-</script></body></html>
+</script>
+</body>
+</html>
