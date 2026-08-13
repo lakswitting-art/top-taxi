@@ -1,42 +1,4 @@
 <!doctype html>
 <html lang="zh-TW">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>TOP Taxi｜DEMO 測試平台</title>
-<style>
-*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;background:radial-gradient(circle at 50% 0,rgba(255,31,45,.24),transparent 320px),linear-gradient(180deg,#08080a,#151519 310px,#f2f3f5 310px);color:#222}.wrap{width:min(100%,760px);margin:auto;padding:max(24px,env(safe-area-inset-top)) 16px max(38px,env(safe-area-inset-bottom))}.hero{padding:18px 8px 25px;text-align:center;color:#fff}.brand{font-size:32px;font-weight:950}.brand b{color:#ff1f2d}.kicker{margin-top:8px;color:#aaa;font-size:11px;font-weight:850;letter-spacing:1.8px}.hero p{margin:13px auto 0;max-width:580px;color:#c3c3c8;font-size:13px;line-height:1.7}.safe{margin:0 0 14px;padding:13px 15px;border:1px solid #ffd4d8;border-radius:15px;background:#fff5f6;color:#7e1821;font-size:12px;line-height:1.65}.safe strong{color:#c90012}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{display:block;min-height:130px;padding:18px;border:1px solid #e8e8eb;border-radius:19px;background:#fff;color:#222;text-decoration:none;box-shadow:0 10px 25px rgba(0,0,0,.07);transition:.15s}.card:active{transform:scale(.985)}.icon{font-size:26px}.title{margin-top:12px;font-size:17px;font-weight:950}.desc{margin-top:6px;color:#818187;font-size:11.5px;line-height:1.55}.orders{margin-top:12px;display:flex;gap:10px}.orders a,.orders button{flex:1;min-height:48px;border:0;border-radius:14px;font:850 13px inherit;cursor:pointer}.orders a{display:flex;align-items:center;justify-content:center;background:#17171b;color:#fff;text-decoration:none}.orders button{background:#e7e7ea;color:#555}.foot{margin-top:20px;text-align:center;color:#8e8e94;font-size:10.5px;line-height:1.65}@media(max-width:520px){.grid{grid-template-columns:1fr}.card{min-height:108px}.brand{font-size:29px}}
-</style>
-</head>
-<body>
-<main class="wrap">
-  <section class="hero">
-    <div class="brand"><b>TOP</b> Taxi</div>
-    <div class="kicker">SALES DEMO / SANDBOX V1</div>
-    <p>展示正式系統操作體驗，同時與正式訂單、LINE 與後端派單完全隔離。</p>
-  </section>
-
-  <div class="safe"><strong>DEMO 測試環境</strong>｜可以放心輸入測試地址、試算與模擬送出。所有送出只會建立本機 Demo 訂單，不會正式叫車、跑腿或通知客服。</div>
-
-  <section class="grid">
-    <a class="card" href="./ride.html"><div class="icon">🚕</div><div class="title">即時叫車</div><div class="desc">測試地址、目前位置、停靠點、路線、需求與模擬送單。</div></a>
-    <a class="card" href="./booking.html"><div class="icon">📅</div><div class="title">預約叫車</div><div class="desc">測試預約時間、一般搭車／代駕、車資與完整確認流程。</div></a>
-    <a class="card" href="./fare.html"><div class="icon">🧮</div><div class="title">車資試算</div><div class="desc">測試 FAST／SURFACE、多停靠點、一般搭車與代駕試算。</div></a>
-    <a class="card" href="./errand.html"><div class="icon">📦</div><div class="title">跑腿服務</div><div class="desc">測試跑腿需求、地址、照片欄位與模擬訂單流程。</div></a>
-  </section>
-
-  <div class="orders">
-    <a href="./orders.html">📋 查看 Demo 測試訂單</a>
-    <button type="button" onclick="clearDemo()">清除測試資料</button>
-  </div>
-  <div id="clearStatus" class="foot">Sandbox V1｜Production Live Mirror + Network Isolation</div>
-</main>
-<script>
-function clearDemo(){
-  ["topTaxiDemoOrders","topTaxiDemoMessages","topTaxiDemoAddresses","topTaxiDemoCustomerPreferences"].forEach(k=>localStorage.removeItem(k));
-  document.getElementById("clearStatus").textContent="✓ Demo 測試資料已清除";
-  setTimeout(()=>document.getElementById("clearStatus").textContent="Sandbox V1｜Production Live Mirror + Network Isolation",1800);
-}
-</script>
-</body>
-</html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>TOP Taxi｜Demo Sandbox</title><style>*{box-sizing:border-box}body{margin:0;background:#0b0b0d;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif}.wrap{width:min(100%,680px);margin:auto;padding:30px 16px 44px}.hero{padding:24px;border:1px solid #2b2b31;border-radius:22px;background:linear-gradient(145deg,#17171b,#0c0c0f);box-shadow:0 20px 60px rgba(0,0,0,.35)}h1{margin:0;font-size:28px}.red{color:#ff2637}.sub{margin-top:9px;color:#aaa;line-height:1.7;font-size:13px}.warn{margin-top:18px;padding:13px 14px;border-radius:14px;background:#221014;border:1px solid #4d1920;color:#ffbac0;font-size:12px;line-height:1.7}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}.card{display:block;min-height:116px;padding:16px;border-radius:17px;background:#fff;color:#17171b;text-decoration:none}.card b{font-size:16px}.card span{display:block;margin-top:8px;color:#777;font-size:11px;line-height:1.55}.wide{grid-column:1/-1;background:#17171b;color:#fff;border:1px solid #34343a}.wide span{color:#bbb}.foot{margin-top:18px;color:#777;font-size:10px;line-height:1.7}@media(max-width:480px){.wrap{padding-top:18px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}}</style></head>
+<body><main class="wrap"><section class="hero"><h1><span class="red">TOP</span> Taxi｜Demo</h1><div class="sub">External Sandbox 測試平台<br>用來驗證乘客流程、派車資料與未來自動化展示。</div><div class="warn">此為 DEMO 測試平台，所有資料僅供測試，不會送出正式訂單。</div><div class="grid"><a class="card" href="./booking.html"><b>📅 預約叫車</b><span>測試日期、時間、地址、需求與預約流程。</span></a><a class="card" href="./ride.html"><b>🚕 即時叫車</b><span>測試現在出發、一般搭車與代駕。</span></a><a class="card" href="./fare.html"><b>🧮 車資試算</b><span>測試 Google 地址、路線與預估車資。</span></a><a class="card" href="./errand.html"><b>🛵 跑腿服務</b><span>測試代買、代送、搬家與其他跑腿需求。</span></a><a class="card wide" href="./orders.html"><b>📋 測試訂單／系統展示</b><span>查看 Sandbox 訂單、派單機器人預覽、未來 AI 與正式營運實機。</span></a></div><div class="foot">Production 與 Demo 已隔離。Demo 不會寫入正式 n8n、Sheet 或派單流程。</div></section></main></body></html>
