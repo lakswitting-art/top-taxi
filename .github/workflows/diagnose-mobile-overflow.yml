@@ -1,0 +1,120 @@
+name: Diagnose mobile overflow
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/diagnose-mobile-overflow.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Locate Chrome
+        run: |
+          set -euxo pipefail
+          which google-chrome || which chromium || which chromium-browser
+
+      - name: Inject viewport diagnostics into temp copies
+        shell: python
+        run: |
+          from pathlib import Path
+          files = ['index.html','ride.html','fare.html','errand.html']
+          script = r'''
+<script id="__topTaxiOverflowDiagScript">
+(function(){
+  function hasClippingAncestor(el){
+    let p=el.parentElement;
+    while(p && p!==document.body){
+      const cs=getComputedStyle(p);
+      if(['hidden','auto','scroll','clip'].includes(cs.overflowX)) return true;
+      p=p.parentElement;
+    }
+    return false;
+  }
+  function snapshot(label){
+    const vw=document.documentElement.clientWidth;
+    const offenders=[...document.querySelectorAll('body *')].map(el=>{
+      const r=el.getBoundingClientRect();
+      const cs=getComputedStyle(el);
+      return {tag:el.tagName,id:el.id||'',cls:typeof el.className==='string'?el.className.slice(0,140):'',left:+r.left.toFixed(1),right:+r.right.toFixed(1),width:+r.width.toFixed(1),scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,overflowX:cs.overflowX,position:cs.position,whiteSpace:cs.whiteSpace,clipped:hasClippingAncestor(el)};
+    }).filter(x => !x.clipped && (x.right>vw+0.5 || x.left<-0.5));
+    return {label,innerWidth:window.innerWidth,docClientWidth:vw,docScrollWidth:document.documentElement.scrollWidth,bodyScrollWidth:document.body.scrollWidth,offenders:offenders.slice(0,50)};
+  }
+  async function run(){
+    const out=[];
+    out.push(snapshot('initial'));
+    const near=document.querySelector('[data-purchase-location="unspecified"]');
+    if(near){near.click(); await new Promise(r=>setTimeout(r,60)); out.push(snapshot('purchase-nearby'));}
+    const add=document.querySelector('#addStopBtn');
+    if(add){add.click(); await new Promise(r=>setTimeout(r,30)); const add2=document.querySelector('#addStopBtn'); if(add2) add2.click(); await new Promise(r=>setTimeout(r,60)); out.push(snapshot('after-two-stops'));}
+    const pre=document.createElement('pre');
+    pre.id='__diag__';
+    pre.textContent=JSON.stringify(out);
+    document.body.appendChild(pre);
+  }
+  setTimeout(run,700);
+})();
+</script>
+'''
+          Path('/tmp/top-taxi-diag').mkdir(parents=True, exist_ok=True)
+          for f in files:
+            s=Path(f).read_text(encoding='utf-8')
+            if '</body>' in s:
+              s=s.replace('</body>',script+'\n</body>',1)
+            else:
+              s+=script
+            Path('/tmp/top-taxi-diag',f).write_text(s,encoding='utf-8')
+
+      - name: Run headless mobile layout diagnostics
+        run: |
+          set -euo pipefail
+          CHROME=$(which google-chrome || which chromium || which chromium-browser)
+          for WIDTH in 393 390 375; do
+            echo "===== WIDTH ${WIDTH} ====="
+            for FILE in index.html ride.html fare.html errand.html; do
+              OUT="/tmp/${FILE}.${WIDTH}.dump.html"
+              "$CHROME" --headless --no-sandbox --disable-gpu --allow-file-access-from-files --window-size=${WIDTH},852 --virtual-time-budget=2500 --dump-dom "file:///tmp/top-taxi-diag/${FILE}" > "$OUT" 2>/tmp/chrome.err || true
+              python - "$FILE" "$WIDTH" "$OUT" <<'PY'
+import sys, json, html
+from pathlib import Path
+from html.parser import HTMLParser
+file,width,out=sys.argv[1:]
+text=Path(out).read_text(encoding='utf-8',errors='ignore')
+class P(HTMLParser):
+    def __init__(self): super().__init__(); self.in_diag=False; self.parts=[]
+    def handle_starttag(self,tag,attrs):
+        if tag=='pre' and dict(attrs).get('id')=='__diag__': self.in_diag=True
+    def handle_endtag(self,tag):
+        if tag=='pre' and self.in_diag: self.in_diag=False
+    def handle_data(self,data):
+        if self.in_diag: self.parts.append(data)
+p=P(); p.feed(text)
+raw=''.join(p.parts)
+print(f'FILE={file} WIDTH={width}')
+if not raw:
+    print('NO_DIAG')
+else:
+    data=json.loads(html.unescape(raw))
+    for snap in data:
+        print(json.dumps(snap,ensure_ascii=False))
+PY
+            done
+          done
+
+      - name: Static width-risk comparison
+        shell: python
+        run: |
+          from pathlib import Path
+          needles=['100vw','min-width:max-content','min-width: max-content','overflow-x:auto','overflow-x: auto','white-space:nowrap','white-space: nowrap','translateX(','width:calc(','width: calc(']
+          for f in ['index.html','ride.html','fare.html','errand.html']:
+            s=Path(f).read_text(encoding='utf-8')
+            print('\n###',f)
+            for n in needles:
+              c=s.count(n)
+              if c: print(n,c)
