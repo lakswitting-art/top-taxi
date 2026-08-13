@@ -58,10 +58,26 @@
           'showStatus("DEMO Google 初始化失敗：" + (error?.name ? error.name + "｜" : "") + (error?.message || String(error)), true);'
         );
 
+        /*
+          Demo Fare 只需要 Places ready 就先把上／下車輸入框建立起來。
+          Routes 改成背景載入，避免 LINE WebView 裡 routes library 較慢時，
+          整個地址 UI 都被卡住，連「使用目前位置」也誤判尚未載入。
+          Production fare.html 完全不修改；只改 Demo mirror 的執行內容。
+        */
+        const fareBeforeRoutesPatch = html;
+        html = html.replace(
+          /const\s*{\s*Route\s*}\s*=\s*await\s*google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/,
+          'google.maps.importLibrary("routes").then(({Route})=>{RouteClass=Route;}).catch((error)=>{console.warn("DEMO Routes library delayed:",error);});'
+        );
+
+        if (html === fareBeforeRoutesPatch) {
+          throw new Error("Demo Fare 找不到 Routes 初始化區塊，已停止載入");
+        }
+
         const fareBeforeGoogleBootPatch = html;
         html = html.replace(
           /window\.addEventListener\(\s*["']load["']\s*,\s*initGoogle\s*\);/,
-          '(function(){let attempts=0;function startDemoFareGoogle(){attempts+=1;if(typeof window.google?.maps?.importLibrary==="function"){initGoogle();return;}if(attempts>=400){showStatus("DEMO Google loader 等待逾時，請重新開啟頁面。",true);return;}setTimeout(startDemoFareGoogle,25);}startDemoFareGoogle();})();'
+          '(function(){let attempts=0;let running=false;function startDemoFareGoogle(){if(typeof pickupController!=="undefined"&&pickupController){return;}attempts+=1;if(typeof window.google?.maps?.importLibrary==="function"&&!running){running=true;Promise.resolve(initGoogle()).catch((error)=>{console.error("DEMO Fare initGoogle rejected:",error);}).finally(()=>{running=false;if((typeof pickupController==="undefined"||!pickupController)&&attempts<500){setTimeout(startDemoFareGoogle,120);}else if((typeof pickupController==="undefined"||!pickupController)&&attempts>=500){showStatus("DEMO Google 地址系統載入逾時，請重新開啟頁面。",true);}});return;}if(attempts>=500){showStatus("DEMO Google loader 等待逾時，請重新開啟頁面。",true);return;}setTimeout(startDemoFareGoogle,25);}startDemoFareGoogle();})();'
         );
 
         if (html === fareBeforeGoogleBootPatch) {
