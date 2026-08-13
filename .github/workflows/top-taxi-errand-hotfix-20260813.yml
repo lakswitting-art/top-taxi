@@ -1,0 +1,78 @@
+name: TOP Taxi errand hotfix 2026-08-13
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/top-taxi-errand-hotfix-20260813.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch errand production page
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('errand.html')
+          s = p.read_text(encoding='utf-8')
+
+          replacements = []
+
+          # 1) Mobile Google suggestion UX: make the dropdown a clear independent scroll area.
+          old = '''.suggestions,\n.address-suggestions {\n  overscroll-behavior: contain;\n  -webkit-overflow-scrolling: touch;\n  touch-action: pan-y;\n  scrollbar-gutter: stable;\n}'''
+          new = '''.suggestions,\n.address-suggestions {\n  max-height: min(300px, 42vh) !important;\n  overflow-y: auto !important;\n  overscroll-behavior: contain;\n  -webkit-overflow-scrolling: touch;\n  touch-action: pan-y;\n  scrollbar-gutter: stable;\n  scrollbar-width: thin;\n  scrollbar-color: rgba(0,0,0,.22) transparent;\n}\n.address-suggestion {\n  min-height: 60px;\n  padding-top: 13px !important;\n  padding-bottom: 13px !important;\n  text-align: left !important;\n  touch-action: pan-y;\n}\n.suggestions::-webkit-scrollbar,\n.address-suggestions::-webkit-scrollbar { width: 4px; }\n.suggestions::-webkit-scrollbar-thumb,\n.address-suggestions::-webkit-scrollbar-thumb {\n  background: rgba(0,0,0,.20);\n  border-radius: 999px;\n}'''
+          assert old in s, 'address UX CSS anchor not found'
+          s = s.replace(old, new, 1)
+
+          # 2) Never describe a locally selected photo as already uploaded to LINE.
+          old = "lines.push(`搬家物品照片｜${movePhotoRemoteUrl?'已附 LINE 圖片':'客人已上傳'}`);"
+          new = "lines.push(`搬家物品照片｜${movePhotoRemoteUrl?'已附 LINE 圖片':'已選擇，圖片傳送中'}`);"
+          assert old in s, 'move photo dispatch label anchor not found'
+          s = s.replace(old, new, 1)
+
+          # 3) Success and sync-warning both return to LINE; only truly uncertain delivery stays put.
+          old = "if(!uncertain&&!sync&&SEND_TEST_MODE!=='success'){clearTimeout(returnTimer);returnTimer=setTimeout(returnToLine,1100);}}"
+          new = "if(!uncertain&&SEND_TEST_MODE!=='success'){clearTimeout(returnTimer);returnTimer=setTimeout(returnToLine,900);}}"
+          assert old in s, 'LINE return anchor not found'
+          s = s.replace(old, new, 1)
+
+          # 4) Avoid pointerdown selecting an address before the finger has a chance to scroll.
+          old = "r.addEventListener('pointerdown',e=>{suppressAddStopUntil=Date.now()+900;e.preventDefault();e.stopPropagation();choose(pred);});"
+          new = "r.addEventListener('click',e=>{suppressAddStopUntil=Date.now()+900;e.preventDefault();e.stopPropagation();choose(pred);});"
+          assert old in s, 'address pointer handler anchor not found'
+          s = s.replace(old, new, 1)
+
+          # 5) Harden n8n photo URL extraction and make missing/failed LINE image delivery a warning, never a false success.
+          old = """let ok=true;try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok){ok=false;console.warn('ERRAND n8n HTTP:',r.status);}else{try{const payload=await r.clone().json();const candidate=payload?.movePhotoUrl||payload?.photoUrl||payload?.data?.movePhotoUrl||payload?.data?.photoUrl;if(taskType==='move'&&typeof candidate==='string'&&/^https:\\/\\//i.test(candidate)){movePhotoRemoteUrl=candidate;orderData.taskSpecific.movePhoto={...(orderData.taskSpecific.movePhoto||{}),url:candidate,dataUrl:null};try{await liff.sendMessages([{type:'image',originalContentUrl:candidate,previewImageUrl:candidate}]);}catch(photoSendError){console.warn('ERRAND MOVE PHOTO LINE SEND FAILED:',photoSendError);}}}catch(parseError){/* Existing n8n may not return JSON/photo URL yet. */}}}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}\n   orderData.delivery.backendStatus=ok?'success':'failed';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState=ok?'success':'sync-warning';b.textContent='✅ 已送出';main.textContent='✅ 跑腿已送出';showResult(sendState);"""
+          new = """let ok=true,photoOk=taskType!=='move';try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok){ok=false;console.warn('ERRAND n8n HTTP:',r.status);}else{let payload=null;try{payload=await r.clone().json();}catch(parseError){console.warn('ERRAND n8n RESPONSE IS NOT JSON:',parseError);}const findPhotoUrl=(v,depth=0)=>{if(depth>5||v==null)return null;if(typeof v==='string')return /^https:\\/\\//i.test(v.trim())?v.trim():null;if(Array.isArray(v)){for(const item of v){const hit=findPhotoUrl(item,depth+1);if(hit)return hit;}return null;}if(typeof v==='object'){for(const key of ['movePhotoUrl','photoUrl','imageUrl','originalContentUrl','previewImageUrl']){const hit=findPhotoUrl(v[key],depth+1);if(hit)return hit;}for(const key of ['data','result','body','output']){const hit=findPhotoUrl(v[key],depth+1);if(hit)return hit;}}return null;};const candidate=findPhotoUrl(payload);if(taskType==='move'){if(candidate){movePhotoRemoteUrl=candidate;orderData.taskSpecific.movePhoto={...(orderData.taskSpecific.movePhoto||{}),url:candidate,dataUrl:null};try{await liff.sendMessages([{type:'image',originalContentUrl:candidate,previewImageUrl:candidate}]);photoOk=true;}catch(photoSendError){photoOk=false;ok=false;console.warn('ERRAND MOVE PHOTO LINE SEND FAILED:',photoSendError);}}else{photoOk=false;ok=false;console.warn('ERRAND MOVE PHOTO URL MISSING FROM n8n RESPONSE');}}}}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}\n   orderData.delivery.backendStatus=ok?'success':'failed';if(taskType==='move')orderData.delivery.photoLineStatus=photoOk?'success':'failed';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;sendInProgress=false;sendState=ok?'success':'sync-warning';b.textContent=ok?'✅ 已送出':'⚠️ 已送出・同步待確認';main.textContent=ok?'✅ 跑腿已送出':'⚠️ 跑腿已送出・同步待確認';showResult(sendState);"""
+          assert old in s, 'n8n/photo send anchor not found'
+          s = s.replace(old, new, 1)
+
+          p.write_text(s, encoding='utf-8')
+      - name: Syntax smoke checks
+        shell: bash
+        run: |
+          grep -q "圖片傳送中" errand.html
+          grep -q "photoLineStatus" errand.html
+          grep -q "addEventListener('click',e=>{suppressAddStopUntil" errand.html
+          grep -q "setTimeout(returnToLine,900)" errand.html
+      - name: Commit production hotfix
+        shell: bash
+        run: |
+          if git diff --quiet -- errand.html; then
+            echo 'No changes to commit'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add errand.html
+          git commit -m 'fix errand photo return and address touch UX'
+          git push origin HEAD:main
