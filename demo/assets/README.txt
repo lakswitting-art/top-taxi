@@ -1,0 +1,1 @@
+Screenshots used by Demo system showcase. Source images are user-provided TOP Taxi test captures.
