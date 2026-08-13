@@ -1,0 +1,112 @@
+name: TOP Taxi errand address UX round 2 deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/top-taxi-address-round2-deploy-v2.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Patch errand mobile address UX
+        shell: python
+        run: |
+          from pathlib import Path
+
+          p = Path('errand.html')
+          s = p.read_text(encoding='utf-8')
+          marker = 'TOP TAXI ADDRESS UX ROUND 2｜MOBILE COMPACT SEARCH'
+
+          style = """
+          <style id="topTaxiAddressUxRound2">
+          /* ===== TOP TAXI ADDRESS UX ROUND 2｜MOBILE COMPACT SEARCH ===== */
+          @media (max-width: 520px) {
+            .suggestions,
+            .address-suggestions {
+              max-height: 176px !important;
+              overflow-y: auto !important;
+              overscroll-behavior: contain;
+              -webkit-overflow-scrolling: touch;
+              touch-action: pan-y;
+              scroll-padding-block: 4px;
+              scrollbar-width: thin;
+            }
+
+            .address-suggestion {
+              min-height: 54px !important;
+              grid-template-columns: 28px minmax(0, 1fr) !important;
+              gap: 9px !important;
+              padding: 9px 12px !important;
+              text-align: left !important;
+              align-items: center !important;
+            }
+
+            .address-suggestion-icon {
+              width: 28px !important;
+              height: 28px !important;
+              font-size: 14px !important;
+            }
+
+            .address-suggestion-main {
+              font-size: 14px !important;
+              line-height: 1.28 !important;
+            }
+
+            .address-suggestion-secondary {
+              margin-top: 2px !important;
+              font-size: 11.5px !important;
+              line-height: 1.28 !important;
+            }
+
+            .address-google-attribution {
+              padding: 6px 12px !important;
+              font-size: 10.5px !important;
+            }
+
+            .address-input {
+              min-height: 46px !important;
+              height: 46px !important;
+            }
+          }
+          </style>
+          """
+
+          if marker not in s:
+              s = s.replace('</head>', style + '\n</head>', 1)
+
+          old = "const maxHeight = Math.max(104, Math.min(330, available));"
+          new = "const cap = window.innerWidth <= 520 ? 176 : 300;\n    const maxHeight = Math.max(108, Math.min(cap, available));"
+          if old in s:
+              s = s.replace(old, new, 1)
+          elif new not in s:
+              raise SystemExit('fitPanel maxHeight target not found')
+
+          p.write_text(s, encoding='utf-8')
+
+      - name: Verify patch
+        shell: bash
+        run: |
+          grep -q 'TOP TAXI ADDRESS UX ROUND 2' errand.html
+          grep -q 'max-height: 176px' errand.html
+          grep -q 'min-height: 54px' errand.html
+          grep -q 'const cap = window.innerWidth <= 520 ? 176 : 300' errand.html
+
+      - name: Commit production update and cleanup
+        shell: bash
+        run: |
+          rm -f .github/workflows/top-taxi-address-round2-20260813.yml
+          rm -f .github/workflows/top-taxi-address-round2-deploy-v2.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add errand.html .github/workflows/top-taxi-address-round2-20260813.yml .github/workflows/top-taxi-address-round2-deploy-v2.yml
+          git commit -m 'refine errand mobile address search density'
+          git push origin HEAD:main
