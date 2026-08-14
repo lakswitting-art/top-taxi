@@ -1,8 +1,9 @@
-name: Errand address A/B focus test
+name: Errand address AB test
 on:
+  workflow_dispatch:
   push:
     paths:
-      - '.github/workflows/errand-address-ab-test.yml'
+      - .github/workflows/errand-address-ab-test.yml
 permissions:
   contents: write
 jobs:
@@ -12,21 +13,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Install temporary plain-wrapper A/B test
+      - name: Patch AB test
         shell: python
         run: |
           from pathlib import Path
           import re
-          p=Path('errand.html')
-          s=p.read_text(encoding='utf-8')
-
-          # Remove diagnostic overlays so the A/B test is visually clean.
-          s=re.sub(r'<div id="topTaxiViewportDebugV2".*?</script>\s*','',s,flags=re.S)
-          s=re.sub(r'<div id="topTaxiViewportDebug".*?</script>\s*','',s,flags=re.S)
-
-          marker='''
+          p = Path("errand.html")
+          s = p.read_text(encoding="utf-8")
+          s = re.sub(r'<div id="topTaxiViewportDebugV2".*?</script>\s*', '', s, flags=re.S)
+          s = re.sub(r'<div id="topTaxiViewportDebug".*?</script>\s*', '', s, flags=re.S)
+          block = """
 <style id="topTaxiErrandAddressABTestV1">
-/* TEMP A/B: first address wrapper is stripped to a plain input host. */
 .ab-plain-address-host{position:relative!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:visible!important;contain:none!important;transform:none!important;zoom:1!important}
 .ab-plain-address-host>.address-input{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;font-size:16px!important;transform:none!important;zoom:1!important;contain:none!important}
 .ab-plain-address-host>.address-suggestions{left:0!important;right:0!important;width:auto!important;max-width:100%!important}
@@ -46,23 +43,23 @@ jobs:
   if(!patchFirstAddress()){
     const mo=new MutationObserver(function(){if(patchFirstAddress()) mo.disconnect();});
     mo.observe(document.documentElement,{childList:true,subtree:true});
-    setTimeout(()=>mo.disconnect(),10000);
+    setTimeout(function(){mo.disconnect()},10000);
   }
 })();
 </script>
-'''
-          if 'topTaxiErrandAddressABTestScriptV1' not in s:
-              s=s.replace('</body>',marker+'\n</body>',1)
-          p.write_text(s,encoding='utf-8')
-      - name: Verify and commit
+"""
+          if "topTaxiErrandAddressABTestScriptV1" not in s:
+              s = s.replace("</body>", block + "\n</body>", 1)
+          p.write_text(s, encoding="utf-8")
+      - name: Commit
         shell: bash
         run: |
-          set -euo pipefail
+          set -e
           git diff --check
-          grep -q 'topTaxiErrandAddressABTestScriptV1' errand.html
+          grep -q topTaxiErrandAddressABTestScriptV1 errand.html
           rm -f .github/workflows/errand-address-ab-test.yml
           git config user.name "TOP Taxi automation"
           git config user.email "actions@users.noreply.github.com"
           git add errand.html .github/workflows/errand-address-ab-test.yml
-          git commit -m "test errand first address with plain wrapper baseline"
+          git commit -m "test errand first address plain wrapper"
           git push origin HEAD:main
