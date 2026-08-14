@@ -1,0 +1,207 @@
+name: Dispatch Message Layout 20260815
+
+on:
+  push:
+    branches:
+      - work/dispatch-message-layout-20260815
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: work/dispatch-message-layout-20260815
+          fetch-depth: 0
+      - name: Patch customer LINE messages
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          def inject(path, marker, code):
+              p=Path(path); s=p.read_text(encoding='utf-8')
+              if marker in s:
+                  return
+              idx=s.rfind('</script>')
+              if idx < 0: raise SystemExit(f'no closing script in {path}')
+              s=s[:idx]+"\n"+code+"\n"+s[idx:]
+              p.write_text(s,encoding='utf-8')
+
+          def replace_once(path, old, new):
+              p=Path(path); s=p.read_text(encoding='utf-8')
+              if new in s: return
+              if old not in s: raise SystemExit(f'marker missing in {path}: {old[:80]}')
+              s=s.replace(old,new,1)
+              p.write_text(s,encoding='utf-8')
+
+          common = r'''
+function topTaxiCleanMessageLinesV2(lines){
+  const out=[];
+  for(const raw of lines){
+    const line=String(raw??'').replace(/\s+$/,'');
+    if(line.trim()==='' && (!out.length || out[out.length-1].trim()==='')) continue;
+    out.push(line);
+  }
+  while(out.length && out[0].trim()==='') out.shift();
+  while(out.length && out[out.length-1].trim()==='') out.pop();
+  return out;
+}
+function topTaxiSplitAddressBlocksV2(lines){
+  const body=[], blocks=[];
+  let block=null;
+  const flush=()=>{ if(block&&block.length){blocks.push(block);block=null;} };
+  for(const raw of lines){
+    const t=String(raw??'').trim();
+    if(/^(📍|🟡|🏁)\s/.test(t)){
+      flush(); block=[raw]; continue;
+    }
+    if(block){
+      if(t===''){ flush(); body.push(raw); }
+      else block.push(raw);
+      continue;
+    }
+    body.push(raw);
+  }
+  flush();
+  return {body,blocks};
+}
+'''
+
+          ride_helper = common + r'''
+function topTaxiFormatRideMessageV2(text){
+  const serviceIsDriver = rideService === 'driver';
+  const serviceShort = serviceIsDriver ? '🚘 代駕' : '🚕 一般搭車';
+  const header = serviceIsDriver ? '🚘 TOP Taxi｜即時叫車・代駕' : '🚕 TOP Taxi｜即時叫車・一般搭車';
+  let lines=String(text||'').split('\n');
+  const split=topTaxiSplitAddressBlocksV2(lines);
+  const body=[];
+  for(let i=0;i<split.body.length;i++){
+    const line=String(split.body[i]??'');
+    const t=line.trim();
+    if(i===0 && /TOP Taxi/.test(t)) continue;
+    if(t.startsWith('📋 服務類型：')) continue;
+    if(t.startsWith('📡 TOP Taxi｜')) continue;
+    if(t.startsWith('💳 付款方式：') && t.includes('現金')) continue;
+    if(t==='💡 特殊需求'){
+      const next=String(split.body[i+1]??'').trim();
+      if(!next || next==='無'){ i++; continue; }
+    }
+    body.push(line);
+  }
+  const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
+  const out=[header,'',...topTaxiCleanMessageLinesV2(body),'',`⚡ 即時｜${serviceShort}`];
+  if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
+  return topTaxiCleanMessageLinesV2(out).join('\n');
+}
+'''
+          inject('ride.html','function topTaxiFormatRideMessageV2',ride_helper)
+          replace_once('ride.html','const message=await buildMessage();','const message=topTaxiFormatRideMessageV2(await buildMessage());')
+
+          booking_helper = common + r'''
+function topTaxiFormatBookingMessageV2(ctx){
+  const isDriver=ctx.bookingService==='driver';
+  const header=isDriver?'📅 TOP Taxi｜預約叫車・代駕':'📅 TOP Taxi｜預約叫車・一般搭車';
+  const serviceShort=isDriver?'🚘 代駕':'🚕 一般搭車';
+  const out=[header];
+  const addSection=(text)=>{
+    const x=String(text||'').trim();
+    if(!x) return;
+    out.push('',...x.split('\n'));
+  };
+  addSection(ctx.passengerDetails);
+  addSection(ctx.fareDetails);
+  if(ctx.memo && ctx.memo!=='無') addSection(`💡 特殊需求\n${ctx.memo}`);
+  if(ctx.payment && !String(ctx.payment).includes('現金')) addSection(`💳 付款方式：${ctx.payment}`);
+  out.push('','━━━━━━━━━━━━━','預約完成！客服確認後會立刻幫您安排！','',`🕐 ${ctx.bookDate} ${ctx.bookTime}｜${serviceShort}`,'',ctx.pickupDispatchHeader,ctx.pickupDispatchText);
+  if(ctx.pickupNote) out.push(`📌 上車補充｜${ctx.pickupNote}`);
+  addSection(ctx.waypointDetails);
+  if(ctx.dropoffDetails) addSection(ctx.dropoffDetails);
+  return topTaxiCleanMessageLinesV2(out).join('\n');
+}
+'''
+          inject('index.html','function topTaxiFormatBookingMessageV2',booking_helper)
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          pat=r'text:\s*lineMessage'
+          repl="text: topTaxiFormatBookingMessageV2({bookingService,bookDate,bookTime,passengerDetails,fareDetails,memo,payment,pickupDispatchHeader,pickupDispatchText,pickupNote,waypointDetails,dropoffDetails})"
+          s2,n=re.subn(pat,repl,s,count=1)
+          if n!=1 and repl not in s: raise SystemExit('index send marker missing')
+          p.write_text(s2 if n else s,encoding='utf-8')
+
+          fare_helper = common + r'''
+function topTaxiFormatFareMessageV2(text,mode){
+  const isDriver=mode==='driver';
+  const header=isDriver?'💰 TOP Taxi｜車資試算・代駕':'💰 TOP Taxi｜車資試算・一般搭車';
+  const serviceShort=isDriver?'🚘 代駕':'🚕 一般搭車';
+  const split=topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
+  const body=[];
+  for(let i=0;i<split.body.length;i++){
+    const t=String(split.body[i]??'').trim();
+    if(i===0 && /TOP Taxi/.test(t)) continue;
+    if(t.startsWith('📋 服務類型：')) continue;
+    if(t.includes('需求已送出') || t.includes('客服確認後')) continue;
+    body.push(split.body[i]);
+  }
+  const kept=topTaxiCleanMessageLinesV2(body).filter(x=>x.trim()!=='━━━━━━━━━━━━━');
+  const out=[header,'',...kept,'','━━━━━━━━━━━━━','以上為系統預估車資，實際費用依當日行程狀況為準。','',`💰 試算｜${serviceShort}`];
+  const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
+  if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
+  return topTaxiCleanMessageLinesV2(out).join('\n');
+}
+'''
+          inject('fare.html','function topTaxiFormatFareMessageV2',fare_helper)
+          p=Path('fare.html'); s=p.read_text(encoding='utf-8')
+          s2,n=re.subn(r'text:\s*message', 'text: topTaxiFormatFareMessageV2(message, serviceMode)', s, count=1)
+          if n!=1 and 'text: topTaxiFormatFareMessageV2(message, serviceMode)' not in s: raise SystemExit('fare send marker missing')
+          p.write_text(s2 if n else s,encoding='utf-8')
+
+          errand_helper = common + r'''
+function topTaxiFormatErrandMessageV2(text){
+  const task=TASKS[taskType]||'跑腿';
+  const icon={purchase:'🛒',delivery:'📦',queue:'🧾',pet:'🐾',move:'📦',other:'🛵'}[taskType]||'🛵';
+  const header=`${icon} TOP Taxi｜跑腿服務・${task}`;
+  const split=topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
+  const body=[];
+  for(let i=0;i<split.body.length;i++){
+    const line=String(split.body[i]??''); const t=line.trim();
+    if(i===0 && /TOP Taxi/.test(t)) continue;
+    if(t.startsWith('📋 服務類型：')) continue;
+    if(t.startsWith('🛵 任務類型：')) continue;
+    if(t.startsWith('📅 預約日期：') || t.startsWith('⏰ 預約時間：')) continue;
+    if(t.startsWith('📡 TOP Taxi｜')) continue;
+    if(t.startsWith('💳 付款方式：') && t.includes('現金')) continue;
+    body.push(line);
+  }
+  const core=errandMode==='reserve'
+    ? `🕐 ${$('#errandDate').value} ${$('#errandTime').value}｜${icon} ${task}`
+    : `⚡ 即時｜${icon} ${task}`;
+  const out=[header,'',...topTaxiCleanMessageLinesV2(body),'',core];
+  const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
+  if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
+  return topTaxiCleanMessageLinesV2(out).join('\n');
+}
+'''
+          inject('errand.html','function topTaxiFormatErrandMessageV2',errand_helper)
+          replace_once('errand.html','const message=dispatchMessage(orderData);','const message=topTaxiFormatErrandMessageV2(dispatchMessage(orderData));')
+
+          for fn in ['ride.html','index.html','fare.html','errand.html']:
+              txt=Path(fn).read_text(encoding='utf-8')
+              if 'topTaxiFormat' not in txt: raise SystemExit(f'formatter missing in {fn}')
+              print(fn, len(txt))
+          PY
+      - name: Commit patched pages
+        shell: bash
+        run: |
+          git config user.name "TOP Taxi Patch Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ride.html index.html fare.html errand.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Update LINE customer message layout for dispatch"
+          git push origin HEAD:work/dispatch-message-layout-20260815
