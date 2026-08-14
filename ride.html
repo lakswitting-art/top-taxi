@@ -1199,9 +1199,9 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
         <div><label class="label" for="homePickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="homePickupNote" class="input" placeholder="例如：社區大門口、超商前"></div>
         <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="workName">地點 2 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="1">清除</button></div><input id="workName" class="input" value="公司"></div><div><label class="label" for="workAddress">地址</label><div class="autocomplete"><input id="workAddress" class="input" autocomplete="off" placeholder="輸入公司地址或地標"><div id="workAddressSuggestions" class="suggestions" hidden></div></div></div></div>
         <div><label class="label" for="workPickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="workPickupNote" class="input" placeholder="例如：公司正門、警衛室旁"></div>
-        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="fav1Name">地點 3 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="2">清除</button></div><input id="fav1Name" class="input" value="常用地點 1"></div><div><label class="label" for="fav1Address">地址</label><div class="autocomplete"><input id="fav1Address" class="input" autocomplete="off" placeholder="輸入常用地址或地標"><div id="fav1AddressSuggestions" class="suggestions" hidden></div></div></div></div>
+        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="fav1Name">地點 3 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="2">清除</button></div><input id="fav1Name" class="input" value="常用 1"></div><div><label class="label" for="fav1Address">地址</label><div class="autocomplete"><input id="fav1Address" class="input" autocomplete="off" placeholder="輸入常用地址或地標"><div id="fav1AddressSuggestions" class="suggestions" hidden></div></div></div></div>
         <div><label class="label" for="fav1PickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="fav1PickupNote" class="input" placeholder="例如：大門右側、路口紅綠燈下"></div>
-        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="fav2Name">地點 4 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="3">清除</button></div><input id="fav2Name" class="input" value="常用4"></div><div><label class="label" for="fav2Address">地址</label><div class="autocomplete"><input id="fav2Address" class="input" autocomplete="off" placeholder="輸入常用地址或地標"><div id="fav2AddressSuggestions" class="suggestions" hidden></div></div></div></div>
+        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="fav2Name">地點 4 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="3">清除</button></div><input id="fav2Name" class="input" value="常用 2"></div><div><label class="label" for="fav2Address">地址</label><div class="autocomplete"><input id="fav2Address" class="input" autocomplete="off" placeholder="輸入常用地址或地標"><div id="fav2AddressSuggestions" class="suggestions" hidden></div></div></div></div>
         <div><label class="label" for="fav2PickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="fav2PickupNote" class="input" placeholder="例如：管理室前、便利商店門口"></div>
         <button id="saveAddresses" class="primary" type="button">儲存常用地址</button>
       </div>
@@ -1215,7 +1215,7 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
         <div class="saved-place-line">
           <div id="savedChips" class="chips"></div>
           <button id="toggleSettings" class="saved-settings-btn" type="button" aria-label="設定常用地址">
-            <span>設定</span>
+            <span>常用地址</span>
             <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z"></path>
               <path d="M19.1 13.7a7.7 7.7 0 0 0 .05-1.7 7.7 7.7 0 0 0-.05-1.7l2-1.55-2-3.45-2.45.98a7.75 7.75 0 0 0-2.95-1.7L13.35 2h-4.7L8.3 4.58a7.75 7.75 0 0 0-2.95 1.7L2.9 5.3l-2 3.45 2 1.55A7.7 7.7 0 0 0 2.85 12c0 .58.02 1.15.05 1.7l-2 1.55 2 3.45 2.45-.98a7.75 7.75 0 0 0 2.95 1.7L8.65 22h4.7l.35-2.58a7.75 7.75 0 0 0 2.95-1.7l2.45.98 2-3.45-2-1.55Z"></path>
@@ -1850,7 +1850,7 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
     smokingMode=savedSmokingPreference||"不限";
 
     function emptyAddress(name=""){return{name,displayName:"",address:"",city:"",district:"",areaLabel:"",placeId:"",lat:null,lng:null,pickupNote:""}}
-    const defaults=[emptyAddress("住家"),emptyAddress("公司"),emptyAddress("常用地點 1"),emptyAddress("常用地點 2")];
+    const defaults=[emptyAddress("住家"),emptyAddress("公司"),emptyAddress("常用 1"),emptyAddress("常用 2")];
 
     function addressComponent(place,types){
       const list=Array.isArray(place?.addressComponents)?place.addressComponents:[];
@@ -4033,6 +4033,83 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
+})();
+</script>
+<style id="topTaxiSavedAddressPolishV2Style">
+.top-taxi-saved-address-hint-v2{
+  margin:4px 2px 0;
+  color:#9b9ba1;
+  font-size:11px;
+  line-height:1.45;
+}
+</style>
+<script id="topTaxiSavedAddressPolishV2">
+(function(){
+  const KEY='topTaxiAddresses';
+  const generic1=new Set(['','常用','常用:','常用：','常用地點 1','常用地點1','常用1','常用 1','常用3','常用 3']);
+  const generic2=new Set(['','常用','常用:','常用：','常用地點 2','常用地點2','常用2','常用 2','常用4','常用 4']);
+
+  function migrate(){
+    try{
+      const raw=JSON.parse(localStorage.getItem(KEY)||'null');
+      if(!Array.isArray(raw))return;
+      let changed=false;
+      if(raw[2]&&generic1.has(String(raw[2].name||'').trim())){
+        raw[2].name='常用 1'; changed=true;
+      }
+      if(raw[3]&&generic2.has(String(raw[3].name||'').trim())){
+        raw[3].name='常用 2'; changed=true;
+      }
+      if(changed)localStorage.setItem(KEY,JSON.stringify(raw));
+    }catch(_){ }
+  }
+
+  function normalizeInput(el, expected, allowed){
+    if(!el)return;
+    const value=String(el.value||'').trim();
+    if(allowed.has(value))el.value=expected;
+  }
+
+  function fixDom(){
+    migrate();
+
+    const rideLabel=document.querySelector('#toggleSettings > span');
+    if(rideLabel && String(rideLabel.textContent||'').trim()==='設定') rideLabel.textContent='常用地址';
+
+    const bookingLabel=document.getElementById('savedSettingsLabel');
+    if(bookingLabel && String(bookingLabel.textContent||'').trim()==='設定') bookingLabel.textContent='常用地址';
+
+    normalizeInput(document.getElementById('sharedName2'),'常用 1',generic1);
+    normalizeInput(document.getElementById('sharedName3'),'常用 2',generic2);
+    normalizeInput(document.getElementById('fav1Name'),'常用 1',generic1);
+    normalizeInput(document.getElementById('fav2Name'),'常用 2',generic2);
+
+    const bookingChips=document.querySelectorAll('#bookingSavedAddressChips .saved-address-chip');
+    bookingChips.forEach(function(btn){
+      const t=String(btn.textContent||'').trim();
+      if(generic1.has(t))btn.textContent='常用 1';
+      else if(generic2.has(t))btn.textContent='常用 2';
+    });
+    const rideChips=document.querySelectorAll('#savedChips .chip');
+    rideChips.forEach(function(btn){
+      const t=String(btn.textContent||'').trim();
+      if(generic1.has(t))btn.textContent='常用 1';
+      else if(generic2.has(t))btn.textContent='常用 2';
+    });
+
+    const rideLine=document.querySelector('.saved-place-line');
+    if(rideLine && !document.querySelector('.top-taxi-saved-address-hint-v2')){
+      const hint=document.createElement('div');
+      hint.className='top-taxi-saved-address-hint-v2';
+      hint.textContent='儲存常用地址，下次可一鍵帶入';
+      rideLine.insertAdjacentElement('afterend',hint);
+    }
+  }
+
+  migrate();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fixDom,{once:true});
+  else fixDom();
+  new MutationObserver(function(){requestAnimationFrame(fixDom);}).observe(document.documentElement,{subtree:true,childList:true});
 })();
 </script>
 </body>
