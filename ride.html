@@ -1248,23 +1248,33 @@ body {
 </script>
 
 
-<style id="topTaxiSavedAddressSlotNumbersV1">
-.saved-slot-number{
-  flex:0 0 auto;
-  display:inline-grid;
-  place-items:center;
-  width:28px;
+<style id="topTaxiSavedAddressSlotNumbersV2">
+.saved-slot-name-input{
+  min-width:0;
+  width:100%;
   height:32px;
-  color:#35353a;
-  font-size:22px;
-  font-weight:850;
+  min-height:32px;
+  padding:0 4px !important;
+  border:1px solid #e5e5e8 !important;
+  border-radius:9px !important;
+  background:#fff !important;
+  color:#35353a !important;
+  font-size:15px !important;
+  font-weight:850 !important;
+  text-align:center;
   line-height:1;
-  user-select:none;
-  -webkit-user-select:none;
+  box-shadow:none !important;
+}
+.saved-slot-name-input:focus{
+  border-color:var(--red) !important;
+  box-shadow:0 0 0 2px rgba(255,31,45,.08) !important;
 }
 #settings.ride-saved-compact .saved-setting-name,
 #bookingSavedAddressEditor .saved-setting-name{
-  justify-content:space-between;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:4px;
+  align-items:center;
 }
 </style>
 
@@ -1303,7 +1313,7 @@ body {
       <div id="settings" class="settings ride-saved-compact" hidden>
         <div class="ride-saved-address-row">
           <div class="saved-setting-name">
-            <span class="saved-slot-number" aria-hidden="true">①</span><input id="homeName" type="hidden" value="住家" aria-label="常用地點名稱">
+            <input id="homeName" class="input ride-saved-name-input saved-slot-name-input" value="①" aria-label="常用地點名稱">
             <button class="saved-clear-btn" type="button" data-clear-saved="0">清除</button>
           </div>
           <div class="autocomplete"><input id="homeAddress" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="homeAddressSuggestions" class="suggestions" hidden></div></div>
@@ -1311,7 +1321,7 @@ body {
         </div>
         <div class="ride-saved-address-row">
           <div class="saved-setting-name">
-            <span class="saved-slot-number" aria-hidden="true">②</span><input id="workName" type="hidden" value="公司" aria-label="常用地點名稱">
+            <input id="workName" class="input ride-saved-name-input saved-slot-name-input" value="②" aria-label="常用地點名稱">
             <button class="saved-clear-btn" type="button" data-clear-saved="1">清除</button>
           </div>
           <div class="autocomplete"><input id="workAddress" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="workAddressSuggestions" class="suggestions" hidden></div></div>
@@ -1319,7 +1329,7 @@ body {
         </div>
         <div class="ride-saved-address-row">
           <div class="saved-setting-name">
-            <span class="saved-slot-number" aria-hidden="true">③</span><input id="fav1Name" type="hidden" value="常用 1" aria-label="常用地點名稱">
+            <input id="fav1Name" class="input ride-saved-name-input saved-slot-name-input" value="③" aria-label="常用地點名稱">
             <button class="saved-clear-btn" type="button" data-clear-saved="2">清除</button>
           </div>
           <div class="autocomplete"><input id="fav1Address" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="fav1AddressSuggestions" class="suggestions" hidden></div></div>
@@ -1327,7 +1337,7 @@ body {
         </div>
         <div class="ride-saved-address-row">
           <div class="saved-setting-name">
-            <span class="saved-slot-number" aria-hidden="true">④</span><input id="fav2Name" type="hidden" value="常用 2" aria-label="常用地點名稱">
+            <input id="fav2Name" class="input ride-saved-name-input saved-slot-name-input" value="④" aria-label="常用地點名稱">
             <button class="saved-clear-btn" type="button" data-clear-saved="3">清除</button>
           </div>
           <div class="autocomplete"><input id="fav2Address" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="fav2AddressSuggestions" class="suggestions" hidden></div></div>
@@ -1980,7 +1990,8 @@ body {
     smokingMode=savedSmokingPreference||"不限";
 
     function emptyAddress(name=""){return{name,displayName:"",address:"",city:"",district:"",areaLabel:"",placeId:"",lat:null,lng:null,pickupNote:""}}
-    const defaults=[emptyAddress("住家"),emptyAddress("公司"),emptyAddress("常用 1"),emptyAddress("常用 2")];
+    const RIDE_SAVED_SLOT_NAMES=["①","②","③","④"];
+    const defaults=RIDE_SAVED_SLOT_NAMES.map(name=>emptyAddress(name));
 
     function addressComponent(place,types){
       const list=Array.isArray(place?.addressComponents)?place.addressComponents:[];
@@ -2397,10 +2408,13 @@ body {
     function normalizeLegacyRideSavedName(item,index){
       const next=normalizeAddress(item||{},defaults[index]||{});
       const current=String(next.name||"").trim();
-      const legacy1=new Set(["","常用","常用:","常用：","常用地點","常用地點 1","常用地點1","常用1","常用 1","常用3","常用 3"]);
-      const legacy2=new Set(["","常用","常用:","常用：","常用地點","常用地點 2","常用地點2","常用2","常用 2","常用4","常用 4"]);
-      if(index===2&&legacy1.has(current))next.name="常用 1";
-      if(index===3&&legacy2.has(current))next.name="常用 2";
+      const genericByIndex=[
+        new Set(["","住家","①"]),
+        new Set(["","公司","②"]),
+        new Set(["","常用","常用:","常用：","常用地點","常用地點 1","常用地點1","常用1","常用 1","常用3","常用 3","③"]),
+        new Set(["","常用","常用:","常用：","常用地點","常用地點 2","常用地點2","常用2","常用 2","常用4","常用 4","④"])
+      ];
+      if(genericByIndex[index]?.has(current))next.name=RIDE_SAVED_SLOT_NAMES[index];
       return next;
     }
 
@@ -2468,8 +2482,7 @@ body {
         b.type="button";
         b.className="chip";
 
-        const fallbackNames=["住家","公司","常用3","常用4"];
-        b.textContent=(x.name||fallbackNames[i]||("常用"+(i+1))).trim();
+        b.textContent=(x.name||RIDE_SAVED_SLOT_NAMES[i]||("常用"+(i+1))).trim();
         b.onclick=()=>useSaved(i);
 
         box.appendChild(b);
@@ -2497,9 +2510,9 @@ body {
       const label=currentName||("地點 "+(index+1));
       if(!window.confirm("確定要清除「"+label+"」這組常用地址嗎？"))return;
 
-      const empty=emptyAddress("");
+      const empty=emptyAddress(RIDE_SAVED_SLOT_NAMES[index]||"");
       savedAddresses[index]=empty;
-      draftAddressData[index]=emptyAddress("");
+      draftAddressData[index]=emptyAddress(RIDE_SAVED_SLOT_NAMES[index]||"");
 
       localStorage.setItem(SHARED_ADDRESS_KEY,JSON.stringify(savedAddresses));
 
@@ -3626,7 +3639,7 @@ body {
       try{
         const next=[];
         for(let i=0;i<ids.length;i++){
-          const id=ids[i],name=$("#"+id+"Name").value.trim()||defaults[i]?.name||"常用地址",pickupNote=$("#"+id+"PickupNote").value.trim();
+          const id=ids[i],name=$("#"+id+"Name").value.trim()||RIDE_SAVED_SLOT_NAMES[i]||"常用地址",pickupNote=$("#"+id+"PickupNote").value.trim();
           let typed=$("#"+id+"Address").value.trim();
           let data=draftAddressData[i]||normalizeAddress();
           if(typed&&!data.placeId){

@@ -2557,23 +2557,33 @@ body {
 </script>
 
 
-<style id="topTaxiSavedAddressSlotNumbersV1">
-.saved-slot-number{
-  flex:0 0 auto;
-  display:inline-grid;
-  place-items:center;
-  width:28px;
+<style id="topTaxiSavedAddressSlotNumbersV2">
+.saved-slot-name-input{
+  min-width:0;
+  width:100%;
   height:32px;
-  color:#35353a;
-  font-size:22px;
-  font-weight:850;
+  min-height:32px;
+  padding:0 4px !important;
+  border:1px solid #e5e5e8 !important;
+  border-radius:9px !important;
+  background:#fff !important;
+  color:#35353a !important;
+  font-size:15px !important;
+  font-weight:850 !important;
+  text-align:center;
   line-height:1;
-  user-select:none;
-  -webkit-user-select:none;
+  box-shadow:none !important;
+}
+.saved-slot-name-input:focus{
+  border-color:var(--red) !important;
+  box-shadow:0 0 0 2px rgba(255,31,45,.08) !important;
 }
 #settings.ride-saved-compact .saved-setting-name,
 #bookingSavedAddressEditor .saved-setting-name{
-  justify-content:space-between;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:4px;
+  align-items:center;
 }
 </style>
 
@@ -3746,12 +3756,10 @@ function createEmptyAddressData(name = "") {
     };
 }
 
-const SHARED_ADDRESS_DEFAULTS = [
-    createEmptyAddressData("住家"),
-    createEmptyAddressData("公司"),
-    createEmptyAddressData("常用 1"),
-    createEmptyAddressData("常用 2")
-];
+const SHARED_ADDRESS_SLOT_NAMES = ["①", "②", "③", "④"];
+const SHARED_ADDRESS_DEFAULTS = SHARED_ADDRESS_SLOT_NAMES.map(function(name) {
+    return createEmptyAddressData(name);
+});
 
 function getAddressComponent(place, types) {
     const components = place && Array.isArray(place.addressComponents)
@@ -4223,10 +4231,15 @@ let sharedAddresses = loadSharedAddresses();
 function normalizeLegacySharedAddressName(item, index) {
     const next = normalizeAddressData(item || {}, SHARED_ADDRESS_DEFAULTS[index] || {});
     const current = String(next.name || "").trim();
-    const legacy1 = new Set(["", "常用", "常用:", "常用：", "常用地點", "常用地點 1", "常用地點1", "常用1", "常用 1", "常用3", "常用 3"]);
-    const legacy2 = new Set(["", "常用", "常用:", "常用：", "常用地點", "常用地點 2", "常用地點2", "常用2", "常用 2", "常用4", "常用 4"]);
-    if (index === 2 && legacy1.has(current)) next.name = "常用 1";
-    if (index === 3 && legacy2.has(current)) next.name = "常用 2";
+    const genericByIndex = [
+        new Set(["", "住家", "①"]),
+        new Set(["", "公司", "②"]),
+        new Set(["", "常用", "常用:", "常用：", "常用地點", "常用地點 1", "常用地點1", "常用1", "常用 1", "常用3", "常用 3", "③"]),
+        new Set(["", "常用", "常用:", "常用：", "常用地點", "常用地點 2", "常用地點2", "常用2", "常用 2", "常用4", "常用 4", "④"])
+    ];
+    if (genericByIndex[index] && genericByIndex[index].has(current)) {
+        next.name = SHARED_ADDRESS_SLOT_NAMES[index];
+    }
     return next;
 }
 
@@ -4259,8 +4272,7 @@ function renderSharedAddressEditor() {
         row.className = "saved-address-row";
         row.innerHTML =
             '<div class="saved-setting-name">' +
-                '<span class="saved-slot-number" aria-hidden="true">'+['①','②','③','④'][index]+'</span>' +
-                '<input type="hidden" id="sharedName'+index+'" value="'+escapeHtml(item.name || "")+'">' +
+                '<input type="text" class="saved-slot-name-input" id="sharedName'+index+'" aria-label="常用地點名稱" value="'+escapeHtml(item.name || SHARED_ADDRESS_SLOT_NAMES[index] || "")+'">' +
                 '<button type="button" class="saved-clear-btn" onclick="clearSharedAddressFromBooking('+index+')">清除</button>' +
             '</div>' +
             '<div class="address-autocomplete">' +
@@ -4290,7 +4302,7 @@ function renderSharedAddressChips() {
         const button = document.createElement("button");
         button.type = "button";
         button.className = "saved-address-chip";
-        button.textContent = item.name || ("常用地點 " + (index + 1));
+        button.textContent = item.name || SHARED_ADDRESS_SLOT_NAMES[index] || ("常用地點 " + (index + 1));
         button.addEventListener("click", function(){
             useSharedAddress(index, button);
         });
@@ -4311,7 +4323,7 @@ function clearSharedAddressFromBooking(index) {
 
     if (!window.confirm("確定要清除「" + label + "」這組常用地址嗎？")) return;
 
-    sharedAddresses[index] = createEmptyAddressData("");
+    sharedAddresses[index] = createEmptyAddressData(SHARED_ADDRESS_SLOT_NAMES[index] || "");
     localStorage.setItem(SHARED_ADDRESS_KEY, JSON.stringify(sharedAddresses));
     renderSharedAddressChips();
 }
@@ -4389,13 +4401,13 @@ async function saveSharedAddressesFromBooking() {
             const typedAddress = (document.getElementById("sharedAddress"+index)?.value || "").trim();
             const pickupNote = (document.getElementById("sharedNote"+index)?.value || "").trim();
 
+            const fallbackName = SHARED_ADDRESS_SLOT_NAMES[index] || SHARED_ADDRESS_DEFAULTS[index]?.name || ("常用地點 " + (index + 1));
+            const name = typedName || oldItem.name || fallbackName;
+
             if (!typedAddress) {
-                next.push(createEmptyAddressData(""));
+                next.push(createEmptyAddressData(name));
                 continue;
             }
-
-            const fallbackName = SHARED_ADDRESS_DEFAULTS[index]?.name || ("常用地點 " + (index + 1));
-            const name = typedName || oldItem.name || fallbackName;
             let data = oldItem;
 
             if (!data.placeId) {
