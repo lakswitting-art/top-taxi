@@ -18,38 +18,9 @@ jobs:
           from pathlib import Path
           p=Path('errand.html')
           s=p.read_text(encoding='utf-8')
-          marker='''
-<div id="topTaxiViewportDebug" style="position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.82);color:#fff;font:11px/1.35 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;pointer-events:none;white-space:pre-wrap"></div>
-<script id="topTaxiViewportDebugScript">
-(function(){
-  const box=document.getElementById('topTaxiViewportDebug');
-  function n(v){return Math.round((Number(v)||0)*10)/10}
-  function snap(label){
-    const vv=window.visualViewport;
-    const a=document.activeElement;
-    const r=a&&a.getBoundingClientRect?a.getBoundingClientRect():null;
-    const p=document.querySelector('.page');
-    const pr=p&&p.getBoundingClientRect?p.getBoundingClientRect():null;
-    box.textContent=[
-      label,
-      'scrollX='+n(window.scrollX)+' scrollY='+n(window.scrollY),
-      'vv.left='+(vv?n(vv.offsetLeft):'na')+' vv.top='+(vv?n(vv.offsetTop):'na')+' scale='+(vv?n(vv.scale):'na')+' vw='+(vv?n(vv.width):'na'),
-      'active='+(a?(a.className||a.tagName):'none'),
-      'activeRect='+(r?[n(r.left),n(r.right),n(r.width)].join('/'):'na'),
-      'pageRect='+(pr?[n(pr.left),n(pr.right),n(pr.width)].join('/'):'na'),
-      'doc='+(document.documentElement.clientWidth)+'/'+(document.documentElement.scrollWidth)
-    ].join('\n');
-  }
-  document.addEventListener('focusin',()=>{snap('focusin');setTimeout(()=>snap('focus+100'),100);setTimeout(()=>snap('focus+300'),300)},true);
-  document.addEventListener('input',()=>snap('input'),true);
-  window.addEventListener('scroll',()=>snap('window scroll'),{passive:true});
-  if(window.visualViewport){visualViewport.addEventListener('scroll',()=>snap('vv scroll'),{passive:true});visualViewport.addEventListener('resize',()=>snap('vv resize'),{passive:true});}
-  setTimeout(()=>snap('ready'),400);
-})();
-</script>
-'''
+          marker = """<div id=\"topTaxiViewportDebug\" style=\"position:fixed;left:8px;right:8px;bottom:8px;z-index:2147483647;padding:8px 10px;border-radius:10px;background:rgba(0,0,0,.82);color:#fff;font:11px/1.35 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;pointer-events:none;white-space:pre-wrap\"></div>\n<script id=\"topTaxiViewportDebugScript\">\n(function(){\n  const box=document.getElementById('topTaxiViewportDebug');\n  function n(v){return Math.round((Number(v)||0)*10)/10}\n  function snap(label){\n    const vv=window.visualViewport; const a=document.activeElement; const r=a&&a.getBoundingClientRect?a.getBoundingClientRect():null; const p=document.querySelector('.page'); const pr=p&&p.getBoundingClientRect?p.getBoundingClientRect():null;\n    box.textContent=[label,'scrollX='+n(window.scrollX)+' scrollY='+n(window.scrollY),'vv.left='+(vv?n(vv.offsetLeft):'na')+' vv.top='+(vv?n(vv.offsetTop):'na')+' scale='+(vv?n(vv.scale):'na')+' vw='+(vv?n(vv.width):'na'),'active='+(a?(a.className||a.tagName):'none'),'activeRect='+(r?[n(r.left),n(r.right),n(r.width)].join('/'):'na'),'pageRect='+(pr?[n(pr.left),n(pr.right),n(pr.width)].join('/'):'na'),'doc='+document.documentElement.clientWidth+'/'+document.documentElement.scrollWidth].join('\\n');\n  }\n  document.addEventListener('focusin',()=>{snap('focusin');setTimeout(()=>snap('focus+100'),100);setTimeout(()=>snap('focus+300'),300)},true);\n  document.addEventListener('input',()=>snap('input'),true);\n  window.addEventListener('scroll',()=>snap('window scroll'),{passive:true});\n  if(window.visualViewport){visualViewport.addEventListener('scroll',()=>snap('vv scroll'),{passive:true});visualViewport.addEventListener('resize',()=>snap('vv resize'),{passive:true});}\n  setTimeout(()=>snap('ready'),400);\n})();\n</script>"""
           if 'topTaxiViewportDebugScript' not in s:
-            s=s.replace('</body>',marker+'\n</body>',1)
+              s=s.replace('</body>',marker+'\n</body>',1)
           p.write_text(s,encoding='utf-8')
       - name: Verify and commit
         shell: bash
