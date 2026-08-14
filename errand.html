@@ -3882,35 +3882,29 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
 })();
 </script>
 
-<div id="topTaxiViewportDebugV2" style="position:fixed;left:6px;right:6px;top:6px;z-index:2147483647;padding:7px 9px;border-radius:10px;background:rgba(0,0,0,.84);color:#fff;font:10px/1.28 -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;pointer-events:none;white-space:pre-wrap;max-height:116px;overflow:hidden"></div>
-<script id="topTaxiViewportDebugScriptV2">
+<style id="topTaxiErrandAddressABTestV1">
+.ab-plain-address-host{position:relative!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:visible!important;contain:none!important;transform:none!important;zoom:1!important}
+.ab-plain-address-host>.address-input{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;font-size:16px!important;transform:none!important;zoom:1!important;contain:none!important}
+.ab-plain-address-host>.address-suggestions{left:0!important;right:0!important;width:auto!important;max-width:100%!important}
+</style>
+<script id="topTaxiErrandAddressABTestScriptV1">
 (function(){
-  const box=document.getElementById('topTaxiViewportDebugV2');
-  function n(v){return Math.round((Number(v)||0)*10)/10}
-  function css(el,p){try{return el?getComputedStyle(el)[p]:'na'}catch(_){return 'na'}}
-  function snap(label){
-    const vv=window.visualViewport;
-    const a=document.activeElement;
-    const r=a&&a.getBoundingClientRect?a.getBoundingClientRect():null;
-    const p=document.querySelector('.page');
-    const pr=p&&p.getBoundingClientRect?p.getBoundingClientRect():null;
-    box.textContent=[
-      label+' | active='+(a?(a.className||a.tagName):'none'),
-      'scrollX='+n(window.scrollX)+' vv.left='+(vv?n(vv.offsetLeft):'na')+' scale='+(vv?n(vv.scale):'na')+' vw='+(vv?n(vv.width):'na'),
-      'active L/R/W='+(r?[n(r.left),n(r.right),n(r.width)].join('/'):'na'),
-      'page L/R/W='+(pr?[n(pr.left),n(pr.right),n(pr.width)].join('/'):'na'),
-      'font='+css(a,'fontSize')+' transform='+css(a,'transform')+' zoom='+css(a,'zoom'),
-      'doc client/scroll='+(document.documentElement.clientWidth)+'/'+(document.documentElement.scrollWidth)
-    ].join('
-');
+  function patchFirstAddress(){
+    const input=document.querySelector('.address-input');
+    if(!input) return false;
+    const host=input.closest('.address-autocomplete');
+    if(!host) return false;
+    host.classList.remove('address-autocomplete');
+    host.classList.add('ab-plain-address-host');
+    input.setAttribute('data-ab-plain-address','1');
+    return true;
   }
-  function burst(label){snap(label);setTimeout(()=>snap(label+'+80'),80);setTimeout(()=>snap(label+'+220'),220)}
-  document.addEventListener('focusin',()=>burst('focusin'),true);
-  document.addEventListener('input',()=>snap('input'),true);
-  if(window.visualViewport){visualViewport.addEventListener('scroll',()=>snap('vv scroll'),{passive:true});visualViewport.addEventListener('resize',()=>snap('vv resize'),{passive:true})}
-  setTimeout(()=>snap('ready'),300);
+  if(!patchFirstAddress()){
+    const mo=new MutationObserver(function(){if(patchFirstAddress()) mo.disconnect();});
+    mo.observe(document.documentElement,{childList:true,subtree:true});
+    setTimeout(function(){mo.disconnect()},10000);
+  }
 })();
 </script>
-
 </body>
 </html>
