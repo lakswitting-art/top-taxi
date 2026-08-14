@@ -2726,6 +2726,30 @@ html, body { max-width: 100%; overflow-x: clip !important; }
 .address-suggestion > * { min-width: 0 !important; max-width: 100% !important; }
 </style>
 
+
+<style id="topTaxiErrandFinalAddressContainV3">
+.errand-address-block[data-slot="final"]{width:100%!important;min-width:0!important;max-width:100%!important;contain:inline-size;}
+.errand-address-block[data-slot="final"] > *,
+.errand-address-block[data-slot="final"] .address-autocomplete,
+.errand-address-block[data-slot="final"] .address-input,
+.errand-address-block[data-slot="final"] .address-suggestions,
+.errand-address-block[data-slot="final"] .errand-delivery-box,
+.errand-address-block[data-slot="final"] .errand-row-toggle,
+.errand-address-block[data-slot="final"] .errand-small-input,
+.errand-address-block[data-slot="final"] .errand-small-input input{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}
+.errand-address-block[data-slot="final"] .address-autocomplete,
+.errand-address-block[data-slot="final"] .address-input,
+.errand-address-block[data-slot="final"] .errand-delivery-box,
+.errand-address-block[data-slot="final"] .errand-row-toggle,
+.errand-address-block[data-slot="final"] .errand-small-input,
+.errand-address-block[data-slot="final"] .errand-small-input input{width:100%!important;}
+.errand-address-block[data-slot="final"] .errand-row-toggle{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important;}
+.errand-address-block[data-slot="final"] .errand-row-toggle .errand-pill{min-width:0!important;max-width:100%!important;width:100%!important;padding-left:6px!important;padding-right:6px!important;white-space:normal!important;}
+.errand-clear-trip{flex:0 0 auto;border:0;background:transparent;padding:6px 0 6px 10px;color:#777780;font:inherit;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.errand-clear-trip:active{color:#c90012;}
+@media(max-width:360px){.errand-address-block[data-slot="final"] .errand-row-toggle{grid-template-columns:1fr 1fr;}}
+</style>
+
 </head>
 <body>
 <header class="hero">
@@ -2742,7 +2766,7 @@ html, body { max-width: 100%; overflow-x: clip !important; }
     <div id="connectionStatus" class="connection-status" style="display:none"><span class="status-dot"></span><span id="connectionText">LINE 系統連線中...</span></div>
     <div id="lineUser" class="line-user" style="display:none"></div>
 
-    <div class="form-header"><div class="form-title">🛵 跑腿服務</div><div class="form-label-small">TOP TAXI ERRAND</div></div>
+    <div class="form-header"><div class="form-title">🛵 跑腿服務</div><button type="button" id="clearErrandTrip" class="errand-clear-trip">清除行程</button></div>
     <form id="errandForm" novalidate>
       <div class="input-group">
         <label>服務時間</label>
@@ -3785,6 +3809,28 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
       requestAnimationFrame(resetX); setTimeout(resetX, 100);
     }
   }, true);
+})();
+</script>
+
+
+<script id="topTaxiErrandFinalTouchGuardV3">
+(function(){
+  const clearBtn=document.getElementById('clearErrandTrip');
+  if(clearBtn)clearBtn.addEventListener('click',function(){window.location.reload();});
+  let startX=0,startY=0;
+  document.addEventListener('touchstart',function(e){const t=e.touches&&e.touches[0];if(!t)return;startX=t.clientX;startY=t.clientY;},{passive:true,capture:true});
+  document.addEventListener('touchmove',function(e){
+    const t=e.touches&&e.touches[0];if(!t)return;
+    const target=e.target&&e.target.closest?e.target:null;
+    if(target&&target.closest('.errand-saved-line,.booking-saved-place-line,.address-suggestions,.suggestions'))return;
+    const dx=t.clientX-startX,dy=t.clientY-startY;
+    if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)){
+      e.preventDefault();
+      const y=window.scrollY||document.documentElement.scrollTop||0;
+      if(window.scrollX!==0)window.scrollTo(0,y);
+      document.documentElement.scrollLeft=0;document.body.scrollLeft=0;
+    }
+  },{passive:false,capture:true});
 })();
 </script>
 
