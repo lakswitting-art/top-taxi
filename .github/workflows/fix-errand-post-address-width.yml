@@ -1,0 +1,42 @@
+name: Fix errand post-address width
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-errand-post-address-width.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Fix stable mobile page width
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('errand.html')
+          s=p.read_text(encoding='utf-8')
+          old='''<style id="topTaxiErrandMobileLeftGapV5">\n@media (max-width: 600px){\n  .page{padding-left:8px!important;padding-right:14px!important;}\n}\n</style>'''
+          if old in s:
+              s=s.replace(old,'',1)
+          css='''\n<style id="topTaxiErrandStableMobileWidthV6">\n@media (max-width: 600px){\n  html,body{width:100%!important;max-width:100%!important;}\n  .page{\n    width:100%!important;\n    max-width:560px!important;\n    margin-left:auto!important;\n    margin-right:auto!important;\n    padding-left:14px!important;\n    padding-right:14px!important;\n  }\n  .booking-card{width:100%!important;max-width:100%!important;}\n}\n@supports (width: 100dvw){\n  @media (max-width: 600px){\n    .page{width:100dvw!important;}\n  }\n}\n</style>\n'''
+          if 'topTaxiErrandStableMobileWidthV6' not in s:
+              s=s.replace('</head>',css+'\n</head>',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          grep -q 'topTaxiErrandStableMobileWidthV6' errand.html
+          ! grep -q 'topTaxiErrandMobileLeftGapV5' errand.html
+          rm -f .github/workflows/fix-errand-post-address-width.yml
+          git config user.name "TOP Taxi automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add errand.html .github/workflows/fix-errand-post-address-width.yml
+          git commit -m "fix errand stable mobile width after address selection"
+          git push origin HEAD:main
