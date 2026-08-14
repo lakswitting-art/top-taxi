@@ -1317,18 +1317,18 @@ body {
         </button>
       </div>
       <div class="field saved-place-field">
-        <div class="saved-place-line">
+        <div class="saved-address-panel compact ride-saved-address-panel">
+          <div class="booking-saved-place-line saved-place-line">
           <div id="savedChips" class="chips"></div>
-          <button id="toggleSettings" class="saved-settings-btn" type="button" aria-label="設定常用地址">
+          <button id="toggleSettings" class="saved-settings-btn saved-address-edit compact" type="button" aria-label="設定常用地址">
             <span>常用地址</span>
             <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z"></path>
               <path d="M19.1 13.7a7.7 7.7 0 0 0 .05-1.7 7.7 7.7 0 0 0-.05-1.7l2-1.55-2-3.45-2.45.98a7.75 7.75 0 0 0-2.95-1.7L13.35 2h-4.7L8.3 4.58a7.75 7.75 0 0 0-2.95 1.7L2.9 5.3l-2 3.45 2 1.55A7.7 7.7 0 0 0 2.85 12c0 .58.02 1.15.05 1.7l-2 1.55 2 3.45 2.45-.98a7.75 7.75 0 0 0 2.95 1.7L8.65 22h4.7l.35-2.58a7.75 7.75 0 0 0 2.95-1.7l2.45.98 2-3.45-2-1.55Z"></path>
             </svg>
           </button>
-        </div>
-      </div>
-      <div id="settings" class="settings ride-saved-compact" hidden>
+          </div>
+          <div id="settings" class="saved-address-editor compact-editor settings ride-saved-compact" hidden>
         <div class="ride-saved-address-row">
           <div class="saved-setting-name">
             <input id="homeName" class="input ride-saved-name-input saved-slot-name-input" value="①" aria-label="常用地點名稱">
@@ -1361,7 +1361,9 @@ body {
           <div class="autocomplete"><input id="fav2Address" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="fav2AddressSuggestions" class="suggestions" hidden></div></div>
           <input id="fav2PickupNote" class="input ride-saved-note" aria-label="上車位置補充" placeholder="上車位置補充（選填）">
         </div>
-        <button id="saveAddresses" class="primary ride-saved-save" type="button">儲存常用地址</button>
+            <button id="saveAddresses" class="primary ride-saved-save" type="button">儲存常用地址</button>
+          </div>
+        </div>
       </div>
       <div class="pickup-note-compact">
         <button id="togglePickupNote" class="pickup-note-toggle" type="button" aria-expanded="false">
@@ -3619,10 +3621,12 @@ body {
     }
 
     $("#toggleSettings").onclick=()=>{
-      const panel=$("#settings");
-      panel.hidden=!panel.hidden;
-      const label=document.querySelector("#toggleSettings > span");
-      if(label)label.textContent=panel.hidden?"常用地址":"收合";
+      const savedEditor=$("#settings");
+      const savedSettingsLabel=document.querySelector("#toggleSettings > span");
+      savedEditor.hidden=!savedEditor.hidden;
+      if(savedSettingsLabel){
+        savedSettingsLabel.textContent=savedEditor.hidden?"常用地址":"收合";
+      }
     };
     $("#clearRideTrip").onclick=resetRideTrip;
 
@@ -3654,6 +3658,8 @@ body {
         localStorage.setItem(SHARED_ADDRESS_KEY,JSON.stringify(savedAddresses));
         renderSaved();
         $("#settings").hidden=true;
+        const savedSettingsLabel=document.querySelector("#toggleSettings > span");
+        if(savedSettingsLabel)savedSettingsLabel.textContent="常用地址";
         setStatus("pickupStatus","常用地址與上車位置補充已儲存","ok");
       }catch(error){
         setStatus("pickupStatus","有常用地址無法確認，請從 Google 建議中選擇後再儲存。","error");
