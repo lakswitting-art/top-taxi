@@ -1247,6 +1247,27 @@ body {
 })();
 </script>
 
+
+<style id="topTaxiSavedAddressSlotNumbersV1">
+.saved-slot-number{
+  flex:0 0 auto;
+  display:inline-grid;
+  place-items:center;
+  width:28px;
+  height:32px;
+  color:#35353a;
+  font-size:22px;
+  font-weight:850;
+  line-height:1;
+  user-select:none;
+  -webkit-user-select:none;
+}
+#settings.ride-saved-compact .saved-setting-name,
+#bookingSavedAddressEditor .saved-setting-name{
+  justify-content:space-between;
+}
+</style>
+
 </head>
 <body>
   <header class="hero">
@@ -1282,7 +1303,7 @@ body {
       <div id="settings" class="settings ride-saved-compact" hidden>
         <div class="ride-saved-address-row">
           <div class="saved-setting-name">
-            <input id="homeName" class="input ride-saved-name-input" value="住家" aria-label="常用地點名稱">
+            <span class="saved-slot-number" aria-hidden="true">①</span><input id="homeName" type="hidden" value="住家" aria-label="常用地點名稱">
             <button class="saved-clear-btn" type="button" data-clear-saved="0">清除</button>
           </div>
           <div class="autocomplete"><input id="homeAddress" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="homeAddressSuggestions" class="suggestions" hidden></div></div>
@@ -1290,7 +1311,7 @@ body {
         </div>
         <div class="ride-saved-address-row">
           <div class="saved-setting-name">
-            <input id="workName" class="input ride-saved-name-input" value="公司" aria-label="常用地點名稱">
+            <span class="saved-slot-number" aria-hidden="true">②</span><input id="workName" type="hidden" value="公司" aria-label="常用地點名稱">
             <button class="saved-clear-btn" type="button" data-clear-saved="1">清除</button>
           </div>
           <div class="autocomplete"><input id="workAddress" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="workAddressSuggestions" class="suggestions" hidden></div></div>
@@ -1298,7 +1319,7 @@ body {
         </div>
         <div class="ride-saved-address-row">
           <div class="saved-setting-name">
-            <input id="fav1Name" class="input ride-saved-name-input" value="常用 1" aria-label="常用地點名稱">
+            <span class="saved-slot-number" aria-hidden="true">③</span><input id="fav1Name" type="hidden" value="常用 1" aria-label="常用地點名稱">
             <button class="saved-clear-btn" type="button" data-clear-saved="2">清除</button>
           </div>
           <div class="autocomplete"><input id="fav1Address" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="fav1AddressSuggestions" class="suggestions" hidden></div></div>
@@ -1306,7 +1327,7 @@ body {
         </div>
         <div class="ride-saved-address-row">
           <div class="saved-setting-name">
-            <input id="fav2Name" class="input ride-saved-name-input" value="常用 2" aria-label="常用地點名稱">
+            <span class="saved-slot-number" aria-hidden="true">④</span><input id="fav2Name" type="hidden" value="常用 2" aria-label="常用地點名稱">
             <button class="saved-clear-btn" type="button" data-clear-saved="3">清除</button>
           </div>
           <div class="autocomplete"><input id="fav2Address" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="fav2AddressSuggestions" class="suggestions" hidden></div></div>
@@ -3584,7 +3605,12 @@ body {
       selectRideRouteMode("FAST");
     }
 
-    $("#toggleSettings").onclick=()=>{$("#settings").hidden=!$("#settings").hidden};
+    $("#toggleSettings").onclick=()=>{
+      const panel=$("#settings");
+      panel.hidden=!panel.hidden;
+      const label=document.querySelector("#toggleSettings > span");
+      if(label)label.textContent=panel.hidden?"常用地址":"收合";
+    };
     $("#clearRideTrip").onclick=resetRideTrip;
 
     document.querySelectorAll("[data-clear-saved]").forEach(button=>{

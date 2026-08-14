@@ -2556,6 +2556,27 @@ body {
 })();
 </script>
 
+
+<style id="topTaxiSavedAddressSlotNumbersV1">
+.saved-slot-number{
+  flex:0 0 auto;
+  display:inline-grid;
+  place-items:center;
+  width:28px;
+  height:32px;
+  color:#35353a;
+  font-size:22px;
+  font-weight:850;
+  line-height:1;
+  user-select:none;
+  -webkit-user-select:none;
+}
+#settings.ride-saved-compact .saved-setting-name,
+#bookingSavedAddressEditor .saved-setting-name{
+  justify-content:space-between;
+}
+</style>
+
 </head>
 
 
@@ -2738,7 +2759,7 @@ body {
                 <div class="booking-saved-place-line">
                     <div id="bookingSavedAddressChips" class="saved-address-chips"></div>
                     <button type="button" id="toggleSavedAddressEditor" class="saved-address-edit compact" aria-label="設定常用地址">
-                        <span id="savedSettingsLabel">設定</span>
+                        <span id="savedSettingsLabel">常用地址</span>
                         <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
                             <path d="M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z"></path>
                             <path d="M19.1 13.7a7.7 7.7 0 0 0 .05-1.7 7.7 7.7 0 0 0-.05-1.7l2-1.55-2-3.45-2.45.98a7.75 7.75 0 0 0-2.95-1.7L13.35 2h-4.7L8.3 4.58a7.75 7.75 0 0 0-2.95 1.7L2.9 5.3l-2 3.45 2 1.55A7.7 7.7 0 0 0 2.85 12c0 .58.02 1.15.05 1.7l-2 1.55 2 3.45 2.45-.98a7.75 7.75 0 0 0 2.95 1.7L8.65 22h4.7l.35-2.58a7.75 7.75 0 0 0 2.95-1.7l2.45.98 2-3.45-2-1.55Z"></path>
@@ -4238,7 +4259,8 @@ function renderSharedAddressEditor() {
         row.className = "saved-address-row";
         row.innerHTML =
             '<div class="saved-setting-name">' +
-                '<input type="text" id="sharedName'+index+'" aria-label="常用地點名稱" value="'+escapeHtml(item.name || "")+'">' +
+                '<span class="saved-slot-number" aria-hidden="true">'+['①','②','③','④'][index]+'</span>' +
+                '<input type="hidden" id="sharedName'+index+'" value="'+escapeHtml(item.name || "")+'">' +
                 '<button type="button" class="saved-clear-btn" onclick="clearSharedAddressFromBooking('+index+')">清除</button>' +
             '</div>' +
             '<div class="address-autocomplete">' +
@@ -4400,7 +4422,7 @@ async function saveSharedAddressesFromBooking() {
         if (editor) editor.hidden = true;
 
         const label = document.getElementById("savedSettingsLabel");
-        if (label) label.textContent = "設定";
+        if (label) label.textContent = "常用地址";
 
         setBookingPickupStatus("常用地址與上車位置補充已儲存", "ok");
     } catch (error) {
@@ -7174,7 +7196,7 @@ window.addEventListener(
             toggleSaved.addEventListener("click", function(){
                 savedEditor.hidden = !savedEditor.hidden;
                 if (savedSettingsLabel) {
-                    savedSettingsLabel.textContent = savedEditor.hidden ? "設定" : "收合";
+                    savedSettingsLabel.textContent = savedEditor.hidden ? "常用地址" : "收合";
                 }
             });
         }
