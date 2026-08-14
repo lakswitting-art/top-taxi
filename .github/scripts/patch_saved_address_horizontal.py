@@ -1,198 +1,109 @@
 from pathlib import Path
-import re
 
-OLD_MARKER = "topTaxiSavedAddressNoHorizontalDragV1"
-NEW_STYLE_MARKER = "topTaxiSavedAddressViewportLockV2"
-NEW_SCRIPT_MARKER = "topTaxiSavedAddressViewportLockScriptV2"
-
-RIDE_CSS = r'''
-<style id="topTaxiSavedAddressViewportLockV2">
-/* iOS/LIFF saved-address fix: avoid sub-16px focus zoom and any document-level horizontal pan. */
-html,
-body {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  overscroll-behavior-x: none;
+MARKER = "topTaxiSavedAddressSlotNumbersV1"
+STYLE = r'''
+<style id="topTaxiSavedAddressSlotNumbersV1">
+.saved-slot-number{
+  flex:0 0 auto;
+  display:inline-grid;
+  place-items:center;
+  width:28px;
+  height:32px;
+  color:#35353a;
+  font-size:22px;
+  font-weight:850;
+  line-height:1;
+  user-select:none;
+  -webkit-user-select:none;
 }
-#settings.ride-saved-compact,
-#settings.ride-saved-compact .ride-saved-address-row,
 #settings.ride-saved-compact .saved-setting-name,
-#settings.ride-saved-compact .autocomplete,
-#settings.ride-saved-compact .suggestions,
-#settings.ride-saved-compact .suggestion,
-#settings.ride-saved-compact .suggestion > * {
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-#settings.ride-saved-compact {
-  overflow-x: hidden;
-  overscroll-behavior-x: none;
-}
-#settings.ride-saved-compact input {
-  font-size: 16px !important;
-}
-#settings.ride-saved-compact .autocomplete {
-  width: 100%;
-}
-#settings.ride-saved-compact .suggestions {
-  left: 0;
-  right: 0;
-  width: auto;
-  max-width: 100%;
-  overflow-x: hidden;
-  touch-action: pan-y;
-  overscroll-behavior-x: none;
-}
-#settings.ride-saved-compact .suggestion {
-  overflow: hidden;
-}
-#settings.ride-saved-compact .suggestion strong,
-#settings.ride-saved-compact .suggestion small {
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+#bookingSavedAddressEditor .saved-setting-name{
+  justify-content:space-between;
 }
 </style>
 '''
 
-BOOKING_CSS = r'''
-<style id="topTaxiSavedAddressViewportLockV2">
-/* iOS/LIFF saved-address fix: avoid sub-16px focus zoom and any document-level horizontal pan. */
-html,
-body {
-  width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
-  overscroll-behavior-x: none;
+
+def require(text, token, filename):
+    if token not in text:
+        raise SystemExit(f"{filename}: required token missing: {token}")
+
+
+def inject_style(text, filename):
+    if MARKER in text:
+        raise SystemExit(f"{filename}: slot-number patch already exists")
+    require(text, "</head>", filename)
+    return text.replace("</head>", STYLE + "\n</head>", 1)
+
+
+# ---------- ride.html ----------
+p = Path("ride.html")
+ride = p.read_text(encoding="utf-8")
+
+ride_replacements = {
+    '<input id="homeName" class="input ride-saved-name-input" value="住家" aria-label="常用地點名稱">':
+        '<span class="saved-slot-number" aria-hidden="true">①</span><input id="homeName" type="hidden" value="住家" aria-label="常用地點名稱">',
+    '<input id="workName" class="input ride-saved-name-input" value="公司" aria-label="常用地點名稱">':
+        '<span class="saved-slot-number" aria-hidden="true">②</span><input id="workName" type="hidden" value="公司" aria-label="常用地點名稱">',
+    '<input id="fav1Name" class="input ride-saved-name-input" value="常用 1" aria-label="常用地點名稱">':
+        '<span class="saved-slot-number" aria-hidden="true">③</span><input id="fav1Name" type="hidden" value="常用 1" aria-label="常用地點名稱">',
+    '<input id="fav2Name" class="input ride-saved-name-input" value="常用 2" aria-label="常用地點名稱">':
+        '<span class="saved-slot-number" aria-hidden="true">④</span><input id="fav2Name" type="hidden" value="常用 2" aria-label="常用地點名稱">',
 }
-#bookingSavedAddressEditor,
-#bookingSavedAddressRows,
-#bookingSavedAddressEditor .saved-address-row,
-#bookingSavedAddressEditor .saved-setting-name,
-#bookingSavedAddressEditor .address-autocomplete,
-#bookingSavedAddressEditor .address-suggestions,
-#bookingSavedAddressEditor .address-suggestion,
-#bookingSavedAddressEditor .address-suggestion > * {
-  min-width: 0;
-  max-width: 100%;
-  box-sizing: border-box;
-}
-#bookingSavedAddressEditor {
-  overflow-x: hidden;
-  overscroll-behavior-x: none;
-}
-#bookingSavedAddressEditor .saved-address-row {
-  grid-template-columns: 92px minmax(0, 1fr);
-}
-#bookingSavedAddressEditor input {
-  font-size: 16px !important;
-}
-#bookingSavedAddressEditor .address-autocomplete {
-  width: 100%;
-}
-#bookingSavedAddressEditor .address-suggestions {
-  left: 0;
-  right: 0;
-  width: auto;
-  max-width: 100%;
-  overflow-x: hidden;
-  touch-action: pan-y;
-  overscroll-behavior-x: none;
-}
-#bookingSavedAddressEditor .address-suggestion {
-  overflow: hidden;
-}
-#bookingSavedAddressEditor .address-suggestion-main,
-#bookingSavedAddressEditor .address-suggestion-secondary {
-  min-width: 0;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-@media (max-width: 390px) {
-  #bookingSavedAddressEditor .saved-address-row {
-    grid-template-columns: 82px minmax(0, 1fr);
-  }
-}
-</style>
-'''
+for old, new in ride_replacements.items():
+    require(ride, old, "ride.html")
+    ride = ride.replace(old, new, 1)
 
-LOCK_SCRIPT = r'''
-<script id="topTaxiSavedAddressViewportLockScriptV2">
-(function(){
-  function clampDocumentX(){
-    const scrolling = document.scrollingElement;
-    if (scrolling && scrolling.scrollLeft) scrolling.scrollLeft = 0;
-    if (document.documentElement && document.documentElement.scrollLeft) document.documentElement.scrollLeft = 0;
-    if (document.body && document.body.scrollLeft) document.body.scrollLeft = 0;
-  }
-
-  function isSavedAddressField(target){
-    if (!target || !target.closest) return false;
-    return !!target.closest('#settings.ride-saved-compact, #bookingSavedAddressEditor');
-  }
-
-  document.addEventListener('focusin', function(event){
-    if (!isSavedAddressField(event.target)) return;
-    requestAnimationFrame(clampDocumentX);
-    setTimeout(clampDocumentX, 80);
-    setTimeout(clampDocumentX, 300);
-  }, true);
-
-  document.addEventListener('focusout', function(event){
-    if (!isSavedAddressField(event.target)) return;
-    requestAnimationFrame(clampDocumentX);
-    setTimeout(clampDocumentX, 80);
-  }, true);
-
-  window.addEventListener('scroll', clampDocumentX, { passive: true });
-})();
-</script>
-'''
+old_toggle = '$("#toggleSettings").onclick=()=>{$("#settings").hidden=!$("#settings").hidden};'
+new_toggle = '''$("#toggleSettings").onclick=()=>{\n      const panel=$("#settings");\n      panel.hidden=!panel.hidden;\n      const label=document.querySelector("#toggleSettings > span");\n      if(label)label.textContent=panel.hidden?"常用地址":"收合";\n    };'''
+require(ride, old_toggle, "ride.html")
+ride = ride.replace(old_toggle, new_toggle, 1)
+ride = inject_style(ride, "ride.html")
+p.write_text(ride, encoding="utf-8")
 
 
-def replace_old_style(text: str, css: str, filename: str) -> str:
-    pattern = r'<style id="topTaxiSavedAddressNoHorizontalDragV1">.*?</style>'
-    text, count = re.subn(pattern, css.strip(), text, count=1, flags=re.S)
-    if count != 1:
-        raise SystemExit(f"{filename}: expected exactly one V1 style block, got {count}")
-    return text
+# ---------- index.html ----------
+p = Path("index.html")
+booking = p.read_text(encoding="utf-8")
+
+# Initial closed label must be 常用地址.
+require(booking, '<span id="savedSettingsLabel">設定</span>', "index.html")
+booking = booking.replace('<span id="savedSettingsLabel">設定</span>', '<span id="savedSettingsLabel">常用地址</span>', 1)
+
+# Saving/closing must return to 常用地址, not 設定.
+require(booking, 'if (label) label.textContent = "設定";', "index.html")
+booking = booking.replace('if (label) label.textContent = "設定";', 'if (label) label.textContent = "常用地址";', 1)
+
+require(booking, 'savedSettingsLabel.textContent = savedEditor.hidden ? "設定" : "收合";', "index.html")
+booking = booking.replace(
+    'savedSettingsLabel.textContent = savedEditor.hidden ? "設定" : "收合";',
+    'savedSettingsLabel.textContent = savedEditor.hidden ? "常用地址" : "收合";',
+    1,
+)
+
+# Editor left column becomes fixed slot numbers; keep hidden name fields so existing/custom names persist.
+old_name_line = "                '<input type=\"text\" id=\"sharedName'+index+'\" aria-label=\"常用地點名稱\" value=\"'+escapeHtml(item.name || \"\")+'\">' +"
+new_name_lines = "                '<span class=\"saved-slot-number\" aria-hidden=\"true\">'+['①','②','③','④'][index]+'</span>' +\n                '<input type=\"hidden\" id=\"sharedName'+index+'\" value=\"'+escapeHtml(item.name || \"\")+'\">' +"
+require(booking, old_name_line, "index.html")
+booking = booking.replace(old_name_line, new_name_lines, 1)
+booking = inject_style(booking, "index.html")
+p.write_text(booking, encoding="utf-8")
 
 
-def patch(filename, css, required):
-    p = Path(filename)
-    text = p.read_text(encoding="utf-8")
+# ---------- validation ----------
+ride = Path("ride.html").read_text(encoding="utf-8")
+booking = Path("index.html").read_text(encoding="utf-8")
 
-    for token in required:
-        if token not in text:
-            raise SystemExit(f"{filename}: required marker missing: {token}")
-    if OLD_MARKER not in text:
-        raise SystemExit(f"{filename}: old horizontal-lock marker missing")
-    if NEW_STYLE_MARKER in text or NEW_SCRIPT_MARKER in text:
-        raise SystemExit(f"{filename}: V2 patch already exists")
-    if "</head>" not in text:
-        raise SystemExit(f"{filename}: </head> missing")
+assert ride.count(MARKER) == 1
+assert booking.count(MARKER) == 1
+for glyph in ['①','②','③','④']:
+    assert glyph in ride, glyph
+    assert glyph in booking, glyph
+assert 'panel.hidden?"常用地址":"收合"' in ride
+assert '<span id="savedSettingsLabel">常用地址</span>' in booking
+assert 'savedEditor.hidden ? "常用地址" : "收合"' in booking
+assert 'if (label) label.textContent = "常用地址";' in booking
+assert 'type="hidden" id="sharedName' in booking
+assert 'id="homeName" type="hidden"' in ride
 
-    text = replace_old_style(text, css, filename)
-    text = text.replace("</head>", LOCK_SCRIPT + "\n</head>", 1)
-    p.write_text(text, encoding="utf-8")
-
-
-patch("ride.html", RIDE_CSS, ["ride-saved-compact", "homeAddressSuggestions", "fav2AddressSuggestions"])
-patch("index.html", BOOKING_CSS, ["bookingSavedAddressEditor", "bookingSavedAddressRows", "address-suggestions"])
-
-for f in ["ride.html", "index.html"]:
-    t = Path(f).read_text(encoding="utf-8")
-    assert OLD_MARKER not in t, f
-    assert t.count(NEW_STYLE_MARKER) == 1, f
-    assert t.count(NEW_SCRIPT_MARKER) == 1, f
-    assert "font-size: 16px !important" in t, f
-    assert "overflow-x: hidden" in t, f
-    assert "touch-action: pan-y" in t, f
-
-print("Patched iOS saved-address viewport behavior in ride.html + index.html only; fare/errand untouched")
+print("Final saved-address polish applied to ride.html + index.html only")
