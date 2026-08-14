@@ -6339,8 +6339,7 @@ ${memo}
                 type:
                     "text",
 
-                text:
-                    lineMessage
+                text: topTaxiFormatBookingMessageV2({bookingService,bookDate,bookTime,passengerDetails,fareDetails,memo,payment,pickupDispatchHeader,pickupDispatchText,pickupNote,waypointDetails,dropoffDetails})
 
             }
 
@@ -7952,6 +7951,60 @@ window.addEventListener(
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 })();
+
+
+function topTaxiCleanMessageLinesV2(lines){
+  const out=[];
+  for(const raw of lines){
+    const line=String(raw??'').replace(/\s+$/,'');
+    if(line.trim()==='' && (!out.length || out[out.length-1].trim()==='')) continue;
+    out.push(line);
+  }
+  while(out.length && out[0].trim()==='') out.shift();
+  while(out.length && out[out.length-1].trim()==='') out.pop();
+  return out;
+}
+function topTaxiSplitAddressBlocksV2(lines){
+  const body=[], blocks=[];
+  let block=null;
+  const flush=()=>{ if(block&&block.length){blocks.push(block);block=null;} };
+  for(const raw of lines){
+    const t=String(raw??'').trim();
+    if(/^(📍|🟡|🏁)\s/.test(t)){
+      flush(); block=[raw]; continue;
+    }
+    if(block){
+      if(t===''){ flush(); body.push(raw); }
+      else block.push(raw);
+      continue;
+    }
+    body.push(raw);
+  }
+  flush();
+  return {body,blocks};
+}
+
+function topTaxiFormatBookingMessageV2(ctx){
+  const isDriver=ctx.bookingService==='driver';
+  const header=isDriver?'📅 TOP Taxi｜預約叫車・代駕':'📅 TOP Taxi｜預約叫車・一般搭車';
+  const serviceShort=isDriver?'🚘 代駕':'🚕 一般搭車';
+  const out=[header];
+  const addSection=(text)=>{
+    const x=String(text||'').trim();
+    if(!x) return;
+    out.push('',...x.split('\n'));
+  };
+  addSection(ctx.passengerDetails);
+  addSection(ctx.fareDetails);
+  if(ctx.memo && ctx.memo!=='無') addSection(`💡 特殊需求\n${ctx.memo}`);
+  if(ctx.payment && !String(ctx.payment).includes('現金')) addSection(`💳 付款方式：${ctx.payment}`);
+  out.push('','━━━━━━━━━━━━━','預約完成！客服確認後會立刻幫您安排！','',`🕐 ${ctx.bookDate} ${ctx.bookTime}｜${serviceShort}`,'',ctx.pickupDispatchHeader,ctx.pickupDispatchText);
+  if(ctx.pickupNote) out.push(`📌 上車補充｜${ctx.pickupNote}`);
+  addSection(ctx.waypointDetails);
+  if(ctx.dropoffDetails) addSection(ctx.dropoffDetails);
+  return topTaxiCleanMessageLinesV2(out).join('\n');
+}
+
 </script>
 </body>
 

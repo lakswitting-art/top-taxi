@@ -6381,7 +6381,7 @@ async function confirmTrip() {
         await liff.sendMessages([
             {
                 type: "text",
-                text: message
+                text: topTaxiFormatFareMessageV2(message, serviceMode)
             }
         ]);
 
@@ -7092,6 +7092,59 @@ window.addEventListener(
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 })();
+
+
+function topTaxiCleanMessageLinesV2(lines){
+  const out=[];
+  for(const raw of lines){
+    const line=String(raw??'').replace(/\s+$/,'');
+    if(line.trim()==='' && (!out.length || out[out.length-1].trim()==='')) continue;
+    out.push(line);
+  }
+  while(out.length && out[0].trim()==='') out.shift();
+  while(out.length && out[out.length-1].trim()==='') out.pop();
+  return out;
+}
+function topTaxiSplitAddressBlocksV2(lines){
+  const body=[], blocks=[];
+  let block=null;
+  const flush=()=>{ if(block&&block.length){blocks.push(block);block=null;} };
+  for(const raw of lines){
+    const t=String(raw??'').trim();
+    if(/^(📍|🟡|🏁)\s/.test(t)){
+      flush(); block=[raw]; continue;
+    }
+    if(block){
+      if(t===''){ flush(); body.push(raw); }
+      else block.push(raw);
+      continue;
+    }
+    body.push(raw);
+  }
+  flush();
+  return {body,blocks};
+}
+
+function topTaxiFormatFareMessageV2(text,mode){
+  const isDriver=mode==='driver';
+  const header=isDriver?'💰 TOP Taxi｜車資試算・代駕':'💰 TOP Taxi｜車資試算・一般搭車';
+  const serviceShort=isDriver?'🚘 代駕':'🚕 一般搭車';
+  const split=topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
+  const body=[];
+  for(let i=0;i<split.body.length;i++){
+    const t=String(split.body[i]??'').trim();
+    if(i===0 && /TOP Taxi/.test(t)) continue;
+    if(t.startsWith('📋 服務類型：')) continue;
+    if(t.includes('需求已送出') || t.includes('客服確認後')) continue;
+    body.push(split.body[i]);
+  }
+  const kept=topTaxiCleanMessageLinesV2(body).filter(x=>x.trim()!=='━━━━━━━━━━━━━');
+  const out=[header,'',...kept,'','━━━━━━━━━━━━━','以上為系統預估車資，實際費用依當日行程狀況為準。','',`💰 試算｜${serviceShort}`];
+  const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
+  if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
+  return topTaxiCleanMessageLinesV2(out).join('\n');
+}
+
 </script>
 </body>
 

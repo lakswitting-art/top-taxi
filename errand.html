@@ -3510,7 +3510,7 @@ async function sendErrand(){
    if(!liff.isLoggedIn()){sendInProgress=false;sendState='idle';b.disabled=false;b.textContent=original;main.disabled=false;main.textContent='確認跑腿 →';liff.login();return;}
    if(!liff.isInClient())throw new Error('Not inside LINE LIFF client');
    try{const p=await liff.getProfile();lineDisplayName=p?.displayName||lineDisplayName||'';lineUserId=p?.userId||lineUserId||'';}catch(e){console.warn('ERRAND PROFILE READ FAILED:',e);}
-   orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;const message=dispatchMessage(orderData);
+   orderData=await buildOrderData();window.TOP_TAXI_LAST_ORDER_DATA=orderData;const message=topTaxiFormatErrandMessageV2(dispatchMessage(orderData));
    await liff.sendMessages([{type:'text',text:message}]);
    orderData.delivery.lineStatus='success';orderData.delivery.backendStatus='pending';orderData.delivery.lastUpdatedAt=taipeiIso();window.TOP_TAXI_LAST_ORDER_DATA=orderData;
    let ok=true,photoOk=taskType!=='move';try{const r=await fetch(WEBHOOK_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(orderData)});if(!r.ok){ok=false;console.warn('ERRAND n8n HTTP:',r.status);}else{let payload=null;try{payload=await r.clone().json();}catch(parseError){console.warn('ERRAND n8n RESPONSE IS NOT JSON:',parseError);}const findPhotoUrl=(v,depth=0)=>{if(depth>5||v==null)return null;if(typeof v==='string')return /^https:\/\//i.test(v.trim())?v.trim():null;if(Array.isArray(v)){for(const item of v){const hit=findPhotoUrl(item,depth+1);if(hit)return hit;}return null;}if(typeof v==='object'){for(const key of ['movePhotoUrl','photoUrl','imageUrl','originalContentUrl','previewImageUrl']){const hit=findPhotoUrl(v[key],depth+1);if(hit)return hit;}for(const key of ['data','result','body','output']){const hit=findPhotoUrl(v[key],depth+1);if(hit)return hit;}}return null;};const candidate=findPhotoUrl(payload);if(taskType==='move'){if(candidate){movePhotoRemoteUrl=candidate;orderData.taskSpecific.movePhoto={...(orderData.taskSpecific.movePhoto||{}),url:candidate,dataUrl:null};try{await liff.sendMessages([{type:'image',originalContentUrl:candidate,previewImageUrl:candidate}]);photoOk=true;}catch(photoSendError){photoOk=false;ok=false;console.warn('ERRAND MOVE PHOTO LINE SEND FAILED:',photoSendError);}}else{photoOk=false;ok=false;console.warn('ERRAND MOVE PHOTO URL MISSING FROM n8n RESPONSE');}}}}catch(e){ok=false;console.error('ERRAND N8N ERROR:',e);}
@@ -4062,6 +4062,64 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
   else boot();
 })();
+
+
+function topTaxiCleanMessageLinesV2(lines){
+  const out=[];
+  for(const raw of lines){
+    const line=String(raw??'').replace(/\s+$/,'');
+    if(line.trim()==='' && (!out.length || out[out.length-1].trim()==='')) continue;
+    out.push(line);
+  }
+  while(out.length && out[0].trim()==='') out.shift();
+  while(out.length && out[out.length-1].trim()==='') out.pop();
+  return out;
+}
+function topTaxiSplitAddressBlocksV2(lines){
+  const body=[], blocks=[];
+  let block=null;
+  const flush=()=>{ if(block&&block.length){blocks.push(block);block=null;} };
+  for(const raw of lines){
+    const t=String(raw??'').trim();
+    if(/^(📍|🟡|🏁)\s/.test(t)){
+      flush(); block=[raw]; continue;
+    }
+    if(block){
+      if(t===''){ flush(); body.push(raw); }
+      else block.push(raw);
+      continue;
+    }
+    body.push(raw);
+  }
+  flush();
+  return {body,blocks};
+}
+
+function topTaxiFormatErrandMessageV2(text){
+  const task=TASKS[taskType]||'跑腿';
+  const icon={purchase:'🛒',delivery:'📦',queue:'🧾',pet:'🐾',move:'📦',other:'🛵'}[taskType]||'🛵';
+  const header=`${icon} TOP Taxi｜跑腿服務・${task}`;
+  const split=topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
+  const body=[];
+  for(let i=0;i<split.body.length;i++){
+    const line=String(split.body[i]??''); const t=line.trim();
+    if(i===0 && /TOP Taxi/.test(t)) continue;
+    if(t.startsWith('📋 服務類型：')) continue;
+    if(t.startsWith('🛵 任務類型：')) continue;
+    if(t.startsWith('📅 預約日期：') || t.startsWith('⏰ 預約時間：')) continue;
+    if(t.startsWith('📡 TOP Taxi｜')) continue;
+    if(t.startsWith('💳 付款方式：') && t.includes('現金')) continue;
+    body.push(line);
+  }
+  const core=errandMode==='reserve'
+    ? `🕐 ${$('#errandDate').value} ${$('#errandTime').value}｜${icon} ${task}`
+    : `⚡ 即時｜${icon} ${task}`;
+  const out=[header,'',...topTaxiCleanMessageLinesV2(body),'',core];
+  const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
+  if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
+  return topTaxiCleanMessageLinesV2(out).join('\n');
+}
+
 </script>
 </body>
 </html>
