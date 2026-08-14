@@ -1,0 +1,39 @@
+name: Errand Address AB4
+'on':
+  push:
+    paths: ['.github/workflows/errand-address-ab4.yml']
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: main}
+      - name: Patch
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p=Path('errand.html'); s=p.read_text(encoding='utf-8')
+          # Replace only p1 after addressBlock creation with a plain, whole-block-style textarea outside addressSection.
+          old="""if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified')){activeSlotKeys.push('p1');const p1node=addressBlock(addressSlots.p1);root.appendChild(p1node);root.parentNode.insertBefore(p1node,root);}"""
+          new="""if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified')){activeSlotKeys.push('p1');const oldP1=document.querySelector('[data-slot=\"p1\"]');if(oldP1)oldP1.remove();const p1node=document.createElement('div');p1node.id='topTaxiP1AB4';p1node.dataset.slot='p1';const initial=addressSlots.p1.data?displayAddress(addressSlots.p1.data):'';p1node.innerHTML=`<label>📍 ${addressSlots.p1.label} <span class=\"field-tag ${addressSlots.p1.required?'required-tag':'optional-tag'}\">${addressSlots.p1.required?'必填':'選填'}</span></label><div id=\"p1Box\"><textarea id=\"p1Input\" rows=\"4\" placeholder=\"請輸入${addressSlots.p1.label}地址或地標名稱\">${escapeHtml(initial)}</textarea><div class=\"address-suggestions\" id=\"p1Suggestions\"></div></div>`;root.parentNode.insertBefore(p1node,root);const input=p1node.querySelector('#p1Input');input.addEventListener('input',()=>{const q=input.value.trim();addressSlots.p1.place=null;addressSlots.p1.data=q?normalizeAddress({address:q}):null;syncDeliveryVisibility();renderPhoto();updateEstimate();});}"""
+          if old not in s: raise SystemExit('AB3 p1 hook not found')
+          s=s.replace(old,new,1)
+          css='''<style id="topTaxiErrandAddressAB4">\n#topTaxiP1AB4{display:block;width:100%;max-width:100%;min-width:0;margin:12px 0 14px;box-sizing:border-box}\n#topTaxiP1AB4 label{display:block;margin:0 0 7px;color:#2b2b30;font-size:14px;font-weight:850}\n#topTaxiP1AB4 #p1Box{position:relative;display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}\n#topTaxiP1AB4 #p1Input{display:block;width:100%;max-width:100%;min-width:0;min-height:128px;box-sizing:border-box;padding:15px 14px;border:1px solid #dedee3;border-radius:14px;background:#fff;color:#222;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;resize:none;outline:none;appearance:none;-webkit-appearance:none;transform:none;zoom:1}\n#topTaxiP1AB4 #p1Input:focus{border-color:#ff1f2d;box-shadow:0 0 0 3px rgba(255,31,45,.08)}\n#topTaxiP1AB4 .address-suggestions{left:0;right:0;width:auto;max-width:100%}\n</style>'''
+          s=s.replace('</head>',css+'\n</head>',1)
+          p.write_text(s,encoding='utf-8')
+      - name: Commit
+        shell: bash
+        run: |
+          set -e
+          git diff --check
+          grep -q 'topTaxiErrandAddressAB4' errand.html
+          grep -q 'id="p1Input" rows="4"' errand.html
+          rm .github/workflows/errand-address-ab4.yml
+          git config user.name 'TOP Taxi automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add errand.html .github/workflows/errand-address-ab4.yml
+          git commit -m 'test plain outside p1 with Places binding'
+          git push origin HEAD:main
