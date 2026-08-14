@@ -1,0 +1,156 @@
+name: TOP Taxi saved address horizontal lock
+
+on:
+  push:
+    paths:
+      - '.github/workflows/top-taxi-lock-saved-address-horizontal-20260815.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch saved-address horizontal overflow only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          marker = 'topTaxiSavedAddressNoHorizontalDragV1'
+
+          ride_css = r'''
+<style id="topTaxiSavedAddressNoHorizontalDragV1">
+/* Saved-address editor only: prevent Google suggestions from widening/panning the page. */
+#settings.ride-saved-compact,
+#settings.ride-saved-compact .ride-saved-address-row,
+#settings.ride-saved-compact .saved-setting-name,
+#settings.ride-saved-compact .autocomplete,
+#settings.ride-saved-compact .suggestions,
+#settings.ride-saved-compact .suggestion,
+#settings.ride-saved-compact .suggestion > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#settings.ride-saved-compact {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+#settings.ride-saved-compact .autocomplete {
+  width: 100%;
+}
+#settings.ride-saved-compact .suggestions {
+  left: 0;
+  right: 0;
+  width: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+}
+#settings.ride-saved-compact .suggestion {
+  overflow: hidden;
+}
+#settings.ride-saved-compact .suggestion strong,
+#settings.ride-saved-compact .suggestion small {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
+'''
+
+          booking_css = r'''
+<style id="topTaxiSavedAddressNoHorizontalDragV1">
+/* Saved-address editor only: prevent Google suggestions from widening/panning the page. */
+#bookingSavedAddressEditor,
+#bookingSavedAddressRows,
+#bookingSavedAddressEditor .saved-address-row,
+#bookingSavedAddressEditor .saved-setting-name,
+#bookingSavedAddressEditor .address-autocomplete,
+#bookingSavedAddressEditor .address-suggestions,
+#bookingSavedAddressEditor .address-suggestion,
+#bookingSavedAddressEditor .address-suggestion > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#bookingSavedAddressEditor {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+#bookingSavedAddressEditor .saved-address-row {
+  grid-template-columns: 92px minmax(0, 1fr);
+}
+#bookingSavedAddressEditor .address-autocomplete {
+  width: 100%;
+}
+#bookingSavedAddressEditor .address-suggestions {
+  left: 0;
+  right: 0;
+  width: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+}
+#bookingSavedAddressEditor .address-suggestion {
+  overflow: hidden;
+}
+#bookingSavedAddressEditor .address-suggestion-main,
+#bookingSavedAddressEditor .address-suggestion-secondary {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 390px) {
+  #bookingSavedAddressEditor .saved-address-row {
+    grid-template-columns: 82px minmax(0, 1fr);
+  }
+}
+</style>
+'''
+
+          for filename, css, required in [
+              ('ride.html', ride_css, ['ride-saved-compact', 'homeAddressSuggestions', 'fav2AddressSuggestions']),
+              ('index.html', booking_css, ['bookingSavedAddressEditor', 'bookingSavedAddressRows', 'address-suggestions']),
+          ]:
+              p = Path(filename)
+              text = p.read_text(encoding='utf-8')
+              for token in required:
+                  if token not in text:
+                      raise SystemExit(f'{filename}: required marker missing: {token}')
+              if marker in text:
+                  raise SystemExit(f'{filename}: patch marker already exists')
+              if '</head>' not in text:
+                  raise SystemExit(f'{filename}: </head> missing')
+              text = text.replace('</head>', css + '\n</head>', 1)
+              p.write_text(text, encoding='utf-8')
+
+          # Guard: this patch must not touch fare/errand.
+          print('Patched ride.html + index.html only')
+          PY
+
+      - name: Validate and publish
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for f in ['ride.html','index.html']:
+              t=Path(f).read_text(encoding='utf-8')
+              assert t.count('topTaxiSavedAddressNoHorizontalDragV1') == 1, f
+              assert 'touch-action: pan-y' in t, f
+          print('validation ok')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ride.html index.html
+          git commit -m "fix: lock saved address suggestions to vertical scroll"
+          git push origin main
