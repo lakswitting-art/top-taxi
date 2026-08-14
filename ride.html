@@ -1194,16 +1194,40 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
           onclick="setRideService('driver')"
         >🚘 代駕服務</button>
       </div>
-      <div id="settings" class="settings" hidden>
-        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="homeName">地點 1 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="0">清除</button></div><input id="homeName" class="input" value="住家"></div><div><label class="label" for="homeAddress">地址</label><div class="autocomplete"><input id="homeAddress" class="input" autocomplete="off" placeholder="輸入住家地址或地標"><div id="homeAddressSuggestions" class="suggestions" hidden></div></div></div></div>
-        <div><label class="label" for="homePickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="homePickupNote" class="input" placeholder="例如：社區大門口、超商前"></div>
-        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="workName">地點 2 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="1">清除</button></div><input id="workName" class="input" value="公司"></div><div><label class="label" for="workAddress">地址</label><div class="autocomplete"><input id="workAddress" class="input" autocomplete="off" placeholder="輸入公司地址或地標"><div id="workAddressSuggestions" class="suggestions" hidden></div></div></div></div>
-        <div><label class="label" for="workPickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="workPickupNote" class="input" placeholder="例如：公司正門、警衛室旁"></div>
-        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="fav1Name">地點 3 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="2">清除</button></div><input id="fav1Name" class="input" value="常用 1"></div><div><label class="label" for="fav1Address">地址</label><div class="autocomplete"><input id="fav1Address" class="input" autocomplete="off" placeholder="輸入常用地址或地標"><div id="fav1AddressSuggestions" class="suggestions" hidden></div></div></div></div>
-        <div><label class="label" for="fav1PickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="fav1PickupNote" class="input" placeholder="例如：大門右側、路口紅綠燈下"></div>
-        <div class="row"><div><div class="saved-setting-label-row"><label class="label" for="fav2Name">地點 4 名稱</label><button class="saved-clear-btn" type="button" data-clear-saved="3">清除</button></div><input id="fav2Name" class="input" value="常用 2"></div><div><label class="label" for="fav2Address">地址</label><div class="autocomplete"><input id="fav2Address" class="input" autocomplete="off" placeholder="輸入常用地址或地標"><div id="fav2AddressSuggestions" class="suggestions" hidden></div></div></div></div>
-        <div><label class="label" for="fav2PickupNote">上車位置補充 <span class="field-tag optional-tag">選填</span></label><input id="fav2PickupNote" class="input" placeholder="例如：管理室前、便利商店門口"></div>
-        <button id="saveAddresses" class="primary" type="button">儲存常用地址</button>
+      <div id="settings" class="settings ride-saved-compact" hidden>
+        <div class="ride-saved-address-row">
+          <div class="saved-setting-name">
+            <input id="homeName" class="input ride-saved-name-input" value="住家" aria-label="常用地點名稱">
+            <button class="saved-clear-btn" type="button" data-clear-saved="0">清除</button>
+          </div>
+          <div class="autocomplete"><input id="homeAddress" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="homeAddressSuggestions" class="suggestions" hidden></div></div>
+          <input id="homePickupNote" class="input ride-saved-note" aria-label="上車位置補充" placeholder="上車位置補充（選填）">
+        </div>
+        <div class="ride-saved-address-row">
+          <div class="saved-setting-name">
+            <input id="workName" class="input ride-saved-name-input" value="公司" aria-label="常用地點名稱">
+            <button class="saved-clear-btn" type="button" data-clear-saved="1">清除</button>
+          </div>
+          <div class="autocomplete"><input id="workAddress" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="workAddressSuggestions" class="suggestions" hidden></div></div>
+          <input id="workPickupNote" class="input ride-saved-note" aria-label="上車位置補充" placeholder="上車位置補充（選填）">
+        </div>
+        <div class="ride-saved-address-row">
+          <div class="saved-setting-name">
+            <input id="fav1Name" class="input ride-saved-name-input" value="常用 1" aria-label="常用地點名稱">
+            <button class="saved-clear-btn" type="button" data-clear-saved="2">清除</button>
+          </div>
+          <div class="autocomplete"><input id="fav1Address" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="fav1AddressSuggestions" class="suggestions" hidden></div></div>
+          <input id="fav1PickupNote" class="input ride-saved-note" aria-label="上車位置補充" placeholder="上車位置補充（選填）">
+        </div>
+        <div class="ride-saved-address-row">
+          <div class="saved-setting-name">
+            <input id="fav2Name" class="input ride-saved-name-input" value="常用 2" aria-label="常用地點名稱">
+            <button class="saved-clear-btn" type="button" data-clear-saved="3">清除</button>
+          </div>
+          <div class="autocomplete"><input id="fav2Address" class="input" autocomplete="off" placeholder="請輸入地址或地標"><div id="fav2AddressSuggestions" class="suggestions" hidden></div></div>
+          <input id="fav2PickupNote" class="input ride-saved-note" aria-label="上車位置補充" placeholder="上車位置補充（選填）">
+        </div>
+        <button id="saveAddresses" class="primary ride-saved-save" type="button">儲存常用地址</button>
       </div>
       <div class="field"><label class="label" for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><div class="autocomplete"><input id="pickup" class="input" autocomplete="off" placeholder="請輸入上車地址或地標"><div id="pickupSuggestions" class="suggestions" hidden></div></div><div id="pickupStatus" class="status"></div>
         <button id="useLocation" class="location-inline-btn" type="button">
@@ -2264,12 +2288,26 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
         : icon + " " + suffix;
     }
 
+    function normalizeLegacyRideSavedName(item,index){
+      const next=normalizeAddress(item||{},defaults[index]||{});
+      const current=String(next.name||"").trim();
+      const legacy1=new Set(["","常用","常用:","常用：","常用地點","常用地點 1","常用地點1","常用1","常用 1","常用3","常用 3"]);
+      const legacy2=new Set(["","常用","常用:","常用：","常用地點","常用地點 2","常用地點2","常用2","常用 2","常用4","常用 4"]);
+      if(index===2&&legacy1.has(current))next.name="常用 1";
+      if(index===3&&legacy2.has(current))next.name="常用 2";
+      return next;
+    }
+
     function loadAddresses(){
       try{
         const raw=JSON.parse(localStorage.getItem(SHARED_ADDRESS_KEY)||"null");
-        if(Array.isArray(raw))return defaults.map((d,i)=>normalizeAddress(raw[i]||{},d));
+        if(Array.isArray(raw)){
+          const next=defaults.map((d,i)=>normalizeLegacyRideSavedName(raw[i]||{},i));
+          try{localStorage.setItem(SHARED_ADDRESS_KEY,JSON.stringify(next));}catch(e){}
+          return next;
+        }
       }catch(e){}
-      return defaults.map(d=>normalizeAddress({},d));
+      return defaults.map((d,i)=>normalizeLegacyRideSavedName({},i));
     }
 
     let savedAddresses=loadAddresses();
@@ -3477,7 +3515,7 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
       try{
         const next=[];
         for(let i=0;i<ids.length;i++){
-          const id=ids[i],name=$("#"+id+"Name").value.trim()||"常用地點",pickupNote=$("#"+id+"PickupNote").value.trim();
+          const id=ids[i],name=$("#"+id+"Name").value.trim()||defaults[i]?.name||"常用地址",pickupNote=$("#"+id+"PickupNote").value.trim();
           let typed=$("#"+id+"Address").value.trim();
           let data=draftAddressData[i]||normalizeAddress();
           if(typed&&!data.placeId){
@@ -4035,81 +4073,78 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
   else boot();
 })();
 </script>
-<style id="topTaxiSavedAddressPolishV2Style">
-.top-taxi-saved-address-hint-v2{
+<style id="topTaxiRideSavedAddressCompactV1">
+#settings.ride-saved-compact{
+  margin-top:10px;
+  padding:12px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#fafafa;
+  display:grid;
+  gap:10px;
+}
+#settings.ride-saved-compact[hidden]{display:none!important;}
+.ride-saved-address-row{
+  display:grid;
+  grid-template-columns:92px minmax(0,1fr);
+  gap:8px;
+}
+.ride-saved-address-row .saved-setting-name{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-width:0;
+}
+.ride-saved-address-row .saved-setting-name input{
+  min-width:0;
+  flex:1;
+}
+.ride-saved-address-row .input{
+  min-height:42px;
+  padding:0 10px;
+  border-radius:12px;
+  font-size:13px;
+}
+.ride-saved-name-input{
+  text-align:center;
+  font-weight:800;
+}
+.ride-saved-address-row .saved-clear-btn{
+  flex:0 0 auto;
+  padding:3px 2px;
+}
+.ride-saved-note{
+  grid-column:2;
+}
+.ride-saved-save{
+  margin-top:2px;
+  min-height:44px;
+}
+.top-taxi-ride-saved-address-hint{
   margin:4px 2px 0;
   color:#9b9ba1;
   font-size:11px;
   line-height:1.45;
 }
+@media(max-width:390px){
+  .ride-saved-address-row{grid-template-columns:82px minmax(0,1fr);}
+}
 </style>
-<script id="topTaxiSavedAddressPolishV2">
+<script id="topTaxiRideSavedAddressCompactScriptV1">
 (function(){
-  const KEY='topTaxiAddresses';
-  const generic1=new Set(['','常用','常用:','常用：','常用地點 1','常用地點1','常用1','常用 1','常用3','常用 3']);
-  const generic2=new Set(['','常用','常用:','常用：','常用地點 2','常用地點2','常用2','常用 2','常用4','常用 4']);
-
-  function migrate(){
-    try{
-      const raw=JSON.parse(localStorage.getItem(KEY)||'null');
-      if(!Array.isArray(raw))return;
-      let changed=false;
-      if(raw[2]&&generic1.has(String(raw[2].name||'').trim())){
-        raw[2].name='常用 1'; changed=true;
-      }
-      if(raw[3]&&generic2.has(String(raw[3].name||'').trim())){
-        raw[3].name='常用 2'; changed=true;
-      }
-      if(changed)localStorage.setItem(KEY,JSON.stringify(raw));
-    }catch(_){ }
-  }
-
-  function normalizeInput(el, expected, allowed){
-    if(!el)return;
-    const value=String(el.value||'').trim();
-    if(allowed.has(value))el.value=expected;
-  }
-
-  function fixDom(){
-    migrate();
-
-    const rideLabel=document.querySelector('#toggleSettings > span');
-    if(rideLabel && String(rideLabel.textContent||'').trim()==='設定') rideLabel.textContent='常用地址';
-
-    const bookingLabel=document.getElementById('savedSettingsLabel');
-    if(bookingLabel && String(bookingLabel.textContent||'').trim()==='設定') bookingLabel.textContent='常用地址';
-
-    normalizeInput(document.getElementById('sharedName2'),'常用 1',generic1);
-    normalizeInput(document.getElementById('sharedName3'),'常用 2',generic2);
-    normalizeInput(document.getElementById('fav1Name'),'常用 1',generic1);
-    normalizeInput(document.getElementById('fav2Name'),'常用 2',generic2);
-
-    const bookingChips=document.querySelectorAll('#bookingSavedAddressChips .saved-address-chip');
-    bookingChips.forEach(function(btn){
-      const t=String(btn.textContent||'').trim();
-      if(generic1.has(t))btn.textContent='常用 1';
-      else if(generic2.has(t))btn.textContent='常用 2';
-    });
-    const rideChips=document.querySelectorAll('#savedChips .chip');
-    rideChips.forEach(function(btn){
-      const t=String(btn.textContent||'').trim();
-      if(generic1.has(t))btn.textContent='常用 1';
-      else if(generic2.has(t))btn.textContent='常用 2';
-    });
-
-    const rideLine=document.querySelector('.saved-place-line');
-    if(rideLine && !document.querySelector('.top-taxi-saved-address-hint-v2')){
+  function boot(){
+    const line=document.querySelector('.saved-place-line');
+    if(line&&!document.querySelector('.top-taxi-ride-saved-address-hint')){
       const hint=document.createElement('div');
-      hint.className='top-taxi-saved-address-hint-v2';
+      hint.className='top-taxi-ride-saved-address-hint';
       hint.textContent='儲存常用地址，下次可一鍵帶入';
-      rideLine.insertAdjacentElement('afterend',hint);
+      line.insertAdjacentElement('afterend',hint);
     }
+    const label=document.querySelector('#toggleSettings > span');
+    if(label)label.textContent='常用地址';
   }
-
-  migrate();
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fixDom,{once:true});
-  else fixDom();
-  new MutationObserver(function(){requestAnimationFrame(fixDom);}).observe(document.documentElement,{subtree:true,childList:true});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
 })();
 </script>
 </body>
