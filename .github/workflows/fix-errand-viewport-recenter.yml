@@ -1,5 +1,6 @@
 name: Fix errand viewport recenter
 on:
+  workflow_dispatch:
   push:
     paths:
       - '.github/workflows/fix-errand-viewport-recenter.yml'
