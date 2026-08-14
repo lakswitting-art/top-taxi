@@ -4250,12 +4250,6 @@ body {
   margin-top:2px;
   min-height:44px;
 }
-.top-taxi-ride-saved-address-hint{
-  margin:4px 2px 0;
-  color:#9b9ba1;
-  font-size:11px;
-  line-height:1.45;
-}
 @media(max-width:390px){
   .ride-saved-address-row{grid-template-columns:82px minmax(0,1fr);}
 }
@@ -4263,13 +4257,6 @@ body {
 <script id="topTaxiRideSavedAddressCompactScriptV1">
 (function(){
   function boot(){
-    const line=document.querySelector('.saved-place-line');
-    if(line&&!document.querySelector('.top-taxi-ride-saved-address-hint')){
-      const hint=document.createElement('div');
-      hint.className='top-taxi-ride-saved-address-hint';
-      hint.textContent='儲存常用地址，下次可一鍵帶入';
-      line.insertAdjacentElement('afterend',hint);
-    }
     const label=document.querySelector('#toggleSettings > span');
     if(label)label.textContent='常用地址';
   }
