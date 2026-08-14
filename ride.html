@@ -1163,8 +1163,15 @@ button.suggestion strong{grid-column:2;grid-row:1;min-width:0}
 button.suggestion small{grid-column:2;grid-row:2;min-width:0}
 </style>
 
-<style id="topTaxiSavedAddressNoHorizontalDragV1">
-/* Saved-address editor only: prevent Google suggestions from widening/panning the page. */
+<style id="topTaxiSavedAddressViewportLockV2">
+/* iOS/LIFF saved-address fix: avoid sub-16px focus zoom and any document-level horizontal pan. */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
 #settings.ride-saved-compact,
 #settings.ride-saved-compact .ride-saved-address-row,
 #settings.ride-saved-compact .saved-setting-name,
@@ -1180,7 +1187,12 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
   overflow-x: hidden;
   overscroll-behavior-x: none;
 }
-#settings.ride-saved-compact .autocomplete { width: 100%; }
+#settings.ride-saved-compact input {
+  font-size: 16px !important;
+}
+#settings.ride-saved-compact .autocomplete {
+  width: 100%;
+}
 #settings.ride-saved-compact .suggestions {
   left: 0;
   right: 0;
@@ -1190,7 +1202,9 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
   touch-action: pan-y;
   overscroll-behavior-x: none;
 }
-#settings.ride-saved-compact .suggestion { overflow: hidden; }
+#settings.ride-saved-compact .suggestion {
+  overflow: hidden;
+}
 #settings.ride-saved-compact .suggestion strong,
 #settings.ride-saved-compact .suggestion small {
   min-width: 0;
@@ -1200,6 +1214,38 @@ button.suggestion small{grid-column:2;grid-row:2;min-width:0}
   white-space: nowrap;
 }
 </style>
+
+
+<script id="topTaxiSavedAddressViewportLockScriptV2">
+(function(){
+  function clampDocumentX(){
+    const scrolling = document.scrollingElement;
+    if (scrolling && scrolling.scrollLeft) scrolling.scrollLeft = 0;
+    if (document.documentElement && document.documentElement.scrollLeft) document.documentElement.scrollLeft = 0;
+    if (document.body && document.body.scrollLeft) document.body.scrollLeft = 0;
+  }
+
+  function isSavedAddressField(target){
+    if (!target || !target.closest) return false;
+    return !!target.closest('#settings.ride-saved-compact, #bookingSavedAddressEditor');
+  }
+
+  document.addEventListener('focusin', function(event){
+    if (!isSavedAddressField(event.target)) return;
+    requestAnimationFrame(clampDocumentX);
+    setTimeout(clampDocumentX, 80);
+    setTimeout(clampDocumentX, 300);
+  }, true);
+
+  document.addEventListener('focusout', function(event){
+    if (!isSavedAddressField(event.target)) return;
+    requestAnimationFrame(clampDocumentX);
+    setTimeout(clampDocumentX, 80);
+  }, true);
+
+  window.addEventListener('scroll', clampDocumentX, { passive: true });
+})();
+</script>
 
 </head>
 <body>

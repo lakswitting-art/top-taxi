@@ -2463,8 +2463,15 @@ body{
 }
 </style>
 
-<style id="topTaxiSavedAddressNoHorizontalDragV1">
-/* Saved-address editor only: prevent Google suggestions from widening/panning the page. */
+<style id="topTaxiSavedAddressViewportLockV2">
+/* iOS/LIFF saved-address fix: avoid sub-16px focus zoom and any document-level horizontal pan. */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
 #bookingSavedAddressEditor,
 #bookingSavedAddressRows,
 #bookingSavedAddressEditor .saved-address-row,
@@ -2484,7 +2491,12 @@ body{
 #bookingSavedAddressEditor .saved-address-row {
   grid-template-columns: 92px minmax(0, 1fr);
 }
-#bookingSavedAddressEditor .address-autocomplete { width: 100%; }
+#bookingSavedAddressEditor input {
+  font-size: 16px !important;
+}
+#bookingSavedAddressEditor .address-autocomplete {
+  width: 100%;
+}
 #bookingSavedAddressEditor .address-suggestions {
   left: 0;
   right: 0;
@@ -2494,7 +2506,9 @@ body{
   touch-action: pan-y;
   overscroll-behavior-x: none;
 }
-#bookingSavedAddressEditor .address-suggestion { overflow: hidden; }
+#bookingSavedAddressEditor .address-suggestion {
+  overflow: hidden;
+}
 #bookingSavedAddressEditor .address-suggestion-main,
 #bookingSavedAddressEditor .address-suggestion-secondary {
   min-width: 0;
@@ -2509,6 +2523,38 @@ body{
   }
 }
 </style>
+
+
+<script id="topTaxiSavedAddressViewportLockScriptV2">
+(function(){
+  function clampDocumentX(){
+    const scrolling = document.scrollingElement;
+    if (scrolling && scrolling.scrollLeft) scrolling.scrollLeft = 0;
+    if (document.documentElement && document.documentElement.scrollLeft) document.documentElement.scrollLeft = 0;
+    if (document.body && document.body.scrollLeft) document.body.scrollLeft = 0;
+  }
+
+  function isSavedAddressField(target){
+    if (!target || !target.closest) return false;
+    return !!target.closest('#settings.ride-saved-compact, #bookingSavedAddressEditor');
+  }
+
+  document.addEventListener('focusin', function(event){
+    if (!isSavedAddressField(event.target)) return;
+    requestAnimationFrame(clampDocumentX);
+    setTimeout(clampDocumentX, 80);
+    setTimeout(clampDocumentX, 300);
+  }, true);
+
+  document.addEventListener('focusout', function(event){
+    if (!isSavedAddressField(event.target)) return;
+    requestAnimationFrame(clampDocumentX);
+    setTimeout(clampDocumentX, 80);
+  }, true);
+
+  window.addEventListener('scroll', clampDocumentX, { passive: true });
+})();
+</script>
 
 </head>
 
