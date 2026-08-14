@@ -17,13 +17,12 @@ jobs:
           ref: main
 
       - name: Patch errand final address and clear trip
-        shell: python
+        shell: bash
         run: |
+          python3 - <<'PY'
           from pathlib import Path
           p=Path('errand.html')
           s=p.read_text(encoding='utf-8')
-
-          # Restore the top-right clear-trip action without changing the rest of the header.
           old='<div class="form-header"><div class="form-title">🛵 跑腿服務</div><div class="form-label-small">TOP TAXI ERRAND</div></div>'
           new='<div class="form-header"><div class="form-title">🛵 跑腿服務</div><button type="button" id="clearErrandTrip" class="errand-clear-trip">清除行程</button></div>'
           if old in s:
@@ -31,109 +30,59 @@ jobs:
           elif 'id="clearErrandTrip"' not in s:
               raise SystemExit('form header target not found')
 
-          css=r'''
-<style id="topTaxiErrandFinalAddressContainV3">
-/* Final/送達 address must never enlarge the page's inline size. */
-.errand-address-block[data-slot="final"]{
-  width:100%!important;
-  min-width:0!important;
-  max-width:100%!important;
-  contain:inline-size;
-}
-.errand-address-block[data-slot="final"] > *,
-.errand-address-block[data-slot="final"] .address-autocomplete,
-.errand-address-block[data-slot="final"] .address-input,
-.errand-address-block[data-slot="final"] .address-suggestions,
-.errand-address-block[data-slot="final"] .errand-delivery-box,
-.errand-address-block[data-slot="final"] .errand-row-toggle,
-.errand-address-block[data-slot="final"] .errand-small-input,
-.errand-address-block[data-slot="final"] .errand-small-input input{
-  box-sizing:border-box!important;
-  min-width:0!important;
-  max-width:100%!important;
-}
-.errand-address-block[data-slot="final"] .address-autocomplete,
-.errand-address-block[data-slot="final"] .address-input,
-.errand-address-block[data-slot="final"] .errand-delivery-box,
-.errand-address-block[data-slot="final"] .errand-row-toggle,
-.errand-address-block[data-slot="final"] .errand-small-input,
-.errand-address-block[data-slot="final"] .errand-small-input input{
-  width:100%!important;
-}
-.errand-address-block[data-slot="final"] .errand-row-toggle{
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr));
-  gap:6px!important;
-}
-.errand-address-block[data-slot="final"] .errand-row-toggle .errand-pill{
-  min-width:0!important;
-  max-width:100%!important;
-  width:100%!important;
-  padding-left:6px!important;
-  padding-right:6px!important;
-  white-space:normal!important;
-}
-.errand-clear-trip{
-  flex:0 0 auto;
-  border:0;
-  background:transparent;
-  padding:6px 0 6px 10px;
-  color:#777780;
-  font:inherit;
-  font-size:12px;
-  font-weight:800;
-  cursor:pointer;
-  white-space:nowrap;
-}
-.errand-clear-trip:active{color:#c90012;}
-@media(max-width:360px){
-  .errand-address-block[data-slot="final"] .errand-row-toggle{grid-template-columns:1fr 1fr;}
-}
-</style>
-'''
+          css='''
+          <style id="topTaxiErrandFinalAddressContainV3">
+          .errand-address-block[data-slot="final"]{width:100%!important;min-width:0!important;max-width:100%!important;contain:inline-size;}
+          .errand-address-block[data-slot="final"] > *,
+          .errand-address-block[data-slot="final"] .address-autocomplete,
+          .errand-address-block[data-slot="final"] .address-input,
+          .errand-address-block[data-slot="final"] .address-suggestions,
+          .errand-address-block[data-slot="final"] .errand-delivery-box,
+          .errand-address-block[data-slot="final"] .errand-row-toggle,
+          .errand-address-block[data-slot="final"] .errand-small-input,
+          .errand-address-block[data-slot="final"] .errand-small-input input{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}
+          .errand-address-block[data-slot="final"] .address-autocomplete,
+          .errand-address-block[data-slot="final"] .address-input,
+          .errand-address-block[data-slot="final"] .errand-delivery-box,
+          .errand-address-block[data-slot="final"] .errand-row-toggle,
+          .errand-address-block[data-slot="final"] .errand-small-input,
+          .errand-address-block[data-slot="final"] .errand-small-input input{width:100%!important;}
+          .errand-address-block[data-slot="final"] .errand-row-toggle{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important;}
+          .errand-address-block[data-slot="final"] .errand-row-toggle .errand-pill{min-width:0!important;max-width:100%!important;width:100%!important;padding-left:6px!important;padding-right:6px!important;white-space:normal!important;}
+          .errand-clear-trip{flex:0 0 auto;border:0;background:transparent;padding:6px 0 6px 10px;color:#777780;font:inherit;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;}
+          .errand-clear-trip:active{color:#c90012;}
+          @media(max-width:360px){.errand-address-block[data-slot="final"] .errand-row-toggle{grid-template-columns:1fr 1fr;}}
+          </style>
+          '''
           if 'topTaxiErrandFinalAddressContainV3' not in s:
               s=s.replace('</head>',css+'\n</head>',1)
 
-          js=r'''
-<script id="topTaxiErrandFinalTouchGuardV3">
-(function(){
-  const clearBtn=document.getElementById('clearErrandTrip');
-  if(clearBtn){
-    clearBtn.addEventListener('click',function(){
-      window.location.reload();
-    });
-  }
-
-  // iOS/Liff can still rubber-band a page horizontally after a lower search field
-  // receives focus. Block only page-level horizontal drags; keep intentional
-  // horizontal saved-address chip rows and vertical suggestion scrolling usable.
-  let startX=0,startY=0;
-  document.addEventListener('touchstart',function(e){
-    const t=e.touches&&e.touches[0];
-    if(!t)return;
-    startX=t.clientX;startY=t.clientY;
-  },{passive:true,capture:true});
-  document.addEventListener('touchmove',function(e){
-    const t=e.touches&&e.touches[0];
-    if(!t)return;
-    const target=e.target&&e.target.closest?e.target:null;
-    if(target&&target.closest('.errand-saved-line,.booking-saved-place-line,.address-suggestions,.suggestions'))return;
-    const dx=t.clientX-startX,dy=t.clientY-startY;
-    if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)){
-      e.preventDefault();
-      const y=window.scrollY||document.documentElement.scrollTop||0;
-      if(window.scrollX!==0)window.scrollTo(0,y);
-      document.documentElement.scrollLeft=0;
-      document.body.scrollLeft=0;
-    }
-  },{passive:false,capture:true});
-})();
-</script>
-'''
+          js='''
+          <script id="topTaxiErrandFinalTouchGuardV3">
+          (function(){
+            const clearBtn=document.getElementById('clearErrandTrip');
+            if(clearBtn)clearBtn.addEventListener('click',function(){window.location.reload();});
+            let startX=0,startY=0;
+            document.addEventListener('touchstart',function(e){const t=e.touches&&e.touches[0];if(!t)return;startX=t.clientX;startY=t.clientY;},{passive:true,capture:true});
+            document.addEventListener('touchmove',function(e){
+              const t=e.touches&&e.touches[0];if(!t)return;
+              const target=e.target&&e.target.closest?e.target:null;
+              if(target&&target.closest('.errand-saved-line,.booking-saved-place-line,.address-suggestions,.suggestions'))return;
+              const dx=t.clientX-startX,dy=t.clientY-startY;
+              if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)){
+                e.preventDefault();
+                const y=window.scrollY||document.documentElement.scrollTop||0;
+                if(window.scrollX!==0)window.scrollTo(0,y);
+                document.documentElement.scrollLeft=0;document.body.scrollLeft=0;
+              }
+            },{passive:false,capture:true});
+          })();
+          </script>
+          '''
           if 'topTaxiErrandFinalTouchGuardV3' not in s:
               s=s.replace('</body>',js+'\n</body>',1)
-
           p.write_text(s,encoding='utf-8')
+          PY
 
       - name: Verify and commit
         shell: bash
