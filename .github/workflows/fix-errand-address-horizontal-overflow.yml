@@ -1,0 +1,131 @@
+name: Fix errand address horizontal overflow
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-errand-address-horizontal-overflow.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Patch errand horizontal viewport lock
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('errand.html')
+          s = p.read_text(encoding='utf-8')
+
+          style = r'''
+<style id="topTaxiErrandAddressViewportLockV2">
+/* Address interaction must never unlock page-level horizontal panning on iOS. */
+html {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip !important;
+  overscroll-behavior-x: none;
+}
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip !important;
+  overscroll-behavior-x: none;
+  touch-action: pan-y pinch-zoom;
+  position: relative;
+}
+.page,
+.booking-card,
+#errandForm,
+#addressSection,
+#extraStopsWrap,
+.errand-address-block,
+.address-autocomplete {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+.address-autocomplete {
+  width: 100% !important;
+}
+.address-input,
+.suggestions,
+.address-suggestions,
+.address-suggestion {
+  box-sizing: border-box !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+.suggestions,
+.address-suggestions {
+  left: 0 !important;
+  right: 0 !important;
+  width: auto !important;
+  overflow-x: clip !important;
+}
+</style>
+'''
+
+          script = r'''
+<script id="topTaxiErrandHorizontalViewportGuardV2">
+(() => {
+  const resetHorizontalViewport = () => {
+    const y = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+    if ((window.scrollX || 0) !== 0) window.scrollTo(0, y);
+    if (document.documentElement.scrollLeft) document.documentElement.scrollLeft = 0;
+    if (document.body.scrollLeft) document.body.scrollLeft = 0;
+  };
+
+  let raf = 0;
+  const scheduleReset = () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => {
+      raf = 0;
+      resetHorizontalViewport();
+    });
+  };
+
+  window.addEventListener('scroll', scheduleReset, { passive: true });
+  document.addEventListener('focusin', scheduleReset, true);
+  document.addEventListener('input', scheduleReset, true);
+  document.addEventListener('change', scheduleReset, true);
+  document.addEventListener('click', (event) => {
+    if (event.target.closest('.address-suggestion, .address-clear-btn, .errand-task-option, [data-task]')) {
+      scheduleReset();
+      setTimeout(resetHorizontalViewport, 0);
+      setTimeout(resetHorizontalViewport, 120);
+    }
+  }, true);
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('scroll', scheduleReset, { passive: true });
+    window.visualViewport.addEventListener('resize', scheduleReset, { passive: true });
+  }
+})();
+</script>
+'''
+
+          if 'topTaxiErrandAddressViewportLockV2' not in s:
+              s = s.replace('</head>', style + '\n</head>', 1)
+          if 'topTaxiErrandHorizontalViewportGuardV2' not in s:
+              s = s.replace('</body>', script + '\n</body>', 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit fix and remove one-shot workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/fix-errand-address-horizontal-overflow.yml
+          git config user.name "TOP Taxi automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add errand.html .github/workflows/fix-errand-address-horizontal-overflow.yml
+          git commit -m "Fix errand address horizontal page panning"
+          git push origin HEAD:main
