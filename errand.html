@@ -3862,34 +3862,42 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
 (()=>{const reset=()=>{const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;if((window.scrollX||0)!==0)window.scrollTo(0,y);if(document.documentElement.scrollLeft)document.documentElement.scrollLeft=0;if(document.body.scrollLeft)document.body.scrollLeft=0;};let raf=0;const schedule=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;reset();});};window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('focusin',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('input',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.address-suggestion,.address-clear-btn')){schedule();setTimeout(reset,0);setTimeout(reset,120);}},true);if(window.visualViewport){window.visualViewport.addEventListener('scroll',schedule,{passive:true});window.visualViewport.addEventListener('resize',schedule,{passive:true});}})();
 </script>
 
-<style id="topTaxiErrandNativeABV1">
-#p1Box.native-ab-host{position:relative!important;width:100%!important;max-width:100%!important;min-width:0!important;contain:none!important;overflow:visible!important;transform:none!important;zoom:1!important}
-#p1Box.native-ab-host .address-search-icon,#p1Box.native-ab-host .address-clear-btn,#p1Box.native-ab-host .address-suggestions{display:none!important}
-#p1Box.native-ab-host .native-ab-textarea{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;min-height:128px!important;padding:18px 16px!important;border:1px solid #dedee3!important;border-radius:16px!important;background:#fff!important;color:#222!important;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;resize:none!important;outline:none!important;appearance:none!important;-webkit-appearance:none!important;transform:none!important;zoom:1!important}
-#p1Box.native-ab-host .native-ab-textarea:focus{border-color:#ff1f2d!important;box-shadow:0 0 0 3px rgba(255,31,45,.08)!important}
+<style id="topTaxiErrandWholeBlockBypassV1">
+#topTaxiP1BypassTest{width:100%;max-width:100%;min-width:0;margin:12px 0 14px;box-sizing:border-box}
+#topTaxiP1BypassTest label{display:block;margin:0 0 7px;color:#2b2b30;font-size:14px;font-weight:850}
+#topTaxiP1BypassInput{display:block;width:100%;max-width:100%;min-width:0;min-height:128px;box-sizing:border-box;padding:15px 14px;border:1px solid #dedee3;border-radius:14px;background:#fff;color:#222;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;resize:none;outline:none;appearance:none;-webkit-appearance:none;transform:none;zoom:1}
+#topTaxiP1BypassInput:focus{border-color:#ff1f2d;box-shadow:0 0 0 3px rgba(255,31,45,.08)}
 </style>
-<script id="topTaxiErrandNativeABScriptV1">
+<script id="topTaxiErrandWholeBlockBypassScriptV1">
 (function(){
-function patch(){
-const old=document.getElementById('p1Input');
-const host=document.getElementById('p1Box');
-if(!old||!host||old.dataset.nativeAbDone) return false;
-const ta=document.createElement('textarea');
-ta.id='p1Input';
-ta.className='native-ab-textarea';
-ta.rows=4;
-ta.placeholder='A/B TEST：這格暫時完全比照一般內容輸入框';
-ta.value=old.value||'';
-ta.dataset.nativeAbDone='1';
-host.classList.add('native-ab-host');
-old.replaceWith(ta);
-return true;
-}
-if(!patch()){
-const mo=new MutationObserver(()=>{if(patch()) mo.disconnect();});
-mo.observe(document.documentElement,{childList:true,subtree:true});
-setTimeout(()=>mo.disconnect(),10000);
-}
+  function install(){
+    const section=document.getElementById('addressSection');
+    if(!section) return false;
+    let test=document.getElementById('topTaxiP1BypassTest');
+    if(!test){
+      test=document.createElement('div');
+      test.id='topTaxiP1BypassTest';
+      test.innerHTML='<label>📍 購買地點｜WHOLE BLOCK A/B TEST</label><textarea id="topTaxiP1BypassInput" rows="4" placeholder="這格完全繞過 errand-address-block / p1Box"></textarea>';
+      section.parentNode.insertBefore(test,section);
+    }
+    const original=section.querySelector('[data-slot="p1"]');
+    if(original) original.style.display='none';
+    const ta=document.getElementById('topTaxiP1BypassInput');
+    if(ta&&!ta.dataset.bound){
+      ta.dataset.bound='1';
+      ta.addEventListener('input',function(){
+        try{
+          const slot=addressSlots&&addressSlots.p1;
+          if(slot){const q=ta.value.trim();slot.place=null;slot.data=q?normalizeAddress({address:q}):null;}
+        }catch(_e){}
+      });
+    }
+    return true;
+  }
+  install();
+  const mo=new MutationObserver(()=>install());
+  mo.observe(document.documentElement,{childList:true,subtree:true});
+  setTimeout(()=>mo.disconnect(),15000);
 })();
 </script>
 </body>
