@@ -2704,6 +2704,16 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none
 .address-suggestion>span:last-child{min-width:0!important;max-width:100%!important;overflow:hidden;}
 </style>
 
+
+<style id="topTaxiErrandAddressViewportLockV2">
+html{width:100%;max-width:100%;overflow-x:clip!important;overscroll-behavior-x:none;}
+body{width:100%;max-width:100%;overflow-x:clip!important;overscroll-behavior-x:none;touch-action:pan-y pinch-zoom;position:relative;}
+.page,.booking-card,#errandForm,#addressSection,#extraStopsWrap,.errand-address-block,.address-autocomplete{min-width:0!important;max-width:100%!important;}
+.address-autocomplete{width:100%!important;}
+.address-input,.suggestions,.address-suggestions,.address-suggestion{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}
+.suggestions,.address-suggestions{left:0!important;right:0!important;width:auto!important;overflow-x:clip!important;}
+</style>
+
 </head>
 <body>
 <header class="hero">
@@ -3734,6 +3744,11 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
     boot();
   }
 })();
+</script>
+
+
+<script id="topTaxiErrandHorizontalViewportGuardV2">
+(()=>{const reset=()=>{const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;if((window.scrollX||0)!==0)window.scrollTo(0,y);if(document.documentElement.scrollLeft)document.documentElement.scrollLeft=0;if(document.body.scrollLeft)document.body.scrollLeft=0;};let raf=0;const schedule=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;reset();});};window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('focusin',schedule,true);document.addEventListener('input',schedule,true);document.addEventListener('change',schedule,true);document.addEventListener('click',e=>{if(e.target.closest('.address-suggestion,.address-clear-btn,.errand-task-option,[data-task]')){schedule();setTimeout(reset,0);setTimeout(reset,120);}},true);if(window.visualViewport){window.visualViewport.addEventListener('scroll',schedule,{passive:true});window.visualViewport.addEventListener('resize',schedule,{passive:true});}})();
 </script>
 
 </body>
