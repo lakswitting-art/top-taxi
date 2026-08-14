@@ -3174,7 +3174,7 @@ function renderAddresses(){
  }
  const finalBlock=addressBlock(addressSlots.final,true);finalBlock.id='finalAddressBlock';root.appendChild(finalBlock);
  if(!cfg.finalRequired){const note=document.createElement('div');note.className='booking-compact-help';note.textContent=taskType==='queue'?'如不需要配送，可留空':'純任務型跑腿可不填送達地址';finalBlock.appendChild(note);}
- initAutocompleteForVisibleSlots();updateDeliveryModule();syncDeliveryVisibility();updateEstimate();
+ /* TEMP NO-PLACES A/B TEST */ updateDeliveryModule();syncDeliveryVisibility();updateEstimate();
 }
 function addressBlock(slot,isFinal=false){
  const d=document.createElement('div');d.className='input-group errand-address-block';d.dataset.slot=slot.key;
@@ -3190,7 +3190,7 @@ let deliveryMethod='handoff';
 function syncDeliveryVisibility(){const module=$('#deliveryModule');if(!module)return;if(taskType==='move'){module.classList.add('errand-hidden');return;}const cfg=taskConfig(),hasFinal=!!addressValue('final');module.classList.toggle('errand-hidden',!cfg.finalRequired&&!hasFinal);}
 function updateDeliveryModule(){const module=$('#deliveryModule');if(!module)return;$$('[data-delivery]').forEach(b=>{b.addEventListener('click',()=>{deliveryMethod=b.dataset.delivery;$$('[data-delivery]').forEach(x=>x.classList.toggle('active',x===b));const forced=deliveryMethod!=='handoff';$('#deliveryLocationWrap')?.classList.toggle('errand-hidden',!forced);$('#deliveryPhotoNote')?.classList.toggle('errand-hidden',!forced);renderPhoto();updateEstimate();});});syncDeliveryVisibility();}
 function addStop(e){if(Date.now()<suppressAddStopUntil){e?.preventDefault?.();e?.stopPropagation?.();return;}const cfg=taskConfig();const keys=Object.keys(addressSlots).filter(k=>k.startsWith('p2_'));const k=keys.find(x=>!addressSlots[x].active);if(!k)return;addressSlots[k].manual=true;activateStop(k,false);if(keys.filter(x=>addressSlots[x].active&&addressSlots[x].manual).length>=cfg.p2Max)$('#addStopBtn')?.setAttribute('hidden','');updateEstimate();}
-function activateStop(key,focus=false){const s=addressSlots[key];if(!s||!s.manual)return;s.active=true;if(!activeSlotKeys.includes(key))activeSlotKeys.push(key);const wrap=$('#extraStopsWrap');if(!wrap)return;const node=addressBlock(s);node.querySelector('.errand-address-head').insertAdjacentHTML('beforeend',`<button type="button" class="errand-text-btn" data-remove-stop="${key}">移除</button>`);wrap.appendChild(node);node.querySelector(`[data-remove-stop="${key}"]`).addEventListener('click',()=>removeStop(key));initAutocompleteForSlot(s);}
+function activateStop(key,focus=false){const s=addressSlots[key];if(!s||!s.manual)return;s.active=true;if(!activeSlotKeys.includes(key))activeSlotKeys.push(key);const wrap=$('#extraStopsWrap');if(!wrap)return;const node=addressBlock(s);node.querySelector('.errand-address-head').insertAdjacentHTML('beforeend',`<button type="button" class="errand-text-btn" data-remove-stop="${key}">移除</button>`);wrap.appendChild(node);node.querySelector(`[data-remove-stop="${key}"]`).addEventListener('click',()=>removeStop(key));/* TEMP NO-PLACES A/B TEST: initAutocompleteForSlot(s); */}
 function removeStop(key){const s=addressSlots[key];s.active=false;s.manual=false;s.place=null;s.data=null;document.querySelector(`[data-slot="${key}"]`)?.remove();activeSlotKeys=activeSlotKeys.filter(x=>x!==key);$('#addStopBtn')?.removeAttribute('hidden');updateEstimate();}
 function renderTaskUi(){
  $$('#errandForm [data-task]').forEach(b=>b.classList.toggle('active',b.dataset.task===taskType));
@@ -3860,51 +3860,6 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
 
 <script id="topTaxiErrandHorizontalViewportGuardV3">
 (()=>{const reset=()=>{const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;if((window.scrollX||0)!==0)window.scrollTo(0,y);if(document.documentElement.scrollLeft)document.documentElement.scrollLeft=0;if(document.body.scrollLeft)document.body.scrollLeft=0;};let raf=0;const schedule=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;reset();});};window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('focusin',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('input',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.address-suggestion,.address-clear-btn')){schedule();setTimeout(reset,0);setTimeout(reset,120);}},true);if(window.visualViewport){window.visualViewport.addEventListener('scroll',schedule,{passive:true});window.visualViewport.addEventListener('resize',schedule,{passive:true});}})();
-</script>
-<script id="topTaxiErrandAddressFocusRecenterV1">
-(function(){
-  let t1=0,t2=0;
-  function resetX(){
-    const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;
-    document.documentElement.scrollLeft=0;
-    document.body.scrollLeft=0;
-    if(window.scrollX!==0) window.scrollTo(0,y);
-  }
-  function settleX(){
-    clearTimeout(t1); clearTimeout(t2);
-    requestAnimationFrame(resetX);
-    t1=setTimeout(resetX,90);
-    t2=setTimeout(resetX,220);
-  }
-  document.addEventListener('focusin',function(e){
-    if(e.target && e.target.matches && e.target.matches('.address-input')) settleX();
-  },true);
-})();
-</script>
-
-<style id="topTaxiErrandAddressABTestV1">
-.ab-plain-address-host{position:relative!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:visible!important;contain:none!important;transform:none!important;zoom:1!important}
-.ab-plain-address-host>.address-input{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;font-size:16px!important;transform:none!important;zoom:1!important;contain:none!important}
-.ab-plain-address-host>.address-suggestions{left:0!important;right:0!important;width:auto!important;max-width:100%!important}
-</style>
-<script id="topTaxiErrandAddressABTestScriptV1">
-(function(){
-  function patchFirstAddress(){
-    const input=document.querySelector('.address-input');
-    if(!input) return false;
-    const host=input.closest('.address-autocomplete');
-    if(!host) return false;
-    host.classList.remove('address-autocomplete');
-    host.classList.add('ab-plain-address-host');
-    input.setAttribute('data-ab-plain-address','1');
-    return true;
-  }
-  if(!patchFirstAddress()){
-    const mo=new MutationObserver(function(){if(patchFirstAddress()) mo.disconnect();});
-    mo.observe(document.documentElement,{childList:true,subtree:true});
-    setTimeout(function(){mo.disconnect()},10000);
-  }
-})();
 </script>
 </body>
 </html>
