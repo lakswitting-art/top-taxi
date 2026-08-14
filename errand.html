@@ -3861,5 +3861,25 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
 <script id="topTaxiErrandHorizontalViewportGuardV3">
 (()=>{const reset=()=>{const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;if((window.scrollX||0)!==0)window.scrollTo(0,y);if(document.documentElement.scrollLeft)document.documentElement.scrollLeft=0;if(document.body.scrollLeft)document.body.scrollLeft=0;};let raf=0;const schedule=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;reset();});};window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('focusin',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('input',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.address-suggestion,.address-clear-btn')){schedule();setTimeout(reset,0);setTimeout(reset,120);}},true);if(window.visualViewport){window.visualViewport.addEventListener('scroll',schedule,{passive:true});window.visualViewport.addEventListener('resize',schedule,{passive:true});}})();
 </script>
+<script id="topTaxiErrandAddressFocusRecenterV1">
+(function(){
+  let t1=0,t2=0;
+  function resetX(){
+    const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;
+    document.documentElement.scrollLeft=0;
+    document.body.scrollLeft=0;
+    if(window.scrollX!==0) window.scrollTo(0,y);
+  }
+  function settleX(){
+    clearTimeout(t1); clearTimeout(t2);
+    requestAnimationFrame(resetX);
+    t1=setTimeout(resetX,90);
+    t2=setTimeout(resetX,220);
+  }
+  document.addEventListener('focusin',function(e){
+    if(e.target && e.target.matches && e.target.matches('.address-input')) settleX();
+  },true);
+})();
+</script>
 </body>
 </html>
