@@ -3943,5 +3943,125 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
   else boot();
 })();
 </script>
+<style id="topTaxiProgressiveStopGateV1">
+.top-taxi-first-address-locked{display:none!important;}
+</style>
+<script id="topTaxiProgressiveStopGateScriptV1">
+(function(){
+  let currentAnchor=null;
+  let firstAddressValid=false;
+
+  function isVisible(el){
+    if(!el||el.hidden)return false;
+    const s=getComputedStyle(el);
+    if(s.display==='none'||s.visibility==='hidden')return false;
+    return !!(el.offsetWidth||el.offsetHeight||el.getClientRects().length);
+  }
+
+  function addButtons(){
+    return Array.from(document.querySelectorAll('button')).filter(function(btn){
+      return (btn.textContent||'').replace(/\s+/g,'').includes('新增停靠點');
+    });
+  }
+
+  function addressFields(){
+    const selectors=[
+      '.address-input',
+      '.top-taxi-address-plain-input',
+      '.autocomplete input',
+      '.address-autocomplete input'
+    ].join(',');
+    return Array.from(document.querySelectorAll(selectors)).filter(function(el){
+      if(el.closest('.saved-address-editor,.errand-saved-editor'))return false;
+      return isVisible(el);
+    });
+  }
+
+  function anchorFor(btn){
+    const fields=addressFields();
+    const before=fields.filter(function(el){
+      return !!(el.compareDocumentPosition(btn)&Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    if(before.length)return before[before.length-1];
+    const after=fields.filter(function(el){
+      return !!(btn.compareDocumentPosition(el)&Node.DOCUMENT_POSITION_FOLLOWING);
+    });
+    return after[0]||fields[0]||null;
+  }
+
+  function refreshAnchor(){
+    const btn=addButtons()[0]||null;
+    const next=btn?anchorFor(btn):null;
+    if(next!==currentAnchor){
+      currentAnchor=next;
+      firstAddressValid=false;
+    }
+  }
+
+  function render(){
+    refreshAnchor();
+    addButtons().forEach(function(btn){
+      btn.classList.toggle('top-taxi-first-address-locked',!firstAddressValid);
+    });
+  }
+
+  function markValidIfAnchor(input){
+    refreshAnchor();
+    if(!currentAnchor||input!==currentAnchor)return;
+    firstAddressValid=!!currentAnchor.value.trim();
+    render();
+  }
+
+  document.addEventListener('input',function(e){
+    refreshAnchor();
+    if(currentAnchor&&e.target===currentAnchor){
+      firstAddressValid=false;
+      render();
+    }
+  },true);
+
+  document.addEventListener('pointerup',function(e){
+    const suggestion=e.target.closest?.('.address-suggestion,.suggestion');
+    if(!suggestion)return;
+    const box=suggestion.closest('.address-autocomplete,.autocomplete,.top-taxi-address-plain-control');
+    const input=box?.querySelector('.address-input,.top-taxi-address-plain-input,input,textarea')||null;
+    setTimeout(function(){markValidIfAnchor(input);},120);
+  },true);
+
+  document.addEventListener('click',function(e){
+    const target=e.target.closest?.('.saved-address-chip,.location-inline-btn,.address-clear-btn,.top-taxi-address-clear,.top-taxi-errand-address-clear,button');
+    if(!target)return;
+    const label=(target.textContent||'').replace(/\s+/g,'');
+    const isShortcut=target.matches('.saved-address-chip,.location-inline-btn')||label.includes('使用目前位置');
+    const isClear=target.matches('.address-clear-btn,.top-taxi-address-clear,.top-taxi-errand-address-clear');
+    if(isShortcut){
+      setTimeout(function(){
+        refreshAnchor();
+        if(currentAnchor&&currentAnchor.value.trim()){
+          firstAddressValid=true;
+          render();
+        }
+      },500);
+    }
+    if(isClear){
+      setTimeout(function(){
+        refreshAnchor();
+        if(!currentAnchor||!currentAnchor.value.trim())firstAddressValid=false;
+        render();
+      },80);
+    }
+  },true);
+
+  const observer=new MutationObserver(function(){requestAnimationFrame(render);});
+
+  function boot(){
+    render();
+    observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','class']});
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
+})();
+</script>
 </body>
 </html>
