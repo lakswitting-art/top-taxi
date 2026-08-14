@@ -1,0 +1,38 @@
+name: Tune errand mobile left gap
+on:
+  push:
+    paths:
+      - '.github/workflows/tune-errand-mobile-left-gap.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Tune mobile page spacing
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('errand.html')
+          s=p.read_text(encoding='utf-8')
+          css='''\n<style id="topTaxiErrandMobileLeftGapV5">\n@media (max-width: 600px){\n  .page{padding-left:8px!important;padding-right:14px!important;}\n}\n</style>\n'''
+          if 'topTaxiErrandMobileLeftGapV5' not in s:
+              s=s.replace('</head>',css+'\n</head>',1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          grep -q 'topTaxiErrandMobileLeftGapV5' errand.html
+          rm -f .github/workflows/tune-errand-mobile-left-gap.yml
+          git config user.name "TOP Taxi automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add errand.html .github/workflows/tune-errand-mobile-left-gap.yml
+          git commit -m "tune errand mobile left spacing"
+          git push origin HEAD:main
