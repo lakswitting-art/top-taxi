@@ -1,0 +1,77 @@
+from pathlib import Path
+
+p = Path('ride.html')
+s = p.read_text(encoding='utf-8')
+
+old_js = '''            button.append(main,secondary);button.addEventListener("pointerdown",event=>{event.preventDefault();event.stopPropagation();armRideAddressSelectionGuard();choose(prediction)});box.appendChild(button);'''
+new_js = '''            button.append(main,secondary);
+            let pointerStartX=0;
+            let pointerStartY=0;
+            let pointerMoved=false;
+
+            button.addEventListener("pointerdown",event=>{
+              pointerStartX=event.clientX;
+              pointerStartY=event.clientY;
+              pointerMoved=false;
+            },{passive:true});
+
+            button.addEventListener("pointermove",event=>{
+              if(
+                Math.abs(event.clientX-pointerStartX)>8||
+                Math.abs(event.clientY-pointerStartY)>8
+              )pointerMoved=true;
+            },{passive:true});
+
+            button.addEventListener("pointercancel",()=>{
+              pointerMoved=true;
+            },{passive:true});
+
+            button.addEventListener("pointerup",event=>{
+              if(pointerMoved)return;
+              event.preventDefault();
+              event.stopPropagation();
+              armRideAddressSelectionGuard();
+              choose(prediction);
+            });
+
+            button.addEventListener("click",event=>{
+              event.preventDefault();
+              if(event.detail===0){
+                armRideAddressSelectionGuard();
+                choose(prediction);
+              }
+            });
+            box.appendChild(button);'''
+
+if old_js not in s:
+    raise SystemExit('Expected ride suggestion pointer handler not found')
+s = s.replace(old_js, new_js, 1)
+
+style_id = 'topTaxiRideAddressUXRound1'
+if style_id not in s:
+    css = '''<style id="topTaxiRideAddressUXRound1">
+/* Ride Address UX Round 1: scroll-safe suggestions */
+.suggestions{
+  max-height:min(300px,44vh)!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(120,120,126,.34) transparent;
+  -webkit-overflow-scrolling:touch;
+}
+.suggestions::-webkit-scrollbar{width:3px}
+.suggestions::-webkit-scrollbar-track{background:transparent}
+.suggestions::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(120,120,126,.34)}
+.suggestion{
+  min-height:64px;
+  align-items:center;
+  padding:13px 14px;
+  touch-action:pan-y;
+  -webkit-tap-highlight-color:transparent;
+}
+</style>'''
+    s = s.replace('</head>', css + '\n</head>', 1)
+
+p.write_text(s, encoding='utf-8')
