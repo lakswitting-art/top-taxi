@@ -1,0 +1,26 @@
+name: TOP Taxi dispatch message layout 2026-08-15
+
+on:
+  push:
+    paths:
+      - '.github/workflows/dispatch-message-layout-20260815-main.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply dispatch message layout patch
+        run: python3 .github/scripts/patch_dispatch_message_layout_20260815.py
+      - name: Publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ride.html index.html fare.html errand.html
+          git commit -m "feat: unify customer LINE messages for dispatch"
+          git push origin main
