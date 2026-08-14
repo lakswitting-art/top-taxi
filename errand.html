@@ -2694,16 +2694,6 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none
 </style>
 
 
-<style id="topTaxiErrandAddressViewportLockV2">
-html{width:100%;max-width:100%;overflow-x:clip!important;overscroll-behavior-x:none;}
-body{width:100%;max-width:100%;overflow-x:clip!important;overscroll-behavior-x:none;touch-action:pan-y pinch-zoom;position:relative;}
-.page,.booking-card,#errandForm,#addressSection,#extraStopsWrap,.errand-address-block,.address-autocomplete{min-width:0!important;max-width:100%!important;}
-.address-autocomplete{width:100%!important;}
-.address-input,.suggestions,.address-suggestions,.address-suggestion{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}
-.suggestions,.address-suggestions{left:0!important;right:0!important;width:auto!important;overflow-x:clip!important;}
-</style>
-
-
 <style>
 /* TOP TAXI ERRAND FINAL ADDRESS WIDTH GUARD 2026-08-14 */
 html, body { max-width: 100%; overflow-x: clip !important; }
@@ -2819,6 +2809,14 @@ body{position:relative}
 #errandForm,.booking-card>*,.field,.address-block,.address-autocomplete,.autocomplete,.address-input-wrap,.address-row,.delivery-module,.errand-delivery-box,.delivery-methods,.delivery-options,.delivery-method-options{min-width:0!important;max-width:100%!important}
 input,textarea,select{max-width:100%!important;min-width:0!important}
 @media(max-width:390px){.booking-card{padding:18px 15px!important}}
+</style>
+<style id="topTaxiErrandAddressViewportLockV3">
+html{width:100%;max-width:100%;overflow-x:clip!important;overscroll-behavior-x:none;}
+body{width:100%;max-width:100%;overflow-x:clip!important;overscroll-behavior-x:none;touch-action:pan-y pinch-zoom;position:relative;}
+.page,.booking-card,#errandForm,#addressSection,#extraStopsWrap,.errand-address-block,.address-autocomplete{min-width:0!important;max-width:100%!important;}
+.address-autocomplete{width:100%!important;}
+.address-input,.suggestions,.address-suggestions,.address-suggestion{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}
+.suggestions,.address-suggestions{left:0!important;right:0!important;width:auto!important;overflow-x:clip!important;}
 </style>
 </head>
 <body>
@@ -3853,11 +3851,6 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
 </script>
 
 
-<script id="topTaxiErrandHorizontalViewportGuardV2">
-(()=>{const reset=()=>{const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;if((window.scrollX||0)!==0)window.scrollTo(0,y);if(document.documentElement.scrollLeft)document.documentElement.scrollLeft=0;if(document.body.scrollLeft)document.body.scrollLeft=0;};let raf=0;const schedule=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;reset();});};window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('focusin',schedule,true);document.addEventListener('input',schedule,true);document.addEventListener('change',schedule,true);document.addEventListener('click',e=>{if(e.target.closest('.address-suggestion,.address-clear-btn,.errand-task-option,[data-task]')){schedule();setTimeout(reset,0);setTimeout(reset,120);}},true);if(window.visualViewport){window.visualViewport.addEventListener('scroll',schedule,{passive:true});window.visualViewport.addEventListener('resize',schedule,{passive:true});}})();
-</script>
-
-
 <script>
 // TOP TAXI ERRAND FINAL ADDRESS VIEWPORT GUARD 2026-08-14
 (function(){
@@ -3946,5 +3939,8 @@ document.addEventListener('focusin',function(e){
 },true);
 </script>
 
+<script id="topTaxiErrandHorizontalViewportGuardV3">
+(()=>{const reset=()=>{const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;if((window.scrollX||0)!==0)window.scrollTo(0,y);if(document.documentElement.scrollLeft)document.documentElement.scrollLeft=0;if(document.body.scrollLeft)document.body.scrollLeft=0;};let raf=0;const schedule=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;reset();});};window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('focusin',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('input',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.address-suggestion,.address-clear-btn')){schedule();setTimeout(reset,0);setTimeout(reset,120);}},true);if(window.visualViewport){window.visualViewport.addEventListener('scroll',schedule,{passive:true});window.visualViewport.addEventListener('resize',schedule,{passive:true});}})();
+</script>
 </body>
 </html>
