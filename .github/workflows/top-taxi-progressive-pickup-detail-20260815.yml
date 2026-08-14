@@ -1,0 +1,30 @@
+name: TOP Taxi progressive pickup detail
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/top-taxi-progressive-pickup-detail-20260815.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply progressive pickup detail patch
+        run: python .github/scripts/top_taxi_progressive_pickup_detail_20260815.py
+      - name: Validate and publish
+        run: |
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/top-taxi-progressive-pickup-detail-20260815.yml
+          git rm .github/scripts/top_taxi_progressive_pickup_detail_20260815.py
+          git add index.html ride.html
+          git diff --cached --check
+          git commit -m "fix: streamline pickup detail UX"
+          git push
