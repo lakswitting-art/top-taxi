@@ -2714,6 +2714,18 @@ body{width:100%;max-width:100%;overflow-x:clip!important;overscroll-behavior-x:n
 .suggestions,.address-suggestions{left:0!important;right:0!important;width:auto!important;overflow-x:clip!important;}
 </style>
 
+
+<style>
+/* TOP TAXI ERRAND FINAL ADDRESS WIDTH GUARD 2026-08-14 */
+html, body { max-width: 100%; overflow-x: clip !important; }
+.page, .booking-card, .input-group, .address-autocomplete, .address-suggestions, .address-suggestion { min-width: 0 !important; max-width: 100% !important; }
+.address-autocomplete { overflow-x: clip !important; }
+.address-input { min-width: 0 !important; max-width: 100% !important; }
+.address-suggestions { width: 100% !important; box-sizing: border-box !important; contain: inline-size layout paint; overscroll-behavior-x: none; }
+.address-suggestion { box-sizing: border-box !important; overflow: hidden !important; }
+.address-suggestion > * { min-width: 0 !important; max-width: 100% !important; }
+</style>
+
 </head>
 <body>
 <header class="hero">
@@ -3749,6 +3761,31 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
 
 <script id="topTaxiErrandHorizontalViewportGuardV2">
 (()=>{const reset=()=>{const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;if((window.scrollX||0)!==0)window.scrollTo(0,y);if(document.documentElement.scrollLeft)document.documentElement.scrollLeft=0;if(document.body.scrollLeft)document.body.scrollLeft=0;};let raf=0;const schedule=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;reset();});};window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('focusin',schedule,true);document.addEventListener('input',schedule,true);document.addEventListener('change',schedule,true);document.addEventListener('click',e=>{if(e.target.closest('.address-suggestion,.address-clear-btn,.errand-task-option,[data-task]')){schedule();setTimeout(reset,0);setTimeout(reset,120);}},true);if(window.visualViewport){window.visualViewport.addEventListener('scroll',schedule,{passive:true});window.visualViewport.addEventListener('resize',schedule,{passive:true});}})();
+</script>
+
+
+<script>
+// TOP TAXI ERRAND FINAL ADDRESS VIEWPORT GUARD 2026-08-14
+(function(){
+  function resetX(){
+    if (window.scrollX !== 0) window.scrollTo(0, window.scrollY);
+    document.documentElement.scrollLeft = 0;
+    document.body.scrollLeft = 0;
+  }
+  document.addEventListener('focusin', function(e){
+    if (e.target && e.target.classList && e.target.classList.contains('address-input')) {
+      requestAnimationFrame(resetX); setTimeout(resetX, 80); setTimeout(resetX, 320);
+    }
+  });
+  document.addEventListener('input', function(e){
+    if (e.target && e.target.classList && e.target.classList.contains('address-input')) requestAnimationFrame(resetX);
+  }, true);
+  document.addEventListener('click', function(e){
+    if (e.target && e.target.closest && e.target.closest('.address-suggestion')) {
+      requestAnimationFrame(resetX); setTimeout(resetX, 100);
+    }
+  }, true);
+})();
 </script>
 
 </body>
