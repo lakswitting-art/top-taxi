@@ -2759,6 +2759,10 @@ html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
 /* AB2: successful whole-block geometry + Places only. No icon/clear/enterkeyhint. */
 .top-taxi-address-ab2-input{padding-left:14px!important;padding-right:14px!important}
 </style>
+<style id="topTaxiErrandAddressAB3">
+/* AB3: move the real p1 address control completely outside #addressSection while keeping Places. */
+#addressSection + *{}
+</style>
 </head>
 <body>
 <header class="hero">
@@ -3176,7 +3180,7 @@ function renderAddresses(){
    root.appendChild(mode);
    mode.querySelectorAll('[data-purchase-location]').forEach(b=>b.addEventListener('click',()=>{purchaseLocationMode=b.dataset.purchaseLocation;addressSlots.p1.required=purchaseLocationMode==='specified';if(purchaseLocationMode==='unspecified'){addressSlots.p1.place=null;addressSlots.p1.data=null;}renderAddresses();}));
  }
- if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified')){activeSlotKeys.push('p1');root.appendChild(addressBlock(addressSlots.p1));}
+ if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified')){activeSlotKeys.push('p1');const p1node=addressBlock(addressSlots.p1);root.appendChild(p1node);root.parentNode.insertBefore(p1node,root);}
  if(cfg.p2Max>0){
    const wrap=document.createElement('div');wrap.id='extraStopsWrap';root.appendChild(wrap);
    const add=document.createElement('button');add.type='button';add.className='booking-add-waypoint';add.id='addStopBtn';add.textContent='＋ 新增停靠點';add.addEventListener('click',e=>addStop(e));root.appendChild(add);
