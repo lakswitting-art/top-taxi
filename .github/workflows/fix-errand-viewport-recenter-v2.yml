@@ -23,38 +23,7 @@ jobs:
           from pathlib import Path
           p = Path('errand.html')
           s = p.read_text(encoding='utf-8')
-          js = r'''
-<script id="topTaxiErrandViewportRecenterV4">
-(function(){
-  let timer=0;
-  function recenter(){
-    const y=window.scrollY||document.documentElement.scrollTop||0;
-    document.documentElement.scrollLeft=0;
-    document.body.scrollLeft=0;
-    if(window.scrollX!==0) window.scrollTo(0,y);
-  }
-  function settle(){
-    clearTimeout(timer);
-    recenter();
-    requestAnimationFrame(recenter);
-    timer=setTimeout(recenter,80);
-    setTimeout(recenter,220);
-  }
-  document.addEventListener('focusout',function(e){
-    if(e.target && e.target.closest && e.target.closest('.address-autocomplete')) settle();
-  },true);
-  document.addEventListener('click',function(e){
-    if(e.target && e.target.closest && e.target.closest('.address-suggestion')) settle();
-  },true);
-  if(window.visualViewport){
-    window.visualViewport.addEventListener('resize',settle,{passive:true});
-    window.visualViewport.addEventListener('scroll',function(){
-      if(Math.abs(window.visualViewport.offsetLeft||0)>0.5) settle();
-    },{passive:true});
-  }
-})();
-</script>
-'''
+          js = r'''\n<script id="topTaxiErrandViewportRecenterV4">\n(function(){\n  let timer=0;\n  function recenter(){\n    const y=window.scrollY||document.documentElement.scrollTop||0;\n    document.documentElement.scrollLeft=0;\n    document.body.scrollLeft=0;\n    if(window.scrollX!==0) window.scrollTo(0,y);\n  }\n  function settle(){\n    clearTimeout(timer);\n    recenter();\n    requestAnimationFrame(recenter);\n    timer=setTimeout(recenter,80);\n    setTimeout(recenter,220);\n  }\n  document.addEventListener('focusout',function(e){\n    if(e.target && e.target.closest && e.target.closest('.address-autocomplete')) settle();\n  },true);\n  document.addEventListener('click',function(e){\n    if(e.target && e.target.closest && e.target.closest('.address-suggestion')) settle();\n  },true);\n  if(window.visualViewport){\n    window.visualViewport.addEventListener('resize',settle,{passive:true});\n    window.visualViewport.addEventListener('scroll',function(){\n      if(Math.abs(window.visualViewport.offsetLeft||0)>0.5) settle();\n    },{passive:true});\n  }\n})();\n</script>\n'''
           if 'topTaxiErrandViewportRecenterV4' not in s:
               s = s.replace('</body>', js + '\n</body>', 1)
           p.write_text(s, encoding='utf-8')
