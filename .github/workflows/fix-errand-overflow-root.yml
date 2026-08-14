@@ -1,0 +1,45 @@
+name: Fix errand overflow root
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-errand-overflow-root.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch overflow root cause
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('errand.html')
+          s=p.read_text(encoding='utf-8')
+
+          css='''\n<style id="topTaxiErrandOverflowRootV7">\n@media (max-width: 600px){\n  html,body{width:100%!important;max-width:100%!important;overflow-x:clip!important;}\n  .page{\n    width:auto!important;\n    max-width:560px!important;\n    margin-left:auto!important;\n    margin-right:auto!important;\n    padding-left:14px!important;\n    padding-right:14px!important;\n  }\n  .booking-card{width:100%!important;max-width:100%!important;min-width:0!important;}\n  #errandForm,#addressSection,#extraStopsWrap,.input-group,.errand-address-block,.address-autocomplete,.address-suggestions,.errand-delivery-box,.errand-row-toggle,.errand-small-input{\n    min-width:0!important;\n    max-width:100%!important;\n  }\n  .address-input,.errand-small-input input,textarea,select{max-width:100%!important;}\n  .errand-address-block[data-slot="final"]{contain:none!important;}\n}\n</style>\n'''
+          if 'topTaxiErrandOverflowRootV7' not in s:
+              s=s.replace('</head>',css+'\n</head>',1)
+
+          js='''\n<script id="topTaxiErrandOverflowRootGuardV7">\n(function(){\n  function clamp(){\n    const vw=document.documentElement.clientWidth||window.innerWidth;\n    const nodes=document.querySelectorAll('#errandForm *');\n    nodes.forEach(function(el){\n      const r=el.getBoundingClientRect();\n      if(r.width>vw+1){\n        el.style.maxWidth='100%';\n        el.style.minWidth='0';\n        el.style.boxSizing='border-box';\n      }\n    });\n    document.documentElement.scrollLeft=0;\n    document.body.scrollLeft=0;\n  }\n  document.addEventListener('click',function(e){\n    if(e.target&&e.target.closest&&e.target.closest('.address-suggestion')){\n      setTimeout(clamp,0);setTimeout(clamp,80);setTimeout(clamp,220);\n    }\n  },true);\n  document.addEventListener('focusout',function(e){\n    if(e.target&&e.target.closest&&e.target.closest('.address-autocomplete')){\n      setTimeout(clamp,80);setTimeout(clamp,220);\n    }\n  },true);\n})();\n</script>\n'''
+          if 'topTaxiErrandOverflowRootGuardV7' not in s:
+              s=s.replace('</body>',js+'\n</body>',1)
+
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          grep -q 'topTaxiErrandOverflowRootV7' errand.html
+          grep -q 'topTaxiErrandOverflowRootGuardV7' errand.html
+          rm -f .github/workflows/fix-errand-overflow-root.yml
+          git config user.name "TOP Taxi automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add errand.html .github/workflows/fix-errand-overflow-root.yml
+          git commit -m "fix errand post-address overflow root cause"
+          git push origin HEAD:main
