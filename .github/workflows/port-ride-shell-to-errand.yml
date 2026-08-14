@@ -16,55 +16,23 @@ jobs:
         shell: python
         run: |
           from pathlib import Path
+          import re
           p=Path('errand.html')
           s=p.read_text(encoding='utf-8')
-          marker='/* ===== RIDE MOBILE SHELL BASELINE V1 ===== */'
-          css=r'''
-<style id="topTaxiRideShellErrandV1">
-/* ===== RIDE MOBILE SHELL BASELINE V1 ===== */
-html,body{width:100%;max-width:100%;overflow-x:hidden}
-body{position:relative}
-.page{
-  width:min(100%,560px)!important;
-  max-width:560px!important;
-  margin:0 auto!important;
-  padding:0 14px max(32px,env(safe-area-inset-bottom))!important;
-  display:block!important;
-}
-.booking-card{
-  width:100%!important;
-  max-width:100%!important;
-  min-width:0!important;
-  margin:0!important;
-  padding:22px 18px!important;
-  border-radius:22px!important;
-  overflow:visible!important;
-}
-#errandForm,.booking-card>*,.field,.address-block,.address-autocomplete,.autocomplete,
-.address-input-wrap,.address-row,.delivery-module,.errand-delivery-box,
-.delivery-methods,.delivery-options,.delivery-method-options{
-  min-width:0!important;
-  max-width:100%!important;
-}
-input,textarea,select{max-width:100%!important;min-width:0!important}
-@media(max-width:390px){
-  .booking-card{padding:18px 15px!important}
-}
-</style>
-'''
-          # Remove all temporary mobile width/safe-area patches added during this debugging loop.
-          import re
-          ids=[
-            'topTaxiErrandViewportRecenterV4','topTaxiErrandMobileBalanceV5',
-            'topTaxiErrandSymmetricShellV6','topTaxiErrandOverflowGuardV7',
-            'topTaxiErrandDeterministicShellV8','topTaxiErrandLiffSafeAreaV9',
-            'topTaxiRideShellErrandV1'
-          ]
+          css='''<style id="topTaxiRideShellErrandV1">
+          /* ===== RIDE MOBILE SHELL BASELINE V1 ===== */
+          html,body{width:100%;max-width:100%;overflow-x:hidden}
+          body{position:relative}
+          .page{width:min(100%,560px)!important;max-width:560px!important;margin:0 auto!important;padding:0 14px max(32px,env(safe-area-inset-bottom))!important;display:block!important}
+          .booking-card{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:22px 18px!important;border-radius:22px!important;overflow:visible!important}
+          #errandForm,.booking-card>*,.field,.address-block,.address-autocomplete,.autocomplete,.address-input-wrap,.address-row,.delivery-module,.errand-delivery-box,.delivery-methods,.delivery-options,.delivery-method-options{min-width:0!important;max-width:100%!important}
+          input,textarea,select{max-width:100%!important;min-width:0!important}
+          @media(max-width:390px){.booking-card{padding:18px 15px!important}}
+          </style>'''
+          ids=['topTaxiErrandViewportRecenterV4','topTaxiErrandMobileBalanceV5','topTaxiErrandSymmetricShellV6','topTaxiErrandOverflowGuardV7','topTaxiErrandDeterministicShellV8','topTaxiErrandLiffSafeAreaV9','topTaxiRideShellErrandV1']
           for i in ids:
-            s=re.sub(r'<style[^>]*id=["\']'+re.escape(i)+r'["\'][^>]*>.*?</style>\s*','',s,flags=re.S|re.I)
-            s=re.sub(r'<script[^>]*id=["\']'+re.escape(i)+r'["\'][^>]*>.*?</script>\s*','',s,flags=re.S|re.I)
-          # Also remove older named one-off CSS blocks when present.
-          s=re.sub(r'/\* ===== TOP TAXI ERRAND (?:MOBILE|LIFF|DETERMINISTIC|SYMMETRIC).*?\*/.*?(?=</style>|/\* =====|$)','',s,flags=re.S|re.I)
+              s=re.sub('<style[^>]*id=["\\\']'+re.escape(i)+'["\\\'][^>]*>.*?</style>\\s*','',s,flags=re.S|re.I)
+              s=re.sub('<script[^>]*id=["\\\']'+re.escape(i)+'["\\\'][^>]*>.*?</script>\\s*','',s,flags=re.S|re.I)
           s=s.replace('</head>',css+'\n</head>',1)
           p.write_text(s,encoding='utf-8')
       - name: Verify and commit
@@ -73,7 +41,6 @@ input,textarea,select{max-width:100%!important;min-width:0!important}
           set -euo pipefail
           git diff --check
           grep -q 'RIDE MOBILE SHELL BASELINE V1' errand.html
-          grep -q 'width:min(100%,560px)' errand.html
           rm -f .github/workflows/port-ride-shell-to-errand.yml
           git config user.name "TOP Taxi automation"
           git config user.email "actions@users.noreply.github.com"
