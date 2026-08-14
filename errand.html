@@ -2755,6 +2755,10 @@ html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
 .top-taxi-address-control .address-suggestions{left:0;right:0;width:auto;max-width:100%;box-sizing:border-box}
 #extraStopsWrap,#finalAddressBlock{display:block;width:100%;max-width:100%;min-width:0}
 </style>
+<style id="topTaxiErrandAddressAB2">
+/* AB2: successful whole-block geometry + Places only. No icon/clear/enterkeyhint. */
+.top-taxi-address-ab2-input{padding-left:14px!important;padding-right:14px!important}
+</style>
 </head>
 <body>
 <header class="hero">
@@ -3187,10 +3191,10 @@ function renderAddresses(){
 function addressBlock(slot,isFinal=false){
  const d=document.createElement('div');d.className='top-taxi-address-field';d.dataset.slot=slot.key;
  const initial=slot.data?displayAddress(slot.data):'';
- d.innerHTML=`<div class="errand-address-head"><label>${slot.key==='p1'?'📍':isFinal?'🏁':'🟡'} ${slot.label} <span class="field-tag ${slot.required?'required-tag':'optional-tag'}">${slot.required?'必填':'選填'}</span></label></div><div id="${slot.key}Box" class="top-taxi-address-control"><span class="address-search-icon">⌕</span><input type="text" id="${slot.key}Input" class="address-input" placeholder="請輸入${slot.label}地址或地標名稱" autocomplete="off" enterkeyhint="search" ${slot.required?'required':''} value="${escapeHtml(initial)}"><button type="button" class="address-clear-btn" id="${slot.key}Clear" ${initial?'':'hidden'}>×</button><div class="address-suggestions" id="${slot.key}Suggestions"></div></div>${isFinal?deliveryModuleHtml():''}`;
+ d.innerHTML=`<div class="errand-address-head"><label>${slot.key==='p1'?'📍':isFinal?'🏁':'🟡'} ${slot.label} <span class="field-tag ${slot.required?'required-tag':'optional-tag'}">${slot.required?'必填':'選填'}</span></label></div><div id="${slot.key}Box" class="top-taxi-address-control top-taxi-address-ab2"><input type="text" id="${slot.key}Input" class="address-input top-taxi-address-ab2-input" placeholder="請輸入${slot.label}地址或地標名稱" autocomplete="off" ${slot.required?'required':''} value="${escapeHtml(initial)}"><div class="address-suggestions" id="${slot.key}Suggestions"></div></div>${isFinal?deliveryModuleHtml():''}`;
  const input=d.querySelector(`#${slot.key}Input`),clear=d.querySelector(`#${slot.key}Clear`);
- input.addEventListener('input',()=>{const q=input.value.trim();clear.hidden=!q;slot.place=null;slot.data=q?normalizeAddress({address:q}):null;syncDeliveryVisibility();renderPhoto();updateEstimate();});
- clear.addEventListener('click',()=>{input.value='';slot.place=null;slot.data=null;clear.hidden=true;const sug=d.querySelector(`#${slot.key}Suggestions`);if(sug){sug.classList.remove('show');sug.innerHTML='';}syncDeliveryVisibility();renderPhoto();updateEstimate();input.focus();});
+ input.addEventListener('input',()=>{const q=input.value.trim();if(clear)clear.hidden=!q;slot.place=null;slot.data=q?normalizeAddress({address:q}):null;syncDeliveryVisibility();renderPhoto();updateEstimate();});
+ if(clear)clear.addEventListener('click',()=>{input.value='';slot.place=null;slot.data=null;clear.hidden=true;const sug=d.querySelector(`#${slot.key}Suggestions`);if(sug){sug.classList.remove('show');sug.innerHTML='';}syncDeliveryVisibility();renderPhoto();updateEstimate();input.focus();});
  return d;
 }
 function deliveryModuleHtml(){if(taskType==='move')return '';const tableOption=taskType==='pet'?'':'<button type="button" class="errand-pill" data-delivery="table">放置外送桌</button>';return `<div id="deliveryModule" class="errand-delivery-box"><div class="errand-delivery-title">送達方式</div><div class="errand-row-toggle"><button type="button" class="errand-pill active" data-delivery="handoff">當面交付</button>${tableOption}<button type="button" class="errand-pill" data-delivery="management">放置管理室</button></div><div id="deliveryLocationWrap" class="errand-small-input errand-hidden"><input id="deliveryLocation" type="text" placeholder="放置位置補充（選填），例如：A棟1樓外送桌／管理室旁"></div><div id="deliveryPhotoNote" class="errand-section-note errand-hidden">司機送達後將拍照回報，照片作為完成配送紀錄。</div></div>`;}
