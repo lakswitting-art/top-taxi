@@ -2774,6 +2774,28 @@ html, body { max-width: 100%; overflow-x: clip !important; }
 }
 </style>
 
+
+<style id="topTaxiErrandOverflowRootV7">
+@media (max-width: 600px){
+  html,body{width:100%!important;max-width:100%!important;overflow-x:clip!important;}
+  .page{
+    width:auto!important;
+    max-width:560px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    padding-left:14px!important;
+    padding-right:14px!important;
+  }
+  .booking-card{width:100%!important;max-width:100%!important;min-width:0!important;}
+  #errandForm,#addressSection,#extraStopsWrap,.input-group,.errand-address-block,.address-autocomplete,.address-suggestions,.errand-delivery-box,.errand-row-toggle,.errand-small-input{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  .address-input,.errand-small-input input,textarea,select{max-width:100%!important;}
+  .errand-address-block[data-slot="final"]{contain:none!important;}
+}
+</style>
+
 </head>
 <body>
 <header class="hero">
@@ -3859,5 +3881,35 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
 </script>
 
 \n<script id="topTaxiErrandViewportRecenterV4">\n(function(){\n  let timer=0;\n  function recenter(){\n    const y=window.scrollY||document.documentElement.scrollTop||0;\n    document.documentElement.scrollLeft=0;\n    document.body.scrollLeft=0;\n    if(window.scrollX!==0) window.scrollTo(0,y);\n  }\n  function settle(){\n    clearTimeout(timer);\n    recenter();\n    requestAnimationFrame(recenter);\n    timer=setTimeout(recenter,80);\n    setTimeout(recenter,220);\n  }\n  document.addEventListener('focusout',function(e){\n    if(e.target && e.target.closest && e.target.closest('.address-autocomplete')) settle();\n  },true);\n  document.addEventListener('click',function(e){\n    if(e.target && e.target.closest && e.target.closest('.address-suggestion')) settle();\n  },true);\n  if(window.visualViewport){\n    window.visualViewport.addEventListener('resize',settle,{passive:true});\n    window.visualViewport.addEventListener('scroll',function(){\n      if(Math.abs(window.visualViewport.offsetLeft||0)>0.5) settle();\n    },{passive:true});\n  }\n})();\n</script>\n
+
+<script id="topTaxiErrandOverflowRootGuardV7">
+(function(){
+  function clamp(){
+    const vw=document.documentElement.clientWidth||window.innerWidth;
+    const nodes=document.querySelectorAll('#errandForm *');
+    nodes.forEach(function(el){
+      const r=el.getBoundingClientRect();
+      if(r.width>vw+1){
+        el.style.maxWidth='100%';
+        el.style.minWidth='0';
+        el.style.boxSizing='border-box';
+      }
+    });
+    document.documentElement.scrollLeft=0;
+    document.body.scrollLeft=0;
+  }
+  document.addEventListener('click',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('.address-suggestion')){
+      setTimeout(clamp,0);setTimeout(clamp,80);setTimeout(clamp,220);
+    }
+  },true);
+  document.addEventListener('focusout',function(e){
+    if(e.target&&e.target.closest&&e.target.closest('.address-autocomplete')){
+      setTimeout(clamp,80);setTimeout(clamp,220);
+    }
+  },true);
+})();
+</script>
+
 </body>
 </html>
