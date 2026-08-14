@@ -1,0 +1,80 @@
+name: Errand address cleanup
+on:
+  push:
+    paths:
+      - '.github/workflows/errand-address-cleanup.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Clean errand address UI and CSS debt
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p=Path('errand.html')
+          s=p.read_text(encoding='utf-8')
+
+          # Remove one-off patch styles/scripts accumulated during the horizontal viewport debugging loop.
+          ids=[
+            'topTaxiErrandXLock','topTaxiErrandAddressXFix','topTaxiErrandFinalAddressContainV3',
+            'topTaxiErrandStableMobileWidthV6','topTaxiErrandAddressViewportLockV2',
+            'topTaxiErrandHorizontalViewportGuardV2','topTaxiErrandAddressFocusBaselineV1',
+            'topTaxiRideShellErrandV1','topTaxiErrandViewportRecenterV4','topTaxiErrandMobileBalanceV5',
+            'topTaxiErrandSymmetricShellV6','topTaxiErrandOverflowGuardV7','topTaxiErrandDeterministicShellV8',
+            'topTaxiErrandLiffSafeAreaV9'
+          ]
+          for i in ids:
+            s=re.sub(r'<style[^>]*id=["\']'+re.escape(i)+r'["\'][^>]*>.*?</style>\s*','',s,flags=re.S|re.I)
+            s=re.sub(r'<script[^>]*id=["\']'+re.escape(i)+r'["\'][^>]*>.*?</script>\s*','',s,flags=re.S|re.I)
+
+          # Remove the anonymous final-address width guard block added during debugging.
+          s=re.sub(r'<style>\s*/\* TOP TAXI ERRAND FINAL ADDRESS WIDTH GUARD 2026-08-14 \*/.*?</style>\s*','',s,flags=re.S|re.I)
+
+          # Address inputs should use the same plain text input behavior as Booking/Fare.
+          s=s.replace('type="search" id="${slot.key}Input" class="address-input"', 'type="text" id="${slot.key}Input" class="address-input"')
+
+          clean_css=r'''
+<style id="topTaxiErrandAddressCleanBaselineV1">
+/* Errand address baseline aligned with Booking/Fare; business logic remains dynamic. */
+html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
+.page{width:100%;max-width:560px;margin:0 auto;padding-left:14px;padding-right:14px}
+.booking-card{width:100%;max-width:100%;min-width:0}
+#errandForm,.input-group,.errand-address-block,.address-autocomplete,.errand-delivery-box{min-width:0;max-width:100%}
+.address-autocomplete{position:relative;width:100%;overflow:visible}
+.address-input{width:100%;min-width:0;max-width:100%;box-sizing:border-box;appearance:none;-webkit-appearance:none}
+.address-suggestions{position:absolute;left:0;right:0;width:auto;max-width:100%;box-sizing:border-box;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;overscroll-behavior-x:none}
+.address-suggestion{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.address-suggestion>span:last-child{min-width:0;max-width:100%;overflow:hidden}
+.errand-address-block[data-slot="final"]{width:100%;min-width:0;max-width:100%}
+.errand-address-block[data-slot="final"] .errand-row-toggle{min-width:0;max-width:100%}
+.errand-clear-trip{flex:0 0 auto;border:0;background:transparent;padding:6px 0 6px 10px;color:#777780;font:inherit;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.errand-clear-trip:active{color:#c90012}
+</style>
+'''
+          if 'topTaxiErrandAddressCleanBaselineV1' not in s:
+            s=s.replace('</head>',clean_css+'\n</head>',1)
+
+          p.write_text(s,encoding='utf-8')
+      - name: Verify and commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          grep -q 'topTaxiErrandAddressCleanBaselineV1' errand.html
+          grep -q 'type="text" id="${slot.key}Input" class="address-input"' errand.html
+          ! grep -q 'topTaxiErrandFinalAddressContainV3' errand.html
+          ! grep -q 'topTaxiErrandStableMobileWidthV6' errand.html
+          ! grep -q 'topTaxiErrandHorizontalViewportGuardV2' errand.html
+          ! grep -q 'topTaxiErrandAddressFocusBaselineV1' errand.html
+          rm -f .github/workflows/errand-address-cleanup.yml
+          git config user.name "TOP Taxi automation"
+          git config user.email "actions@users.noreply.github.com"
+          git add errand.html .github/workflows/errand-address-cleanup.yml
+          git commit -m "refactor errand address UI to clean shared baseline"
+          git push origin HEAD:main
