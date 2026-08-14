@@ -1,0 +1,30 @@
+name: TOP Taxi saved address polish
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/top-taxi-saved-address-polish-20260815.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch booking and ride saved-address copy
+        run: python .github/scripts/top_taxi_saved_address_polish_20260815.py
+      - name: Validate and publish
+        run: |
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/top-taxi-saved-address-polish-20260815.yml
+          git rm .github/scripts/top_taxi_saved_address_polish_20260815.py
+          git add index.html ride.html
+          git diff --cached --check
+          git commit -m "fix: polish saved address labels"
+          git push
