@@ -54,29 +54,20 @@ POLISH_SCRIPT = r'''<style id="topTaxiSavedAddressPolishV2Style">
     if(allowed.has(value))el.value=expected;
   }
 
-  function normalizeButtonText(btn, expected, allowed){
-    if(!btn)return;
-    const value=String(btn.textContent||'').trim();
-    if(allowed.has(value))btn.textContent=expected;
-  }
-
   function fixDom(){
     migrate();
 
-    // Ride closed-state label. Booking already has its own 收合 state while editor is open.
     const rideLabel=document.querySelector('#toggleSettings > span');
     if(rideLabel && String(rideLabel.textContent||'').trim()==='設定') rideLabel.textContent='常用地址';
 
     const bookingLabel=document.getElementById('savedSettingsLabel');
     if(bookingLabel && String(bookingLabel.textContent||'').trim()==='設定') bookingLabel.textContent='常用地址';
 
-    // Setting editor names on both pages.
     normalizeInput(document.getElementById('sharedName2'),'常用 1',generic1);
     normalizeInput(document.getElementById('sharedName3'),'常用 2',generic2);
     normalizeInput(document.getElementById('fav1Name'),'常用 1',generic1);
     normalizeInput(document.getElementById('fav2Name'),'常用 2',generic2);
 
-    // Existing rendered chips, if any.
     const bookingChips=document.querySelectorAll('#bookingSavedAddressChips .saved-address-chip');
     bookingChips.forEach(function(btn){
       const t=String(btn.textContent||'').trim();
@@ -90,7 +81,6 @@ POLISH_SCRIPT = r'''<style id="topTaxiSavedAddressPolishV2Style">
       else if(generic2.has(t))btn.textContent='常用 2';
     });
 
-    // Hint only where the shared-address control exists. No fare/errand leakage.
     const rideLine=document.querySelector('.saved-place-line');
     if(rideLine && !document.querySelector('.top-taxi-saved-address-hint-v2')){
       const hint=document.createElement('div');
@@ -107,28 +97,25 @@ POLISH_SCRIPT = r'''<style id="topTaxiSavedAddressPolishV2Style">
 })();
 </script>'''
 
-# Booking defaults for fresh users.
 index = read("index.html")
 index = index.replace('createEmptyAddressData("常用地點 1")', 'createEmptyAddressData("常用 1")')
 index = index.replace('createEmptyAddressData("常用地點 2")', 'createEmptyAddressData("常用 2")')
-index = insert_before(index, '</body>', POLISH_SCRIPT, 'topTaxiSavedAddressPolishV2')
+index = insert_before(index, '</body>', POLISH_SCRIPT, '<script id="topTaxiSavedAddressPolishV2">')
 write("index.html", index)
 
-# Ride defaults + visible closed-state wording for fresh users.
 ride = read("ride.html")
 ride = ride.replace('<span>設定</span>\n            <svg class="settings-gear-icon"', '<span>常用地址</span>\n            <svg class="settings-gear-icon"', 1)
 ride = ride.replace('value="常用地點 1"', 'value="常用 1"')
 ride = ride.replace('value="常用4"', 'value="常用 2"')
 ride = ride.replace('emptyAddress("常用地點 1")', 'emptyAddress("常用 1")')
 ride = ride.replace('emptyAddress("常用地點 2")', 'emptyAddress("常用 2")')
-ride = insert_before(ride, '</body>', POLISH_SCRIPT, 'topTaxiSavedAddressPolishV2')
+ride = insert_before(ride, '</body>', POLISH_SCRIPT, '<script id="topTaxiSavedAddressPolishV2">')
 write("ride.html", ride)
 
-# Guard rails: only these two pages receive this patch.
 for name in FILES:
     text=read(name)
-    if text.count('topTaxiSavedAddressPolishV2') != 1:
-        raise RuntimeError(f"{name}: polish marker count invalid")
+    if text.count('<script id="topTaxiSavedAddressPolishV2">') != 1:
+        raise RuntimeError(f"{name}: polish script count invalid")
     if 'topTaxiProgressiveStopGateV1' not in text:
         raise RuntimeError(f"{name}: previously PASS stop gate unexpectedly missing")
 
