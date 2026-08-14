@@ -92,7 +92,10 @@ s = s.replace(old_item, new_item, 1)
 old_js = '''                            button.addEventListener(
                                 "pointerdown",
                                 (event) => {
+
                                     event.preventDefault();
+                                    event.stopPropagation();
+                                    armFareAddressSelectionGuard();
                                     choosePrediction(
                                         prediction
                                     );
@@ -142,6 +145,8 @@ new_js = '''                            let pointerStartX = 0;
                                     }
 
                                     event.preventDefault();
+                                    event.stopPropagation();
+                                    armFareAddressSelectionGuard();
                                     choosePrediction(
                                         prediction
                                     );
@@ -153,14 +158,16 @@ new_js = '''                            let pointerStartX = 0;
                                 (event) => {
                                     event.preventDefault();
                                     if (event.detail === 0) {
+                                        armFareAddressSelectionGuard();
                                         choosePrediction(
                                             prediction
                                         );
                                     }
                                 }
                             );'''
-if old_js not in s:
+count = s.count(old_js)
+if count < 1:
     raise SystemExit('Expected suggestion pointer handler not found')
-s = s.replace(old_js, new_js, 1)
+s = s.replace(old_js, new_js)
 
 p.write_text(s, encoding='utf-8')
