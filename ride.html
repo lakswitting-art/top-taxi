@@ -1162,6 +1162,45 @@ button.suggestion::before{
 button.suggestion strong{grid-column:2;grid-row:1;min-width:0}
 button.suggestion small{grid-column:2;grid-row:2;min-width:0}
 </style>
+
+<style id="topTaxiSavedAddressNoHorizontalDragV1">
+/* Saved-address editor only: prevent Google suggestions from widening/panning the page. */
+#settings.ride-saved-compact,
+#settings.ride-saved-compact .ride-saved-address-row,
+#settings.ride-saved-compact .saved-setting-name,
+#settings.ride-saved-compact .autocomplete,
+#settings.ride-saved-compact .suggestions,
+#settings.ride-saved-compact .suggestion,
+#settings.ride-saved-compact .suggestion > * {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#settings.ride-saved-compact {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+#settings.ride-saved-compact .autocomplete { width: 100%; }
+#settings.ride-saved-compact .suggestions {
+  left: 0;
+  right: 0;
+  width: auto;
+  max-width: 100%;
+  overflow-x: hidden;
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
+}
+#settings.ride-saved-compact .suggestion { overflow: hidden; }
+#settings.ride-saved-compact .suggestion strong,
+#settings.ride-saved-compact .suggestion small {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
+
 </head>
 <body>
   <header class="hero">
