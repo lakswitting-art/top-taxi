@@ -3880,5 +3880,68 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
 (()=>{const reset=()=>{const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;if((window.scrollX||0)!==0)window.scrollTo(0,y);if(document.documentElement.scrollLeft)document.documentElement.scrollLeft=0;if(document.body.scrollLeft)document.body.scrollLeft=0;};let raf=0;const schedule=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;reset();});};window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('focusin',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('input',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.address-suggestion,.address-clear-btn')){schedule();setTimeout(reset,0);setTimeout(reset,120);}},true);if(window.visualViewport){window.visualViewport.addEventListener('scroll',schedule,{passive:true});window.visualViewport.addEventListener('resize',schedule,{passive:true});}})();
 </script>
 
+<style id="topTaxiErrandAddressClearV1">
+.top-taxi-address-plain-input{padding-right:46px!important}
+.top-taxi-errand-address-clear{
+  position:absolute;
+  top:9px;
+  right:8px;
+  z-index:5200;
+  width:32px;
+  height:32px;
+  min-height:32px;
+  padding:0;
+  border:0;
+  border-radius:50%;
+  background:transparent;
+  color:#85858b;
+  font:inherit;
+  font-size:20px;
+  line-height:1;
+  cursor:pointer;
+  touch-action:manipulation;
+}
+.top-taxi-errand-address-clear[hidden]{display:none!important}
+</style>
+<script id="topTaxiErrandAddressClearScriptV1">
+(function(){
+  function ensure(control){
+    if(!control||control.dataset.errandClearReady==='1')return;
+    const input=control.querySelector('.top-taxi-address-plain-input');
+    if(!input)return;
+    control.dataset.errandClearReady='1';
+    const clear=document.createElement('button');
+    clear.type='button';
+    clear.className='top-taxi-errand-address-clear';
+    clear.textContent='×';
+    clear.setAttribute('aria-label','清除地址');
+    const panel=control.querySelector('.address-suggestions');
+    if(panel)control.insertBefore(clear,panel);else control.appendChild(clear);
+    const sync=function(){clear.hidden=!input.value.trim();};
+    clear.addEventListener('click',function(event){
+      event.preventDefault();
+      event.stopPropagation();
+      input.value='';
+      input.dispatchEvent(new Event('input',{bubbles:true}));
+      sync();
+      input.focus();
+    });
+    input.addEventListener('input',sync);
+    input.addEventListener('change',sync);
+    input.addEventListener('focus',sync);
+    sync();
+  }
+  function scan(){
+    document.querySelectorAll('.top-taxi-address-plain-control').forEach(ensure);
+  }
+  const observer=new MutationObserver(function(){requestAnimationFrame(scan);});
+  function boot(){
+    scan();
+    observer.observe(document.body,{subtree:true,childList:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
+})();
+</script>
 </body>
 </html>

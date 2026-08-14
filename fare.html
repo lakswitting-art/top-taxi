@@ -2265,6 +2265,29 @@ body{
 .trip-reset-btn:active{opacity:.55}
 @media(max-width:390px){.trip-reset-btn{font-size:10.5px}.form-header-actions{gap:2px}}
 </style>
+<style id="topTaxiFareAddressTouchUXV1">
+.address-suggestions{
+  max-height:min(300px,44vh)!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior-y:contain;
+  touch-action:pan-y;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(120,120,126,.34) transparent;
+  -webkit-overflow-scrolling:touch;
+}
+.address-suggestions::-webkit-scrollbar{width:3px}
+.address-suggestions::-webkit-scrollbar-track{background:transparent}
+.address-suggestions::-webkit-scrollbar-thumb{border-radius:999px;background:rgba(120,120,126,.34)}
+.address-suggestion{
+  min-height:64px;
+  align-items:center;
+  padding:13px 14px;
+  text-align:left!important;
+  touch-action:pan-y;
+  -webkit-tap-highlight-color:transparent;
+}
+</style>
 </head>
 
 
@@ -4496,18 +4519,44 @@ async function initGoogle() {
                                 textWrap
                             );
 
-                            button.addEventListener(
-                                "pointerdown",
-                                (event) => {
+                            let pointerStartX = 0;
+                            let pointerStartY = 0;
+                            let pointerMoved = false;
 
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    armFareAddressSelectionGuard();
-                                    choosePrediction(
-                                        prediction
-                                    );
+                            button.addEventListener("pointerdown", (event) => {
+                                pointerStartX = event.clientX;
+                                pointerStartY = event.clientY;
+                                pointerMoved = false;
+                            }, { passive: true });
+
+                            button.addEventListener("pointermove", (event) => {
+                                if (
+                                    Math.abs(event.clientX - pointerStartX) > 8 ||
+                                    Math.abs(event.clientY - pointerStartY) > 8
+                                ) {
+                                    pointerMoved = true;
                                 }
-                            );
+                            }, { passive: true });
+
+                            button.addEventListener("pointercancel", () => {
+                                pointerMoved = true;
+                            }, { passive: true });
+
+                            button.addEventListener("pointerup", (event) => {
+                                if (pointerMoved) return;
+                                event.preventDefault();
+                                event.stopPropagation();
+                                armFareAddressSelectionGuard();
+                                choosePrediction(prediction);
+                            });
+
+                            button.addEventListener("click", (event) => {
+                                event.preventDefault();
+                                if (event.detail === 0) {
+                                    armFareAddressSelectionGuard();
+                                    choosePrediction(prediction);
+                                }
+                            });
 
                             suggestionsBox.appendChild(
                                 button
