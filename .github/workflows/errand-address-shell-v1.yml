@@ -1,5 +1,5 @@
 name: Errand Address Shell V1
-on:
+'on':
   push:
     paths:
       - '.github/workflows/errand-address-shell-v1.yml'
@@ -19,84 +19,22 @@ jobs:
           import re
           p=Path('errand.html')
           s=p.read_text(encoding='utf-8')
-
-          # Remove all temporary A/B test artifacts now that whole-block bypass proved the root layer.
-          for ident in [
-            'topTaxiErrandNativeABV1','topTaxiErrandAddressABTestV1',
-            'topTaxiErrandWholeBlockBypassV1','topTaxiErrandWholeBlockBypassScriptV1',
-            'topTaxiErrandNoPlacesABV1','topTaxiErrandNoPlacesABScriptV1',
-            'topTaxiErrandFocusDiagV1','topTaxiErrandFocusDiagV2',
-            'topTaxiErrandAddressFocusRecenterV1'
-          ]:
+          for ident in ['topTaxiErrandNativeABV1','topTaxiErrandAddressABTestV1','topTaxiErrandWholeBlockBypassV1','topTaxiErrandWholeBlockBypassScriptV1','topTaxiErrandNoPlacesABV1','topTaxiErrandNoPlacesABScriptV1','topTaxiErrandFocusDiagV1','topTaxiErrandFocusDiagV2','topTaxiErrandAddressFocusRecenterV1']:
             s=re.sub(r'<style id="'+re.escape(ident)+r'">.*?</style>\s*','',s,flags=re.S)
             s=re.sub(r'<script id="'+re.escape(ident)+r'">.*?</script>\s*','',s,flags=re.S)
-
-          # Restore Places hooks disabled only for the isolation test.
-          s=s.replace('/* TEMP NO-PLACES A/B TEST */ updateDeliveryModule();syncDeliveryVisibility();updateEstimate();',
-                      'initAutocompleteForVisibleSlots();updateDeliveryModule();syncDeliveryVisibility();updateEstimate();')
+          s=s.replace('/* TEMP NO-PLACES A/B TEST */ updateDeliveryModule();syncDeliveryVisibility();updateEstimate();','initAutocompleteForVisibleSlots();updateDeliveryModule();syncDeliveryVisibility();updateEstimate();')
           s=s.replace('/* TEMP NO-PLACES A/B TEST: initAutocompleteForSlot(s); */','initAutocompleteForSlot(s);')
-
-          # New neutral shell: no errand-address-block/p1Box layout class. IDs remain for existing logic.
-          s=s.replace("d.className='input-group errand-address-block';d.dataset.slot=slot.key;",
-                      "d.className='top-taxi-address-field';d.dataset.slot=slot.key;")
+          s=s.replace("d.className='input-group errand-address-block';d.dataset.slot=slot.key;","d.className='top-taxi-address-field';d.dataset.slot=slot.key;")
           s=s.replace('class="address-autocomplete"','class="top-taxi-address-control"')
-
-          css='''
-<style id="topTaxiErrandAddressShellV1">
-/* Address Shell V1: proven whole-block-safe geometry; logic/IDs stay unchanged. */
-.top-taxi-address-field{
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  margin:0 0 15px;
-  padding:0;
-  box-sizing:border-box;
-}
-.top-taxi-address-field .errand-address-head{
-  width:100%;
-  min-width:0;
-}
-.top-taxi-address-control{
-  position:relative;
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
-.top-taxi-address-control .address-input{
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-  box-sizing:border-box;
-}
-.top-taxi-address-control .address-suggestions{
-  left:0;
-  right:0;
-  width:auto;
-  max-width:100%;
-  box-sizing:border-box;
-}
-#extraStopsWrap{
-  display:block;
-  width:100%;
-  max-width:100%;
-  min-width:0;
-}
-#finalAddressBlock{
-  width:100%;
-  max-width:100%;
-  min-width:0;
-}
-</style>
-'''
-          if 'topTaxiErrandAddressShellV1' not in s:
-            s=s.replace('</head>',css+'\n</head>',1)
-
+          css='''<style id="topTaxiErrandAddressShellV1">
+.top-taxi-address-field{display:block;width:100%;max-width:100%;min-width:0;margin:0 0 15px;padding:0;box-sizing:border-box}
+.top-taxi-address-field .errand-address-head{width:100%;min-width:0}
+.top-taxi-address-control{position:relative;display:block;width:100%;max-width:100%;min-width:0;margin:0;padding:0;box-sizing:border-box}
+.top-taxi-address-control .address-input{display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}
+.top-taxi-address-control .address-suggestions{left:0;right:0;width:auto;max-width:100%;box-sizing:border-box}
+#extraStopsWrap,#finalAddressBlock{display:block;width:100%;max-width:100%;min-width:0}
+</style>'''
+          if 'topTaxiErrandAddressShellV1' not in s:s=s.replace('</head>',css+'\n</head>',1)
           p.write_text(s,encoding='utf-8')
       - name: Verify and commit
         shell: bash
