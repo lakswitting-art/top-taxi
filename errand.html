@@ -2678,82 +2678,6 @@ body{
 </style>
 
 
-<style id="topTaxiErrandXLock">
-html,body{width:100%;max-width:100%;overflow-x:hidden;overscroll-behavior-x:none;}
-.page,.booking-card,#errandForm,#addressSection,#extraStopsWrap,.errand-address-block,.errand-purchase-location-mode,.errand-driver-alert,.fare-estimate,.errand-delivery-box{min-width:0;max-width:100%;}
-.errand-row-toggle,.errand-price-main,.fare-estimate-top,.errand-summary-btn{min-width:0;max-width:100%;}
-.errand-price-main span,.errand-summary-btn span,.fare-estimate-distance{min-width:0;overflow-wrap:anywhere;}
-</style>
-
-
-<style id="topTaxiErrandAddressXFix">
-.address-autocomplete{min-width:0;max-width:100%;overflow:visible;}
-.suggestions,.address-suggestions{box-sizing:border-box!important;width:100%!important;max-width:100%!important;overflow-x:hidden!important;contain:paint;}
-.address-suggestion{box-sizing:border-box!important;max-width:100%!important;min-width:0!important;}
-.address-suggestion>span:last-child{min-width:0!important;max-width:100%!important;overflow:hidden;}
-</style>
-
-
-<style>
-/* TOP TAXI ERRAND FINAL ADDRESS WIDTH GUARD 2026-08-14 */
-html, body { max-width: 100%; overflow-x: clip !important; }
-.page, .booking-card, .input-group, .address-autocomplete, .address-suggestions, .address-suggestion { min-width: 0 !important; max-width: 100% !important; }
-.address-autocomplete { overflow-x: clip !important; }
-.address-input { min-width: 0 !important; max-width: 100% !important; }
-.address-suggestions { width: 100% !important; box-sizing: border-box !important; contain: inline-size layout paint; overscroll-behavior-x: none; }
-.address-suggestion { box-sizing: border-box !important; overflow: hidden !important; }
-.address-suggestion > * { min-width: 0 !important; max-width: 100% !important; }
-</style>
-
-
-<style id="topTaxiErrandFinalAddressContainV3">
-.errand-address-block[data-slot="final"]{width:100%!important;min-width:0!important;max-width:100%!important;contain:inline-size;}
-.errand-address-block[data-slot="final"] > *,
-.errand-address-block[data-slot="final"] .address-autocomplete,
-.errand-address-block[data-slot="final"] .address-input,
-.errand-address-block[data-slot="final"] .address-suggestions,
-.errand-address-block[data-slot="final"] .errand-delivery-box,
-.errand-address-block[data-slot="final"] .errand-row-toggle,
-.errand-address-block[data-slot="final"] .errand-small-input,
-.errand-address-block[data-slot="final"] .errand-small-input input{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}
-.errand-address-block[data-slot="final"] .address-autocomplete,
-.errand-address-block[data-slot="final"] .address-input,
-.errand-address-block[data-slot="final"] .errand-delivery-box,
-.errand-address-block[data-slot="final"] .errand-row-toggle,
-.errand-address-block[data-slot="final"] .errand-small-input,
-.errand-address-block[data-slot="final"] .errand-small-input input{width:100%!important;}
-.errand-address-block[data-slot="final"] .errand-row-toggle{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px!important;}
-.errand-address-block[data-slot="final"] .errand-row-toggle .errand-pill{min-width:0!important;max-width:100%!important;width:100%!important;padding-left:6px!important;padding-right:6px!important;white-space:normal!important;}
-.errand-clear-trip{flex:0 0 auto;border:0;background:transparent;padding:6px 0 6px 10px;color:#777780;font:inherit;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;}
-.errand-clear-trip:active{color:#c90012;}
-@media(max-width:360px){.errand-address-block[data-slot="final"] .errand-row-toggle{grid-template-columns:1fr 1fr;}}
-</style>
-
-
-
-
-
-<style id="topTaxiErrandStableMobileWidthV6">
-@media (max-width: 600px){
-  html,body{width:100%!important;max-width:100%!important;}
-  .page{
-    width:100%!important;
-    max-width:560px!important;
-    margin-left:auto!important;
-    margin-right:auto!important;
-    padding-left:14px!important;
-    padding-right:14px!important;
-  }
-  .booking-card{width:100%!important;max-width:100%!important;}
-}
-@supports (width: 100dvw){
-  @media (max-width: 600px){
-    .page{width:100dvw!important;}
-  }
-}
-</style>
-
-
 <style id="topTaxiErrandOverflowRootV7">
 @media (max-width: 600px){
   html,body{width:100%!important;max-width:100%!important;overflow-x:clip!important;}
@@ -2800,16 +2724,6 @@ html, body { max-width: 100%; overflow-x: clip !important; }
 }
 </style>
 
-<style id="topTaxiRideShellErrandV1">
-/* ===== RIDE MOBILE SHELL BASELINE V1 ===== */
-html,body{width:100%;max-width:100%;overflow-x:hidden}
-body{position:relative}
-.page{width:min(100%,560px)!important;max-width:560px!important;margin:0 auto!important;padding:0 14px max(32px,env(safe-area-inset-bottom))!important;display:block!important}
-.booking-card{width:100%!important;max-width:100%!important;min-width:0!important;margin:0!important;padding:22px 18px!important;border-radius:22px!important;overflow:visible!important}
-#errandForm,.booking-card>*,.field,.address-block,.address-autocomplete,.autocomplete,.address-input-wrap,.address-row,.delivery-module,.errand-delivery-box,.delivery-methods,.delivery-options,.delivery-method-options{min-width:0!important;max-width:100%!important}
-input,textarea,select{max-width:100%!important;min-width:0!important}
-@media(max-width:390px){.booking-card{padding:18px 15px!important}}
-</style>
 <style id="topTaxiErrandAddressViewportLockV3">
 html{width:100%;max-width:100%;overflow-x:clip!important;overscroll-behavior-x:none;}
 body{width:100%;max-width:100%;overflow-x:clip!important;overscroll-behavior-x:none;touch-action:pan-y pinch-zoom;position:relative;}
@@ -2817,6 +2731,21 @@ body{width:100%;max-width:100%;overflow-x:clip!important;overscroll-behavior-x:n
 .address-autocomplete{width:100%!important;}
 .address-input,.suggestions,.address-suggestions,.address-suggestion{box-sizing:border-box!important;min-width:0!important;max-width:100%!important;}
 .suggestions,.address-suggestions{left:0!important;right:0!important;width:auto!important;overflow-x:clip!important;}
+</style>
+<style id="topTaxiErrandAddressCleanBaselineV1">
+html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
+.page{width:100%;max-width:560px;margin:0 auto;padding-left:14px;padding-right:14px}
+.booking-card{width:100%;max-width:100%;min-width:0}
+#errandForm,.input-group,.errand-address-block,.address-autocomplete,.errand-delivery-box{min-width:0;max-width:100%}
+.address-autocomplete{position:relative;width:100%;overflow:visible}
+.address-input{width:100%;min-width:0;max-width:100%;box-sizing:border-box;appearance:none;-webkit-appearance:none}
+.address-suggestions{position:absolute;left:0;right:0;width:auto;max-width:100%;box-sizing:border-box;overflow-x:hidden;overflow-y:auto;touch-action:pan-y;overscroll-behavior-x:none}
+.address-suggestion{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.address-suggestion>span:last-child{min-width:0;max-width:100%;overflow:hidden}
+.errand-address-block[data-slot="final"]{width:100%;min-width:0;max-width:100%}
+.errand-address-block[data-slot="final"] .errand-row-toggle{min-width:0;max-width:100%}
+.errand-clear-trip{flex:0 0 auto;border:0;background:transparent;padding:6px 0 6px 10px;color:#777780;font:inherit;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}
+.errand-clear-trip:active{color:#c90012}
 </style>
 </head>
 <body>
@@ -3250,7 +3179,7 @@ function renderAddresses(){
 function addressBlock(slot,isFinal=false){
  const d=document.createElement('div');d.className='input-group errand-address-block';d.dataset.slot=slot.key;
  const initial=slot.data?displayAddress(slot.data):'';
- d.innerHTML=`<div class="errand-address-head"><label>${slot.key==='p1'?'📍':isFinal?'🏁':'🟡'} ${slot.label} <span class="field-tag ${slot.required?'required-tag':'optional-tag'}">${slot.required?'必填':'選填'}</span></label></div><div id="${slot.key}Box" class="address-autocomplete"><span class="address-search-icon">⌕</span><input type="search" id="${slot.key}Input" class="address-input" placeholder="請輸入${slot.label}地址或地標名稱" autocomplete="off" enterkeyhint="search" ${slot.required?'required':''} value="${escapeHtml(initial)}"><button type="button" class="address-clear-btn" id="${slot.key}Clear" ${initial?'':'hidden'}>×</button><div class="address-suggestions" id="${slot.key}Suggestions"></div></div>${isFinal?deliveryModuleHtml():''}`;
+ d.innerHTML=`<div class="errand-address-head"><label>${slot.key==='p1'?'📍':isFinal?'🏁':'🟡'} ${slot.label} <span class="field-tag ${slot.required?'required-tag':'optional-tag'}">${slot.required?'必填':'選填'}</span></label></div><div id="${slot.key}Box" class="address-autocomplete"><span class="address-search-icon">⌕</span><input type="text" id="${slot.key}Input" class="address-input" placeholder="請輸入${slot.label}地址或地標名稱" autocomplete="off" enterkeyhint="search" ${slot.required?'required':''} value="${escapeHtml(initial)}"><button type="button" class="address-clear-btn" id="${slot.key}Clear" ${initial?'':'hidden'}>×</button><div class="address-suggestions" id="${slot.key}Suggestions"></div></div>${isFinal?deliveryModuleHtml():''}`;
  const input=d.querySelector(`#${slot.key}Input`),clear=d.querySelector(`#${slot.key}Clear`);
  input.addEventListener('input',()=>{const q=input.value.trim();clear.hidden=!q;slot.place=null;slot.data=q?normalizeAddress({address:q}):null;syncDeliveryVisibility();renderPhoto();updateEstimate();});
  clear.addEventListener('click',()=>{input.value='';slot.place=null;slot.data=null;clear.hidden=true;const sug=d.querySelector(`#${slot.key}Suggestions`);if(sug){sug.classList.remove('show');sug.innerHTML='';}syncDeliveryVisibility();renderPhoto();updateEstimate();input.focus();});
@@ -3928,16 +3857,6 @@ document.addEventListener('DOMContentLoaded',async()=>{loadPreferences();bind();
 })();
 </script>
 
-
-<script id="topTaxiErrandAddressFocusBaselineV1">
-/* Address inputs should behave like ride.html: no custom horizontal/viewport repositioning. */
-document.addEventListener('focusin',function(e){
-  if(e.target && e.target.matches && e.target.matches('.address-input')){
-    document.documentElement.scrollLeft=0;
-    document.body.scrollLeft=0;
-  }
-},true);
-</script>
 
 <script id="topTaxiErrandHorizontalViewportGuardV3">
 (()=>{const reset=()=>{const y=window.scrollY||document.documentElement.scrollTop||document.body.scrollTop||0;if((window.scrollX||0)!==0)window.scrollTo(0,y);if(document.documentElement.scrollLeft)document.documentElement.scrollLeft=0;if(document.body.scrollLeft)document.body.scrollLeft=0;};let raf=0;const schedule=()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;reset();});};window.addEventListener('scroll',schedule,{passive:true});document.addEventListener('focusin',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('input',e=>{if(e.target&&e.target.matches&&e.target.matches('.address-input'))schedule();},true);document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('.address-suggestion,.address-clear-btn')){schedule();setTimeout(reset,0);setTimeout(reset,120);}},true);if(window.visualViewport){window.visualViewport.addEventListener('scroll',schedule,{passive:true});window.visualViewport.addEventListener('resize',schedule,{passive:true});}})();
