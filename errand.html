@@ -2755,21 +2755,16 @@ html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
 .top-taxi-address-control .address-suggestions{left:0;right:0;width:auto;max-width:100%;box-sizing:border-box}
 #extraStopsWrap,#finalAddressBlock{display:block;width:100%;max-width:100%;min-width:0}
 </style>
-<style id="topTaxiErrandAddressAB2">
-/* AB2: successful whole-block geometry + Places only. No icon/clear/enterkeyhint. */
-.top-taxi-address-ab2-input{padding-left:14px!important;padding-right:14px!important}
-</style>
 <style id="topTaxiErrandAddressAB3">
 /* AB3: move the real p1 address control completely outside #addressSection while keeping Places. */
 #addressSection + *{}
 </style>
-<style id="topTaxiErrandAddressAB4">
-#topTaxiP1AB4{display:block;width:100%;max-width:100%;min-width:0;margin:12px 0 14px;box-sizing:border-box}
-#topTaxiP1AB4 label{display:block;margin:0 0 7px;color:#2b2b30;font-size:14px;font-weight:850}
-#topTaxiP1AB4 #p1Box{position:relative;display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box}
-#topTaxiP1AB4 #p1Input{display:block;width:100%;max-width:100%;min-width:0;min-height:128px;box-sizing:border-box;padding:15px 14px;border:1px solid #dedee3;border-radius:14px;background:#fff;color:#222;font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;resize:none;outline:none;appearance:none;-webkit-appearance:none;transform:none;zoom:1}
-#topTaxiP1AB4 #p1Input:focus{border-color:#ff1f2d;box-shadow:0 0 0 3px rgba(255,31,45,.08)}
-#topTaxiP1AB4 .address-suggestions{left:0;right:0;width:auto;max-width:100%}
+<style id="topTaxiErrandAddressAB5">
+.top-taxi-address-plain-field{display:block;width:100%;max-width:100%;min-width:0;margin:0 0 15px;padding:0;box-sizing:border-box}
+.top-taxi-address-plain-control{position:relative;display:block;width:100%;max-width:100%;min-width:0;margin:0;padding:0;box-sizing:border-box}
+.top-taxi-address-plain-input{display:block;width:100%;max-width:100%;min-width:0;min-height:86px;padding:14px;border:1px solid #e5e5e8;border-radius:14px;background:#fafafa;color:#222;font:inherit;font-size:16px;line-height:1.5;resize:none;outline:none;box-sizing:border-box}
+.top-taxi-address-plain-input:focus{border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(255,31,45,.08),0 6px 18px rgba(255,31,45,.06)}
+.top-taxi-address-plain-control .address-suggestions{left:0;right:0;width:auto;max-width:100%;box-sizing:border-box}
 </style>
 </head>
 <body>
@@ -3188,7 +3183,7 @@ function renderAddresses(){
    root.appendChild(mode);
    mode.querySelectorAll('[data-purchase-location]').forEach(b=>b.addEventListener('click',()=>{purchaseLocationMode=b.dataset.purchaseLocation;addressSlots.p1.required=purchaseLocationMode==='specified';if(purchaseLocationMode==='unspecified'){addressSlots.p1.place=null;addressSlots.p1.data=null;}renderAddresses();}));
  }
- if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified')){activeSlotKeys.push('p1');const oldP1=document.querySelector('[data-slot="p1"]');if(oldP1)oldP1.remove();const p1node=document.createElement('div');p1node.id='topTaxiP1AB4';p1node.dataset.slot='p1';const initial=addressSlots.p1.data?displayAddress(addressSlots.p1.data):'';p1node.innerHTML=`<label>📍 ${addressSlots.p1.label} <span class="field-tag ${addressSlots.p1.required?'required-tag':'optional-tag'}">${addressSlots.p1.required?'必填':'選填'}</span></label><div id="p1Box"><textarea id="p1Input" rows="4" placeholder="請輸入${addressSlots.p1.label}地址或地標名稱">${escapeHtml(initial)}</textarea><div class="address-suggestions" id="p1Suggestions"></div></div>`;root.parentNode.insertBefore(p1node,root);const input=p1node.querySelector('#p1Input');input.addEventListener('input',()=>{const q=input.value.trim();addressSlots.p1.place=null;addressSlots.p1.data=q?normalizeAddress({address:q}):null;syncDeliveryVisibility();renderPhoto();updateEstimate();});}
+ if(!(taskType==='purchase'&&purchaseLocationMode==='unspecified')){activeSlotKeys.push('p1');root.appendChild(addressBlock(addressSlots.p1));}
  if(cfg.p2Max>0){
    const wrap=document.createElement('div');wrap.id='extraStopsWrap';root.appendChild(wrap);
    const add=document.createElement('button');add.type='button';add.className='booking-add-waypoint';add.id='addStopBtn';add.textContent='＋ 新增停靠點';add.addEventListener('click',e=>addStop(e));root.appendChild(add);
@@ -3201,12 +3196,11 @@ function renderAddresses(){
  initAutocompleteForVisibleSlots();updateDeliveryModule();syncDeliveryVisibility();updateEstimate();
 }
 function addressBlock(slot,isFinal=false){
- const d=document.createElement('div');d.className='top-taxi-address-field';d.dataset.slot=slot.key;
+ const d=document.createElement('div');d.className='top-taxi-address-plain-field';d.dataset.slot=slot.key;
  const initial=slot.data?displayAddress(slot.data):'';
- d.innerHTML=`<div class="errand-address-head"><label>${slot.key==='p1'?'📍':isFinal?'🏁':'🟡'} ${slot.label} <span class="field-tag ${slot.required?'required-tag':'optional-tag'}">${slot.required?'必填':'選填'}</span></label></div><div id="${slot.key}Box" class="top-taxi-address-control top-taxi-address-ab2"><input type="text" id="${slot.key}Input" class="address-input top-taxi-address-ab2-input" placeholder="請輸入${slot.label}地址或地標名稱" autocomplete="off" ${slot.required?'required':''} value="${escapeHtml(initial)}"><div class="address-suggestions" id="${slot.key}Suggestions"></div></div>${isFinal?deliveryModuleHtml():''}`;
- const input=d.querySelector(`#${slot.key}Input`),clear=d.querySelector(`#${slot.key}Clear`);
- input.addEventListener('input',()=>{const q=input.value.trim();if(clear)clear.hidden=!q;slot.place=null;slot.data=q?normalizeAddress({address:q}):null;syncDeliveryVisibility();renderPhoto();updateEstimate();});
- if(clear)clear.addEventListener('click',()=>{input.value='';slot.place=null;slot.data=null;clear.hidden=true;const sug=d.querySelector(`#${slot.key}Suggestions`);if(sug){sug.classList.remove('show');sug.innerHTML='';}syncDeliveryVisibility();renderPhoto();updateEstimate();input.focus();});
+ d.innerHTML=`<div class="errand-address-head"><label>${slot.key==='p1'?'📍':isFinal?'🏁':'🟡'} ${slot.label} <span class="field-tag ${slot.required?'required-tag':'optional-tag'}">${slot.required?'必填':'選填'}</span></label></div><div id="${slot.key}Box" class="top-taxi-address-plain-control"><textarea id="${slot.key}Input" class="top-taxi-address-plain-input" rows="2" placeholder="請輸入${slot.label}地址或地標名稱" ${slot.required?'required':''}>${escapeHtml(initial)}</textarea><div class="address-suggestions" id="${slot.key}Suggestions"></div></div>${isFinal?deliveryModuleHtml():''}`;
+ const input=d.querySelector(`#${slot.key}Input`);
+ input.addEventListener('input',()=>{const q=input.value.trim();slot.place=null;slot.data=q?normalizeAddress({address:q}):null;syncDeliveryVisibility();renderPhoto();updateEstimate();});
  return d;
 }
 function deliveryModuleHtml(){if(taskType==='move')return '';const tableOption=taskType==='pet'?'':'<button type="button" class="errand-pill" data-delivery="table">放置外送桌</button>';return `<div id="deliveryModule" class="errand-delivery-box"><div class="errand-delivery-title">送達方式</div><div class="errand-row-toggle"><button type="button" class="errand-pill active" data-delivery="handoff">當面交付</button>${tableOption}<button type="button" class="errand-pill" data-delivery="management">放置管理室</button></div><div id="deliveryLocationWrap" class="errand-small-input errand-hidden"><input id="deliveryLocation" type="text" placeholder="放置位置補充（選填），例如：A棟1樓外送桌／管理室旁"></div><div id="deliveryPhotoNote" class="errand-section-note errand-hidden">司機送達後將拍照回報，照片作為完成配送紀錄。</div></div>`;}
