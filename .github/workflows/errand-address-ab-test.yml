@@ -1,9 +1,8 @@
 name: Errand address AB test
 on:
-  workflow_dispatch:
   push:
     paths:
-      - .github/workflows/errand-address-ab-test.yml
+      - '.github/workflows/errand-address-ab-test.yml'
 permissions:
   contents: write
 jobs:
@@ -18,39 +17,39 @@ jobs:
         run: |
           from pathlib import Path
           import re
-          p = Path("errand.html")
-          s = p.read_text(encoding="utf-8")
+          p = Path('errand.html')
+          s = p.read_text(encoding='utf-8')
           s = re.sub(r'<div id="topTaxiViewportDebugV2".*?</script>\s*', '', s, flags=re.S)
           s = re.sub(r'<div id="topTaxiViewportDebug".*?</script>\s*', '', s, flags=re.S)
-          block = """
-<style id="topTaxiErrandAddressABTestV1">
-.ab-plain-address-host{position:relative!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:visible!important;contain:none!important;transform:none!important;zoom:1!important}
-.ab-plain-address-host>.address-input{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;font-size:16px!important;transform:none!important;zoom:1!important;contain:none!important}
-.ab-plain-address-host>.address-suggestions{left:0!important;right:0!important;width:auto!important;max-width:100%!important}
-</style>
-<script id="topTaxiErrandAddressABTestScriptV1">
-(function(){
-  function patchFirstAddress(){
-    const input=document.querySelector('.address-input');
-    if(!input) return false;
-    const host=input.closest('.address-autocomplete');
-    if(!host) return false;
-    host.classList.remove('address-autocomplete');
-    host.classList.add('ab-plain-address-host');
-    input.setAttribute('data-ab-plain-address','1');
-    return true;
-  }
-  if(!patchFirstAddress()){
-    const mo=new MutationObserver(function(){if(patchFirstAddress()) mo.disconnect();});
-    mo.observe(document.documentElement,{childList:true,subtree:true});
-    setTimeout(function(){mo.disconnect()},10000);
-  }
-})();
-</script>
-"""
-          if "topTaxiErrandAddressABTestScriptV1" not in s:
-              s = s.replace("</body>", block + "\n</body>", 1)
-          p.write_text(s, encoding="utf-8")
+          block = '\n'.join([
+              '<style id="topTaxiErrandAddressABTestV1">',
+              '.ab-plain-address-host{position:relative!important;width:100%!important;max-width:100%!important;min-width:0!important;overflow:visible!important;contain:none!important;transform:none!important;zoom:1!important}',
+              '.ab-plain-address-host>.address-input{display:block!important;width:100%!important;max-width:100%!important;min-width:0!important;box-sizing:border-box!important;font-size:16px!important;transform:none!important;zoom:1!important;contain:none!important}',
+              '.ab-plain-address-host>.address-suggestions{left:0!important;right:0!important;width:auto!important;max-width:100%!important}',
+              '</style>',
+              '<script id="topTaxiErrandAddressABTestScriptV1">',
+              '(function(){',
+              '  function patchFirstAddress(){',
+              "    const input=document.querySelector('.address-input');",
+              '    if(!input) return false;',
+              "    const host=input.closest('.address-autocomplete');",
+              '    if(!host) return false;',
+              "    host.classList.remove('address-autocomplete');",
+              "    host.classList.add('ab-plain-address-host');",
+              "    input.setAttribute('data-ab-plain-address','1');",
+              '    return true;',
+              '  }',
+              '  if(!patchFirstAddress()){',
+              '    const mo=new MutationObserver(function(){if(patchFirstAddress()) mo.disconnect();});',
+              '    mo.observe(document.documentElement,{childList:true,subtree:true});',
+              '    setTimeout(function(){mo.disconnect()},10000);',
+              '  }',
+              '})();',
+              '</script>'
+          ])
+          if 'topTaxiErrandAddressABTestScriptV1' not in s:
+              s = s.replace('</body>', block + '\n</body>', 1)
+          p.write_text(s, encoding='utf-8')
       - name: Commit
         shell: bash
         run: |
