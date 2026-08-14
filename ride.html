@@ -1259,8 +1259,8 @@ body {
   border-radius:9px !important;
   background:#fff !important;
   color:#35353a !important;
-  font-size:15px !important;
-  font-weight:850 !important;
+  font-size:14px !important;
+  font-weight:600 !important;
   text-align:center;
   line-height:1;
   box-shadow:none !important;
@@ -1310,6 +1310,24 @@ body {
           onclick="setRideService('driver')"
         >🚘 代駕服務</button>
       </div>
+      <div class="field"><label class="label" for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><div class="autocomplete"><input id="pickup" class="input" autocomplete="off" placeholder="請輸入上車地址或地標"><div id="pickupSuggestions" class="suggestions" hidden></div></div><div id="pickupStatus" class="status"></div>
+        <button id="useLocation" class="location-inline-btn" type="button">
+          <span class="location-inline-icon">⌖</span>
+          <span id="useLocationText">使用目前位置</span>
+        </button>
+      </div>
+      <div class="field saved-place-field">
+        <div class="saved-place-line">
+          <div id="savedChips" class="chips"></div>
+          <button id="toggleSettings" class="saved-settings-btn" type="button" aria-label="設定常用地址">
+            <span>常用地址</span>
+            <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z"></path>
+              <path d="M19.1 13.7a7.7 7.7 0 0 0 .05-1.7 7.7 7.7 0 0 0-.05-1.7l2-1.55-2-3.45-2.45.98a7.75 7.75 0 0 0-2.95-1.7L13.35 2h-4.7L8.3 4.58a7.75 7.75 0 0 0-2.95 1.7L2.9 5.3l-2 3.45 2 1.55A7.7 7.7 0 0 0 2.85 12c0 .58.02 1.15.05 1.7l-2 1.55 2 3.45 2.45-.98a7.75 7.75 0 0 0 2.95 1.7L8.65 22h4.7l.35-2.58a7.75 7.75 0 0 0 2.95-1.7l2.45.98 2-3.45-2-1.55Z"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
       <div id="settings" class="settings ride-saved-compact" hidden>
         <div class="ride-saved-address-row">
           <div class="saved-setting-name">
@@ -1344,24 +1362,6 @@ body {
           <input id="fav2PickupNote" class="input ride-saved-note" aria-label="上車位置補充" placeholder="上車位置補充（選填）">
         </div>
         <button id="saveAddresses" class="primary ride-saved-save" type="button">儲存常用地址</button>
-      </div>
-      <div class="field"><label class="label" for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><div class="autocomplete"><input id="pickup" class="input" autocomplete="off" placeholder="請輸入上車地址或地標"><div id="pickupSuggestions" class="suggestions" hidden></div></div><div id="pickupStatus" class="status"></div>
-        <button id="useLocation" class="location-inline-btn" type="button">
-          <span class="location-inline-icon">⌖</span>
-          <span id="useLocationText">使用目前位置</span>
-        </button>
-      </div>
-      <div class="field saved-place-field">
-        <div class="saved-place-line">
-          <div id="savedChips" class="chips"></div>
-          <button id="toggleSettings" class="saved-settings-btn" type="button" aria-label="設定常用地址">
-            <span>常用地址</span>
-            <svg class="settings-gear-icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 8.25a3.75 3.75 0 1 0 0 7.5 3.75 3.75 0 0 0 0-7.5Z"></path>
-              <path d="M19.1 13.7a7.7 7.7 0 0 0 .05-1.7 7.7 7.7 0 0 0-.05-1.7l2-1.55-2-3.45-2.45.98a7.75 7.75 0 0 0-2.95-1.7L13.35 2h-4.7L8.3 4.58a7.75 7.75 0 0 0-2.95 1.7L2.9 5.3l-2 3.45 2 1.55A7.7 7.7 0 0 0 2.85 12c0 .58.02 1.15.05 1.7l-2 1.55 2 3.45 2.45-.98a7.75 7.75 0 0 0 2.95 1.7L8.65 22h4.7l.35-2.58a7.75 7.75 0 0 0 2.95-1.7l2.45.98 2-3.45-2-1.55Z"></path>
-            </svg>
-          </button>
-        </div>
       </div>
       <div class="pickup-note-compact">
         <button id="togglePickupNote" class="pickup-note-toggle" type="button" aria-expanded="false">
@@ -4126,7 +4126,7 @@ body {
     const target=e.target.closest?.('.saved-address-chip,.location-inline-btn,.address-clear-btn,.top-taxi-address-clear,.top-taxi-errand-address-clear,button');
     if(!target)return;
     const label=(target.textContent||'').replace(/\s+/g,'');
-    const isShortcut=target.matches('.saved-address-chip,.location-inline-btn')||label.includes('使用目前位置');
+    const isShortcut=target.matches('.saved-address-chip,.location-inline-btn,#savedChips .chip')||label.includes('使用目前位置');
     const isClear=target.matches('.address-clear-btn,.top-taxi-address-clear,.top-taxi-errand-address-clear');
     if(isShortcut){
       setTimeout(function(){
