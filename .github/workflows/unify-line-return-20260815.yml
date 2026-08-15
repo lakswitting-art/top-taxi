@@ -1,0 +1,62 @@
+name: Unify LINE return behavior
+
+on:
+  push:
+    paths:
+      - '.github/workflows/unify-line-return-20260815.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Align ride return behavior
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('ride.html')
+          s = p.read_text(encoding='utf-8')
+          old = '''      if(!isUncertain&&!isSyncWarning&&RIDE_SEND_TEST_MODE!=="success"){
+            if(rideReturnTimer)clearTimeout(rideReturnTimer);
+            rideReturnTimer=setTimeout(rideReturnToLineChat,1100);
+          }
+'''
+          new = '''      if(!isUncertain&&RIDE_SEND_TEST_MODE!=="success"){
+            if(rideReturnTimer)clearTimeout(rideReturnTimer);
+            rideReturnTimer=setTimeout(rideReturnToLineChat,1100);
+          }
+'''
+          if old not in s:
+              raise SystemExit('Expected ride return block not found; aborting')
+          s = s.replace(old, new, 1)
+          if old in s:
+              raise SystemExit('Old ride return block still present')
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Verify focused diff
+        run: |
+          grep -F 'if(!isUncertain&&RIDE_SEND_TEST_MODE!=="success"){' ride.html
+          grep -F 'rideReturnTimer=setTimeout(rideReturnToLineChat,1100);' ride.html
+          if grep -F 'if(!isUncertain&&!isSyncWarning&&RIDE_SEND_TEST_MODE!=="success"){' ride.html; then
+            exit 1
+          fi
+          git diff --check
+          git diff --stat -- ride.html
+
+      - name: Publish
+        run: |
+          git config user.name "TOP Taxi Patch Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ride.html
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: return to LINE after backend sync warning"
+          git push origin main
