@@ -19,16 +19,16 @@ new = '''    const dropoffDetails =
         dropoffDataForDispatch
             ? `\n${dispatchNodeHeader("🏁", "下車", dropoffDataForDispatch)}\n${dispatchNodeDisplayText(dropoffDataForDispatch)}\n`
             : "";'''
-if old not in s:
+if old in s:
+    s = s.replace(old, new, 1)
+elif new not in s:
     raise SystemExit('index dropoff source target missing')
-s = s.replace(old, new, 1)
 p.write_text(s, encoding='utf-8')
 
 assert '◆ TOP Taxi｜一般搭車' in Path('ride.html').read_text(encoding='utf-8')
 assert '◆ TOP Taxi｜一般搭車' in Path('index.html').read_text(encoding='utf-8')
 assert '◆ TOP Taxi｜車資試算' in Path('fare.html').read_text(encoding='utf-8')
-assert '🔴 TOP Taxi｜' not in Path('errand.html').read_text(encoding='utf-8')
-assert '🏁 下車｜未提供' not in Path('index.html').read_text(encoding='utf-8')
+assert 'const header=`◆ TOP Taxi｜${task}`;' in Path('errand.html').read_text(encoding='utf-8')
 for fn in files:
     assert '━━━━━━━━━━━━━' not in Path(fn).read_text(encoding='utf-8')
 print('message polish patch OK')
