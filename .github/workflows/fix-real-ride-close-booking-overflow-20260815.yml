@@ -12,20 +12,24 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
-      - name: Apply root-cause patch
+      - name: Apply unified LINE return patch
         run: python3 .github/scripts/fix-real-ride-close-booking-overflow-20260815.py
       - name: Verify
         run: |
-          grep -F 'setTimeout(rideReturnToLineChat, 80);' ride.html
-          grep -F 'topTaxiBookingAddressHorizontalGuardV2' index.html
-          grep -F "const header = serviceIsDriver ? 'TOP Taxi｜代駕' : 'TOP Taxi｜一般搭車';" ride.html
-          grep -F "const header=isDriver?'TOP Taxi｜代駕':'TOP Taxi｜一般搭車';" index.html
+          grep -F 'if(!isUncertain&&RIDE_SEND_TEST_MODE!=="success"){' ride.html
+          grep -F 'rideReturnTimer=setTimeout(rideReturnToLineChat,1100);' ride.html
+          if grep -F 'if(!isUncertain&&!isSyncWarning&&RIDE_SEND_TEST_MODE!=="success"){' ride.html; then
+            exit 1
+          fi
+          if grep -F 'setTimeout(rideReturnToLineChat, 80);' ride.html; then
+            exit 1
+          fi
           git diff --check
       - name: Publish
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add ride.html index.html
+          git add ride.html
           git diff --cached --quiet && exit 0
-          git commit -m "fix: close ride LIFF promptly and lock booking address viewport"
+          git commit -m "fix: return ride to LINE after backend sync warning"
           git push origin main
