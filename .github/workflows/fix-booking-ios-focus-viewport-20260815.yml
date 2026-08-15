@@ -1,0 +1,31 @@
+name: Fix booking iOS focus viewport 2026-08-15
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-booking-ios-focus-viewport-20260815.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply booking iOS focus viewport patch
+        run: python3 .github/scripts/fix-booking-ios-focus-viewport-20260815.py
+      - name: Verify surgical diff
+        run: |
+          git diff --check
+          test "$(git diff --name-only | tr '\n' ' ')" = "index.html "
+          git diff -- index.html
+      - name: Publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "fix: prevent booking iOS focus pan"
+          git push origin main
