@@ -52,17 +52,6 @@
 
 html {
     background: var(--black);
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    overscroll-behavior-x: none;
-}
-
-body {
-    width: 100%;
-    max-width: 100%;
-    overflow-x: hidden;
-    overscroll-behavior-x: none;
 }
 
 body {
@@ -100,16 +89,6 @@ body {
 
 }
 
-
-/* Mobile LIFF horizontal-shift guard for address/autocomplete UI. */
-.page,
-.booking-card,
-.autocomplete,
-.address-autocomplete,
-.address-suggestions,
-.suggestions {
-    max-width: 100%;
-}
 
 /* =========================================
    HERO
@@ -8022,7 +8001,7 @@ function topTaxiFormatBookingMessageV2(ctx){
   out.push('','━━━━━━━━━━','預約完成！客服確認後會立刻幫您安排！','',`🕐 ${ctx.bookDate} ${ctx.bookTime}`,serviceShort,'',ctx.pickupDispatchHeader,ctx.pickupDispatchText);
   if(ctx.pickupNote) out.push(`📌 上車補充｜${ctx.pickupNote}`);
   addSection(ctx.waypointDetails);
-  if(ctx.dropoffDetails && !/下車[｜：:]\s*未提供/.test(String(ctx.dropoffDetails))) addSection(ctx.dropoffDetails);
+  if(ctx.dropoffDetails) addSection(ctx.dropoffDetails);
   return topTaxiCleanMessageLinesV2(out).join('\n');
 }
 
