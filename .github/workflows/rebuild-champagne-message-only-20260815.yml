@@ -1,0 +1,39 @@
+name: Rebuild champagne base with message format only
+
+on:
+  push:
+    paths:
+      - '.github/workflows/rebuild-champagne-message-only-20260815.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Fetch champagne backup
+        run: git fetch origin backup/champagne-2026-08-15:refs/remotes/origin/backup/champagne-2026-08-15
+      - name: Restore champagne and apply message formatter only
+        run: python3 .github/scripts/rebuild_from_champagne_with_message_format_20260815.py
+      - name: Verify exact scope
+        run: |
+          git diff --check
+          echo '--- diff versus champagne backup ---'
+          git diff --stat origin/backup/champagne-2026-08-15 -- ride.html index.html fare.html errand.html
+          git diff origin/backup/champagne-2026-08-15 -- ride.html index.html fare.html errand.html
+      - name: Publish
+        run: |
+          git config user.name "TOP Taxi Patch Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ride.html index.html fare.html errand.html
+          if git diff --cached --quiet; then
+            echo 'No changes'
+            exit 0
+          fi
+          git commit -m "fix: restore champagne behavior with new message format only"
+          git push origin main
