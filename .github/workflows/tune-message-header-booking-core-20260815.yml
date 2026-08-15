@@ -1,0 +1,61 @@
+name: Tune TOP Taxi message header and booking core
+
+on:
+  push:
+    paths:
+      - '.github/workflows/tune-message-header-booking-core-20260815.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply compact message labels
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          edits = {
+            'ride.html': [
+              ("const header = serviceIsDriver ? '🚘 TOP Taxi｜即時叫車・代駕' : '🚕 TOP Taxi｜即時叫車・一般搭車';",
+               "const header = serviceIsDriver ? '🔴 TOP Taxi｜代駕' : '🔴 TOP Taxi｜一般搭車';")
+            ],
+            'index.html': [
+              ("const header=isDriver?'📅 TOP Taxi｜預約叫車・代駕':'📅 TOP Taxi｜預約叫車・一般搭車';",
+               "const header=isDriver?'🔴 TOP Taxi｜代駕':'🔴 TOP Taxi｜一般搭車';"),
+              ("out.push('','━━━━━━━━━━━━━','預約完成！客服確認後會立刻幫您安排！','',`🕐 ${ctx.bookDate} ${ctx.bookTime}｜${serviceShort}`,'',ctx.pickupDispatchHeader,ctx.pickupDispatchText);",
+               "out.push('','━━━━━━━━━━━━━','預約完成！客服確認後會立刻幫您安排！','',`🕐 ${ctx.bookDate} ${ctx.bookTime}`,serviceShort,'',ctx.pickupDispatchHeader,ctx.pickupDispatchText);")
+            ],
+            'fare.html': [
+              ("const header=isDriver?'💰 TOP Taxi｜車資試算・代駕':'💰 TOP Taxi｜車資試算・一般搭車';",
+               "const header='🔴 TOP Taxi｜車資試算';")
+            ],
+            'errand.html': [
+              ("const header=`${icon} TOP Taxi｜跑腿服務・${task}`;",
+               "const header=`🔴 TOP Taxi｜${task}`;")
+            ]
+          }
+
+          for fn, pairs in edits.items():
+            p=Path(fn)
+            s=p.read_text(encoding='utf-8')
+            for old,new in pairs:
+              if old not in s:
+                raise SystemExit(f'marker missing in {fn}: {old}')
+              s=s.replace(old,new,1)
+            p.write_text(s,encoding='utf-8')
+            print('patched', fn)
+          PY
+      - name: Publish
+        run: |
+          git config user.name "TOP Taxi Patch Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ride.html index.html fare.html errand.html
+          git commit -m "style: shorten LINE headers and split booking core" || exit 0
+          git push origin main
