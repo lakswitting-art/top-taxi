@@ -1,0 +1,31 @@
+name: Fix real ride close and booking overflow
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-real-ride-close-booking-overflow-20260815.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply root-cause patch
+        run: python3 .github/scripts/fix-real-ride-close-booking-overflow-20260815.py
+      - name: Verify
+        run: |
+          grep -F 'setTimeout(rideReturnToLineChat, 80);' ride.html
+          grep -F 'topTaxiBookingAddressHorizontalGuardV2' index.html
+          grep -F "const header = serviceIsDriver ? 'TOP Taxi｜代駕' : 'TOP Taxi｜一般搭車';" ride.html
+          grep -F "const header=isDriver?'TOP Taxi｜代駕':'TOP Taxi｜一般搭車';" index.html
+          git diff --check
+      - name: Publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ride.html index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: close ride LIFF promptly and lock booking address viewport"
+          git push origin main
