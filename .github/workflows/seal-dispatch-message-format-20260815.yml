@@ -1,0 +1,45 @@
+name: Seal dispatch message format 2026-08-15
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/seal-dispatch-message-format-20260815.py'
+      - '.github/workflows/seal-dispatch-message-format-20260815.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  seal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Apply sealed message format
+        run: python3 .github/scripts/seal-dispatch-message-format-20260815.py
+
+      - name: Verify surgical diff
+        run: |
+          git diff --check
+          changed="$(git diff --name-only)"
+          echo "$changed"
+          test "$changed" = $'errand.html\nfare.html\nindex.html\nride.html'
+          ! git diff -- ride.html index.html fare.html errand.html | grep -F 'topTaxiBookingAddressHorizontalGuardV2'
+
+      - name: Commit sealed format
+        run: |
+          if git diff --quiet; then
+            echo 'No changes needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add ride.html index.html fare.html errand.html
+          git commit -m 'fix: seal unified dispatch message format'
+          git push origin main
