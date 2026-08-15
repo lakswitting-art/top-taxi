@@ -1,0 +1,29 @@
+name: Fix ride return and booking horizontal lock
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-ride-return-booking-horizontal-20260815.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply patch
+        run: python3 .github/scripts/fix-ride-return-booking-horizontal-20260815.py
+      - name: Verify
+        run: |
+          grep -F 'liff.closeWindow()' ride.html
+          grep -F 'overscroll-behavior-x: none;' index.html
+          git diff --check
+      - name: Publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ride.html index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: return ride LIFF and lock booking horizontal viewport"
+          git push origin main
