@@ -4098,7 +4098,7 @@ function topTaxiSplitAddressBlocksV2(lines){
 function topTaxiFormatErrandMessageV2(text){
   const task=TASKS[taskType]||'跑腿';
   const icon={purchase:'🛒',delivery:'📦',queue:'🧾',pet:'🐾',move:'📦',other:'🛵'}[taskType]||'🛵';
-  const header=`TOP Taxi｜${task}`;
+  const header='TOP Taxi｜跑腿服務';
   const split=topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
   const body=[];
   for(let i=0;i<split.body.length;i++){
@@ -4112,10 +4112,20 @@ function topTaxiFormatErrandMessageV2(text){
     body.push(line);
   }
   const core=errandMode==='reserve'
-    ? `🕐 ${$('#errandDate').value} ${$('#errandTime').value}｜${icon} ${task}`
-    : `⚡ 即時｜${icon} ${task}`;
-  const out=[header,'','🧪 DISPATCH FORMAT V2','',...topTaxiCleanMessageLinesV2(body),'',core];
-  const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
+    ? [`🕐 ${$('#errandDate').value} ${$('#errandTime').value}`,`${icon} ${task}`]
+    : [`⚡ 即時｜${icon} ${task}`];
+  const out=[header,'',...topTaxiCleanMessageLinesV2(body),'',...core];
+  const blocks=split.blocks
+    .filter(b=>!String(b[0]||'').includes('未提供'))
+    .map(b=>{
+      const next=[...b];
+      const head=String(next[0]||'');
+      const sep=head.indexOf('｜');
+      const suffix=sep>=0?head.slice(sep):'';
+      if(head.startsWith('📍')) next[0]=`📍 上車${suffix}`;
+      if(head.startsWith('🏁')) next[0]=`🏁 下車${suffix}`;
+      return next;
+    });
   if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
   return topTaxiCleanMessageLinesV2(out).join('\n');
 }

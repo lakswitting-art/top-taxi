@@ -6429,6 +6429,10 @@ async function confirmTrip() {
         } else {
             fareTripSendState = "sync-warning";
             showFareTripResult("sync-warning", serviceName);
+            if (fareTripReturnTimer) clearTimeout(fareTripReturnTimer);
+            fareTripReturnTimer = setTimeout(function() {
+                returnToLineChat();
+            }, 1100);
         }
 
     } catch (error) {
@@ -7133,13 +7137,13 @@ function topTaxiFormatFareMessageV2(text,mode){
   const body=[];
   for(let i=0;i<split.body.length;i++){
     const t=String(split.body[i]??'').trim();
-    if(i===0 && /TOP Taxi/.test(t)) continue;
+    if(/TOP Taxi｜車資試算/.test(t)) continue;
     if(t.startsWith('📋 服務類型：')) continue;
     if(t.includes('需求已送出') || t.includes('客服確認後')) continue;
     body.push(split.body[i]);
   }
   const kept=topTaxiCleanMessageLinesV2(body).filter(x=>x.trim()!=='━━━━━━━━━━');
-  const out=[header,'','🧪 DISPATCH FORMAT V2','',...kept,'','━━━━━━━━━━','以上為系統預估車資，實際費用依當日行程狀況為準。','',`💰 試算｜${serviceShort}`];
+  const out=[header,'',...kept,'','━━━━━━━━━━','以上為系統預估車資，實際費用依當日行程狀況為準。','',`💰 試算｜${serviceShort}`];
   const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
   if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
   return topTaxiCleanMessageLinesV2(out).join('\n');
