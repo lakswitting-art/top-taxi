@@ -7986,7 +7986,7 @@ function topTaxiSplitAddressBlocksV2(lines){
 
 function topTaxiFormatBookingMessageV2(ctx){
   const isDriver=ctx.bookingService==='driver';
-  const header=isDriver?'📅 TOP Taxi｜預約叫車・代駕':'📅 TOP Taxi｜預約叫車・一般搭車';
+  const header=isDriver?'🔴 TOP Taxi｜代駕':'🔴 TOP Taxi｜一般搭車';
   const serviceShort=isDriver?'🚘 代駕':'🚕 一般搭車';
   const out=[header];
   const addSection=(text)=>{
@@ -7998,7 +7998,7 @@ function topTaxiFormatBookingMessageV2(ctx){
   addSection(ctx.fareDetails);
   if(ctx.memo && ctx.memo!=='無') addSection(`💡 特殊需求\n${ctx.memo}`);
   if(ctx.payment && !String(ctx.payment).includes('現金')) addSection(`💳 付款方式：${ctx.payment}`);
-  out.push('','━━━━━━━━━━━━━','預約完成！客服確認後會立刻幫您安排！','',`🕐 ${ctx.bookDate} ${ctx.bookTime}｜${serviceShort}`,'',ctx.pickupDispatchHeader,ctx.pickupDispatchText);
+  out.push('','━━━━━━━━━━━━━','預約完成！客服確認後會立刻幫您安排！','',`🕐 ${ctx.bookDate} ${ctx.bookTime}`,serviceShort,'',ctx.pickupDispatchHeader,ctx.pickupDispatchText);
   if(ctx.pickupNote) out.push(`📌 上車補充｜${ctx.pickupNote}`);
   addSection(ctx.waypointDetails);
   if(ctx.dropoffDetails) addSection(ctx.dropoffDetails);

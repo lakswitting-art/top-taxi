@@ -7127,7 +7127,7 @@ function topTaxiSplitAddressBlocksV2(lines){
 
 function topTaxiFormatFareMessageV2(text,mode){
   const isDriver=mode==='driver';
-  const header=isDriver?'💰 TOP Taxi｜車資試算・代駕':'💰 TOP Taxi｜車資試算・一般搭車';
+  const header='🔴 TOP Taxi｜車資試算';
   const serviceShort=isDriver?'🚘 代駕':'🚕 一般搭車';
   const split=topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
   const body=[];
