@@ -6309,7 +6309,7 @@ async function confirmTrip() {
         "",
         "📡 TOP Taxi｜車資試算",
         "",
-        "━━━━━━━━━━━━━",
+        "━━━━━━━━━━",
         successText,
         "",
         "💬 如有其他乘車需求（如禁菸、寵物、輪椅或收據等），請直接於 LINE 聊天室告知客服。"
@@ -7127,7 +7127,7 @@ function topTaxiSplitAddressBlocksV2(lines){
 
 function topTaxiFormatFareMessageV2(text,mode){
   const isDriver=mode==='driver';
-  const header='🔴 TOP Taxi｜車資試算';
+  const header='◆ TOP Taxi｜車資試算';
   const serviceShort=isDriver?'🚘 代駕':'🚕 一般搭車';
   const split=topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
   const body=[];
@@ -7138,8 +7138,8 @@ function topTaxiFormatFareMessageV2(text,mode){
     if(t.includes('需求已送出') || t.includes('客服確認後')) continue;
     body.push(split.body[i]);
   }
-  const kept=topTaxiCleanMessageLinesV2(body).filter(x=>x.trim()!=='━━━━━━━━━━━━━');
-  const out=[header,'',...kept,'','━━━━━━━━━━━━━','以上為系統預估車資，實際費用依當日行程狀況為準。','',`💰 試算｜${serviceShort}`];
+  const kept=topTaxiCleanMessageLinesV2(body).filter(x=>x.trim()!=='━━━━━━━━━━');
+  const out=[header,'',...kept,'','━━━━━━━━━━','以上為系統預估車資，實際費用依當日行程狀況為準。','',`💰 試算｜${serviceShort}`];
   const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
   if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
   return topTaxiCleanMessageLinesV2(out).join('\n');

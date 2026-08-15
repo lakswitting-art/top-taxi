@@ -3493,7 +3493,7 @@ function dispatchMessage(orderData){
  const need=needsLabel();if(need!=='無')lines.push(`其他需求｜${need}`);const photo=photoInfo();if(photo.required)lines.push('📷 拍照回報｜需要');
  if(currentEstimate){lines.push('');lines.push(`🛣️ 行車路線：${currentEstimate.routeMode==='SURFACE'?'平面道路':'推薦快速'}`);lines.push(`📏 距離：${currentEstimate.distanceKm.toFixed(1)} km`);lines.push(`⏱️ 預估時間：${currentEstimate.minutes} 分鐘`);}
  const q=quote(),hasFareEstimate=!!currentEstimate||(taskType==='purchase'&&purchaseLocationMode==='unspecified');if(hasFareEstimate&&q.total!=null){lines.push(`💰 ${taskType==='move'?'預估搬家費':'預估跑腿費'}：NT$${q.total.toLocaleString('zh-TW')}${q.isStarting?' 起':''}`);if(advanceNeeded)lines.push('※ 跑腿服務費不含商品／代墊款');}
- lines.push('');lines.push(`💳 付款方式：${selectedPayment()}`);lines.push('');lines.push('📡 TOP Taxi｜跑腿服務');lines.push('');lines.push('━━━━━━━━━━━━━');lines.push('跑腿需求已送出！客服確認後會立刻幫您安排！');return lines.join('\n');
+ lines.push('');lines.push(`💳 付款方式：${selectedPayment()}`);lines.push('');lines.push('📡 TOP Taxi｜跑腿服務');lines.push('');lines.push('━━━━━━━━━━');lines.push('跑腿需求已送出！客服確認後會立刻幫您安排！');return lines.join('\n');
 }
 
 
@@ -4098,7 +4098,7 @@ function topTaxiSplitAddressBlocksV2(lines){
 function topTaxiFormatErrandMessageV2(text){
   const task=TASKS[taskType]||'跑腿';
   const icon={purchase:'🛒',delivery:'📦',queue:'🧾',pet:'🐾',move:'📦',other:'🛵'}[taskType]||'🛵';
-  const header=`🔴 TOP Taxi｜${task}`;
+  const header=`◆ TOP Taxi｜${task}`;
   const split=topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
   const body=[];
   for(let i=0;i<split.body.length;i++){
