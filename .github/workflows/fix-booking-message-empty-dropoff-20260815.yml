@@ -1,0 +1,45 @@
+name: Fix booking message header and empty dropoff
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-booking-message-empty-dropoff-20260815.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Patch booking message only
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old="""  const header=isDriver?'🔴 TOP Taxi｜代駕':'🔴 TOP Taxi｜一般搭車';"""
+          new="""  const header=isDriver?'◆ TOP Taxi｜代駕':'◆ TOP Taxi｜一般搭車';"""
+          assert old in s, 'header target missing'
+          s=s.replace(old,new,1)
+          old2="""  if(ctx.dropoffDetails) addSection(ctx.dropoffDetails);"""
+          new2="""  if(ctx.dropoffDetails && !/下車[｜：:]\\s*未提供/.test(String(ctx.dropoffDetails))) addSection(ctx.dropoffDetails);"""
+          assert old2 in s, 'dropoff formatter target missing'
+          s=s.replace(old2,new2,1)
+          p.write_text(s,encoding='utf-8')
+      - name: Verify scope
+        shell: bash
+        run: |
+          grep -F "◆ TOP Taxi｜代駕" index.html
+          grep -F "下車[｜：:]" index.html
+          git diff --check
+          git diff -- index.html
+      - name: Publish
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: clean booking message header and omit empty dropoff"
+          git push
