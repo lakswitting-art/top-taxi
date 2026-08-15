@@ -6,8 +6,8 @@ for fn in files:
     p = Path(fn)
     s = p.read_text(encoding='utf-8')
     s = s.replace('━━━━━━━━━━━━━', '━━━━━━━━━━')
-    if fn in ('ride.html', 'fare.html', 'errand.html'):
-        s = s.replace('🔴 TOP Taxi｜', '◆ TOP Taxi｜')
+    s = s.replace('🔴 TOP Taxi｜', 'TOP Taxi｜')
+    s = s.replace('◆ TOP Taxi｜', 'TOP Taxi｜')
     p.write_text(s, encoding='utf-8')
 
 p = Path('index.html')
@@ -20,4 +20,9 @@ s = re.sub(
     flags=re.S
 )
 p.write_text(s, encoding='utf-8')
-print('message polish patch completed')
+
+for fn in files:
+    text = Path(fn).read_text(encoding='utf-8')
+    assert '🔴 TOP Taxi｜' not in text
+    assert '◆ TOP Taxi｜' not in text
+print('plain text message headers completed')
