@@ -4099,6 +4099,7 @@ function topTaxiFormatErrandMessageV2(text){
   const task=TASKS[taskType]||'跑腿';
   const icon={purchase:'🛒',delivery:'📦',queue:'🧾',pet:'🐾',move:'📦',other:'🛵'}[taskType]||'🛵';
   const header='TOP Taxi｜跑腿服務';
+  const isNearPurchase=taskType==='purchase'&&purchaseLocationMode==='unspecified';
   const split=topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
   const body=[];
   for(let i=0;i<split.body.length;i++){
@@ -4109,23 +4110,48 @@ function topTaxiFormatErrandMessageV2(text){
     if(t.startsWith('📅 預約日期：') || t.startsWith('⏰ 預約時間：')) continue;
     if(t.startsWith('📡 TOP Taxi｜')) continue;
     if(t.startsWith('💳 付款方式：') && t.includes('現金')) continue;
+    if(isNearPurchase && t==='⚠️ 購買地點｜送達地點附近購買') continue;
+    if(isNearPurchase && t==='請於送達地點附近就近購買，實際店家依商品供應狀況選擇。') continue;
     body.push(line);
+  }
+  const cleanBody=topTaxiCleanMessageLinesV2(body);
+  const hasRouteLine=cleanBody.some(line=>String(line||'').trim().startsWith('🛣️ 行車路線：'));
+  const spacedBody=[];
+  for(const line of cleanBody){
+    const t=String(line??'').trim();
+    const estimateStart=hasRouteLine
+      ? t.startsWith('🛣️ 行車路線：')
+      : (t.startsWith('💰 預估跑腿費：') || t.startsWith('💰 預估搬家費：'));
+    if(estimateStart && spacedBody.length && String(spacedBody[spacedBody.length-1]||'').trim()!=='') spacedBody.push('');
+    spacedBody.push(line);
   }
   const core=errandMode==='reserve'
     ? [`🕐 ${$('#errandDate').value} ${$('#errandTime').value}`,`${icon} ${task}`]
     : [`⚡ 即時｜${icon} ${task}`];
-  const out=[header,'',...topTaxiCleanMessageLinesV2(body),'',...core];
-  const blocks=split.blocks
-    .filter(b=>!String(b[0]||'').includes('未提供'))
-    .map(b=>{
-      const next=[...b];
-      const head=String(next[0]||'');
-      const sep=head.indexOf('｜');
-      const suffix=sep>=0?head.slice(sep):'';
-      if(head.startsWith('📍')) next[0]=`📍 上車${suffix}`;
-      if(head.startsWith('🏁')) next[0]=`🏁 下車${suffix}`;
-      return next;
-    });
+  const out=[header,'',...spacedBody,'',...core];
+  if(isNearPurchase){
+    out.push('','⚠️ 購買地點｜送達地點附近購買','請於送達地點附近就近購買，實際店家依商品供應狀況選擇。');
+  }
+  const rawBlocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
+  const hasFinal=!!addressValue('final');
+  const blocks=rawBlocks.map((b,idx)=>{
+    const next=[...b];
+    const head=String(next[0]||'');
+    const sep=head.indexOf('｜');
+    const suffix=sep>=0?head.slice(sep):'';
+    let label='';
+    if(isNearPurchase){
+      label=hasFinal&&idx===rawBlocks.length-1?'🏁 下車':`🟡 停靠 ${idx+1}`;
+    }else if(idx===0){
+      label='📍 上車';
+    }else if(hasFinal&&idx===rawBlocks.length-1){
+      label='🏁 下車';
+    }else{
+      label=`🟡 停靠 ${idx}`;
+    }
+    next[0]=`${label}${suffix}`;
+    return next;
+  });
   if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
   return topTaxiCleanMessageLinesV2(out).join('\n');
 }
