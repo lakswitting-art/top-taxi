@@ -1,0 +1,34 @@
+name: Remove booking horizontal guard 2026-08-15
+
+on:
+  push:
+    paths:
+      - '.github/workflows/remove-booking-horizontal-guard-20260815.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Remove booking horizontal guard only
+        run: python3 .github/scripts/remove-booking-horizontal-guard-20260815.py
+      - name: Verify surgical diff
+        run: |
+          git diff -- index.html
+          test "$(git diff --numstat -- index.html | awk '{print $1}')" = "0"
+          test "$(git diff --numstat -- index.html | awk '{print $2}')" -ge "80"
+          ! grep -q 'topTaxiBookingAddressHorizontalGuardV2' index.html
+          grep -q 'function topTaxiFormatBookingMessageV2(ctx)' index.html
+          grep -q 'function bookingReturnToLineChat()' index.html
+      - name: Publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "fix: restore champagne booking address behavior"
+          git push origin main
