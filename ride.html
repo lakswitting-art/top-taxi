@@ -3539,6 +3539,13 @@ body {
         if(backendSyncOk){
           rideSendState="success";
           showRideSendResult("success");
+          window.setTimeout(function(){
+            try{
+              if(window.liff && liff.isInClient()) liff.closeWindow();
+            }catch(closeError){
+              console.warn("RIDE LIFF CLOSE FAILED:",closeError);
+            }
+          },650);
         }else{
           rideSendState="sync-warning";
           showRideSendResult("sync-warning");

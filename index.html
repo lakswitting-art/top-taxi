@@ -52,6 +52,17 @@
 
 html {
     background: var(--black);
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+}
+
+body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
 }
 
 body {
@@ -89,6 +100,16 @@ body {
 
 }
 
+
+/* Mobile LIFF horizontal-shift guard for address/autocomplete UI. */
+.page,
+.booking-card,
+.autocomplete,
+.address-autocomplete,
+.address-suggestions,
+.suggestions {
+    max-width: 100%;
+}
 
 /* =========================================
    HERO
