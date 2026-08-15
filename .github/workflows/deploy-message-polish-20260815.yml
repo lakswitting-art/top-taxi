@@ -1,0 +1,61 @@
+name: Deploy message polish 2026-08-15
+on:
+  push:
+    paths:
+      - '.github/workflows/deploy-message-polish-20260815.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply final message polish
+        shell: python
+        run: |
+          from pathlib import Path
+
+          files=['ride.html','index.html','fare.html','errand.html']
+          for fn in files:
+              p=Path(fn)
+              s=p.read_text(encoding='utf-8')
+              s=s.replace('━━━━━━━━━━━━━','━━━━━━━━━━')
+              if fn in ('ride.html','fare.html','errand.html'):
+                  s=s.replace('🔴 TOP Taxi｜','◆ TOP Taxi｜')
+              p.write_text(s,encoding='utf-8')
+
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          old="""    const dropoffDetails =
+        dropoffDataForDispatch
+            ? `\n${dispatchNodeHeader("🏁", "下車", dropoffDataForDispatch)}\n${dispatchNodeDisplayText(dropoffDataForDispatch)}\n`
+            : `\n🏁 下車｜未提供\n`;"""
+          new="""    const dropoffDetails =
+        dropoffDataForDispatch
+            ? `\n${dispatchNodeHeader("🏁", "下車", dropoffDataForDispatch)}\n${dispatchNodeDisplayText(dropoffDataForDispatch)}\n`
+            : "";"""
+          if old not in s:
+              raise SystemExit('index dropoff source target missing')
+          s=s.replace(old,new,1)
+          p.write_text(s,encoding='utf-8')
+      - name: Verify
+        shell: bash
+        run: |
+          grep -F "◆ TOP Taxi｜一般搭車" ride.html
+          grep -F "◆ TOP Taxi｜一般搭車" index.html
+          grep -F "◆ TOP Taxi｜車資試算" fare.html
+          grep -F 'const header=`◆ TOP Taxi｜${task}`;' errand.html
+          ! grep -F "🏁 下車｜未提供" index.html
+          ! grep -F "━━━━━━━━━━━━━" ride.html index.html fare.html errand.html
+          git diff --check
+      - name: Publish
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ride.html index.html fare.html errand.html
+          git diff --cached --quiet && exit 0
+          git commit -m "fix: polish customer message layout"
+          git push
