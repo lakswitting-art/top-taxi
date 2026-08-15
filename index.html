@@ -7986,7 +7986,7 @@ function topTaxiSplitAddressBlocksV2(lines){
 
 function topTaxiFormatBookingMessageV2(ctx){
   const isDriver=ctx.bookingService==='driver';
-  const header=isDriver?'◆ TOP Taxi｜代駕':'◆ TOP Taxi｜一般搭車';
+  const header=isDriver?'TOP Taxi｜代駕':'TOP Taxi｜一般搭車';
   const serviceShort=isDriver?'🚘 代駕':'🚕 一般搭車';
   const out=[header];
   const addSection=(text)=>{
