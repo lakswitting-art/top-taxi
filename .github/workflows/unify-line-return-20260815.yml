@@ -60,3 +60,5 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "fix: return to LINE after backend sync warning"
           git push origin main
+
+# trigger: 2026-08-15T15:51+08:00
