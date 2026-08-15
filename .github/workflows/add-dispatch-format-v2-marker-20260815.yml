@@ -1,0 +1,80 @@
+name: Add temporary DISPATCH FORMAT V2 marker
+
+on:
+  push:
+    paths:
+      - '.github/workflows/add-dispatch-format-v2-marker-20260815.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Add visible format marker only
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          marker = '🧪 DISPATCH FORMAT V2'
+
+          replacements = {
+              'ride.html': (
+                  "const out=[header,'',...topTaxiCleanMessageLinesV2(body),'',`⚡ 即時｜${serviceShort}`];",
+                  "const out=[header,'','🧪 DISPATCH FORMAT V2','',...topTaxiCleanMessageLinesV2(body),'',`⚡ 即時｜${serviceShort}`];"
+              ),
+              'index.html': (
+                  "const out=[header];",
+                  "const out=[header,'','🧪 DISPATCH FORMAT V2'];"
+              ),
+              'fare.html': (
+                  "const out=[header,'',...kept,'','━━━━━━━━━━','以上為系統預估車資，實際費用依當日行程狀況為準。','',`💰 試算｜${serviceShort}`];",
+                  "const out=[header,'','🧪 DISPATCH FORMAT V2','',...kept,'','━━━━━━━━━━','以上為系統預估車資，實際費用依當日行程狀況為準。','',`💰 試算｜${serviceShort}`];"
+              ),
+              'errand.html': (
+                  "const out=[header,'',...topTaxiCleanMessageLinesV2(body),'',core];",
+                  "const out=[header,'','🧪 DISPATCH FORMAT V2','',...topTaxiCleanMessageLinesV2(body),'',core];"
+              ),
+          }
+
+          changed = []
+          for fn, (old, new) in replacements.items():
+              p = Path(fn)
+              s = p.read_text(encoding='utf-8')
+              if marker in s:
+                  print(f'{fn}: marker already present')
+                  continue
+              if old not in s:
+                  raise SystemExit(f'{fn}: expected formatter marker not found; aborting without partial publish')
+              s = s.replace(old, new, 1)
+              p.write_text(s, encoding='utf-8')
+              changed.append(fn)
+              print(f'{fn}: marker added')
+
+          if not changed:
+              print('No page changes required')
+          PY
+
+      - name: Verify scope
+        run: |
+          git diff --check
+          git diff --stat -- ride.html index.html fare.html errand.html
+          grep -n "DISPATCH FORMAT V2" ride.html index.html fare.html errand.html
+
+      - name: Publish marker
+        run: |
+          git config user.name "TOP Taxi Patch Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add ride.html index.html fare.html errand.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "test: add visible DISPATCH FORMAT V2 marker"
+          git push origin main
