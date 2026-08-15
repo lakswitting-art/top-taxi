@@ -4114,7 +4114,7 @@ function topTaxiFormatErrandMessageV2(text){
   const core=errandMode==='reserve'
     ? `🕐 ${$('#errandDate').value} ${$('#errandTime').value}｜${icon} ${task}`
     : `⚡ 即時｜${icon} ${task}`;
-  const out=[header,'',...topTaxiCleanMessageLinesV2(body),'',core];
+  const out=[header,'','🧪 DISPATCH FORMAT V2','',...topTaxiCleanMessageLinesV2(body),'',core];
   const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
   if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
   return topTaxiCleanMessageLinesV2(out).join('\n');

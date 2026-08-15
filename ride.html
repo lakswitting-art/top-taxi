@@ -4445,7 +4445,7 @@ function topTaxiFormatRideMessageV2(text){
     body.push(line);
   }
   const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
-  const out=[header,'',...topTaxiCleanMessageLinesV2(body),'',`⚡ 即時｜${serviceShort}`];
+  const out=[header,'','🧪 DISPATCH FORMAT V2','',...topTaxiCleanMessageLinesV2(body),'',`⚡ 即時｜${serviceShort}`];
   if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
   return topTaxiCleanMessageLinesV2(out).join('\n');
 }
