@@ -1,0 +1,113 @@
+name: One-shot ride return fix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/one-shot-fix-ride-return.yml
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Align ride LIFF return flow
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('ride.html')
+          text = path.read_text(encoding='utf-8')
+
+          state_anchor = '''    let rideLineUserId="";
+    let rideLineDisplayName="";
+
+    /* =========================================
+'''
+          state_replacement = '''    let rideLineUserId="";
+    let rideLineDisplayName="";
+
+    async function initRideLiff(){
+      try{
+        if(!(window.liff&&CONFIG.liffId))return;
+        await liff.init({liffId:CONFIG.liffId});
+        if(liff.isLoggedIn()){
+          try{
+            const profile=await liff.getProfile();
+            rideLineUserId=profile?.userId||rideLineUserId||"";
+            rideLineDisplayName=profile?.displayName||rideLineDisplayName||"";
+          }catch(profileError){
+            console.warn("RIDE LINE PROFILE READ FAILED:",profileError);
+          }
+        }
+      }catch(error){
+        console.error("RIDE LIFF INIT ERROR:",error);
+      }
+    }
+
+    /* =========================================
+'''
+          if state_anchor not in text:
+            raise SystemExit('ride LIFF state anchor not found')
+          text = text.replace(state_anchor, state_replacement, 1)
+
+          immediate_return = '''          showRideSendResult("success");
+          // iOS LINE LIFF: do not rely only on the delayed timer.
+          // Trigger the already-existing return path immediately after the successful send/sync chain.
+          setTimeout(rideReturnToLineChat, 80);
+'''
+          normal_return = '''          showRideSendResult("success");
+'''
+          if immediate_return not in text:
+            raise SystemExit('80ms ride return block not found')
+          text = text.replace(immediate_return, normal_return, 1)
+
+          boot_anchor = '''    applyPaymentPreferenceOnLoad();
+    window.initGoogle=init;
+'''
+          boot_replacement = '''    applyPaymentPreferenceOnLoad();
+    initRideLiff();
+    window.initGoogle=init;
+'''
+          if boot_anchor not in text:
+            raise SystemExit('ride boot anchor not found')
+          text = text.replace(boot_anchor, boot_replacement, 1)
+
+          if 'setTimeout(rideReturnToLineChat, 80)' in text:
+            raise SystemExit('80ms return still present')
+          if text.count('initRideLiff();') != 1:
+            raise SystemExit('unexpected initRideLiff call count')
+          if text.count('rideReturnTimer=setTimeout(rideReturnToLineChat,1100);') != 1:
+            raise SystemExit('1100ms return baseline missing')
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+      - name: Verify focused diff
+        shell: bash
+        run: |
+          git diff --check
+          git diff -- ride.html
+          grep -F 'initRideLiff();' ride.html
+          grep -F 'rideReturnTimer=setTimeout(rideReturnToLineChat,1100);' ride.html
+          if grep -F 'setTimeout(rideReturnToLineChat, 80)' ride.html; then
+            echo 'Unexpected 80ms return remains'
+            exit 1
+          fi
+
+      - name: Commit focused fix and remove one-shot workflow
+        shell: bash
+        run: |
+          rm -f .github/workflows/one-shot-fix-ride-return.yml
+          git config user.name 'TOP Taxi Fix Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ride.html .github/workflows/one-shot-fix-ride-return.yml
+          git commit -m 'fix: align ride LINE return with system baseline'
+          git push origin HEAD:main
