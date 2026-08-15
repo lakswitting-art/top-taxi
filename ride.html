@@ -3539,6 +3539,9 @@ body {
         if(backendSyncOk){
           rideSendState="success";
           showRideSendResult("success");
+          // iOS LINE LIFF: do not rely only on the delayed timer.
+          // Trigger the already-existing return path immediately after the successful send/sync chain.
+          setTimeout(rideReturnToLineChat, 80);
         }else{
           rideSendState="sync-warning";
           showRideSendResult("sync-warning");
