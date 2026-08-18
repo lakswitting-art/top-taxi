@@ -1344,17 +1344,35 @@ body {
 }
 </style>
 
+
+<style id="topTaxiRideUIShell20260818">
+html,body{background:#f2f3f5!important}
+body{min-height:100vh}
+.hero{display:none!important}
+main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!important}
+.saved-place-line .chip{
+  color:#66666c!important;
+  background:#f3f3f5!important;
+  border-color:#e3e3e7!important;
+  box-shadow:none!important;
+  -webkit-tap-highlight-color:transparent;
+}
+.saved-place-line .chip.active{
+  color:#55555b!important;
+  background:#e9e9ed!important;
+  border-color:#d9d9de!important;
+  box-shadow:none!important;
+}
+.saved-place-line .chip:focus,
+.saved-place-line .chip:focus-visible{
+  outline:none!important;
+  box-shadow:0 0 0 2px rgba(0,0,0,.055)!important;
+}
+</style>
+
 </head>
 <body>
-  <header class="hero">
-    <div class="logo-wrap"><div class="logo-glow"></div><img src="logo.png" alt="TOP Taxi Logo" class="logo"></div>
-    <div class="hero-copy">
-      <h1 class="brand"><span class="brand-red">TOP</span> Taxi</h1>
-      <div class="system-name">24H 即時叫車</div>
-      <div class="hero-description">24H｜快速叫車・即時路線・預估車資</div>
-    </div>
-  </header>
-  <main>
+<main>
     <section class="card">
       <div class="form-header"><div id="rideTitle" class="form-title">即時叫車</div><div class="form-header-actions"><div class="form-label-small top-taxi-mini-logo"><span>TOP</span> Taxi</div><button id="clearRideTrip" class="trip-reset-btn" type="button">清除本次行程</button></div></div>
       <p class="sub">選擇地址後，系統會依 Google 即時路線重新預估車資</p>
