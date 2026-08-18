@@ -32,11 +32,11 @@ body{min-height:100vh}
 .form-label-small::before{content:"TOP";color:var(--red);font-size:13px;font-weight:950}
 .form-label-small::after{content:" Taxi";color:#17171b;font-size:13px;font-weight:900}
 
-/* 只修改服務時間：跟一般搭車／代駕同款 */
+/* 服務時間：直接接主標，與其他頁服務切換同版 */
 .errand-mode-switch{
   grid-template-columns:1fr 1fr!important;
   gap:4px!important;
-  margin:8px 0 18px!important;
+  margin:16px 0 18px!important;
   padding:5px!important;
   border:1px solid #e3e3e7!important;
   border-radius:17px!important;
@@ -63,6 +63,8 @@ body{min-height:100vh}
   color:#fff!important;
   box-shadow:0 7px 16px rgba(218,0,27,.24),inset 0 1px 0 rgba(255,255,255,.24)!important;
 }
+.errand-mode-group{margin-bottom:0!important}
+.errand-mode-label-hidden{display:none!important}
 
 .errand-purchase-label-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-bottom:8px}
 .errand-purchase-label-row>label{margin:0!important}
@@ -97,6 +99,14 @@ body{min-height:100vh}
         brand.textContent='TOP Taxi';
         header.appendChild(brand);
       }
+    }
+
+    const modeSwitch=document.querySelector('.errand-mode-switch');
+    if(modeSwitch){
+      const group=modeSwitch.closest('.input-group');
+      if(group) group.classList.add('errand-mode-group');
+      const label=group ? Array.from(group.children).find(el=>el.tagName==='LABEL' && text(el)==='服務時間') : null;
+      if(label) label.classList.add('errand-mode-label-hidden');
     }
 
     const clearCandidates=Array.from(document.querySelectorAll('button,a,[role="button"]')).filter(el=>/清除(?:本次)?行程/.test(text(el)));
