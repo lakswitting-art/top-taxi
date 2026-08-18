@@ -1370,11 +1370,31 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
 }
 </style>
 
+
+<style id="topTaxiRidePickupReset20260818">
+.pickup-label-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.pickup-label-row .label{margin:0}
+.pickup-reset-btn{
+  flex:0 0 auto;
+  color:#8d8d94;
+  font-size:11px;
+  font-weight:750;
+}
+@media(max-width:390px){
+  .pickup-reset-btn{font-size:10.5px}
+}
+</style>
+
 </head>
 <body>
 <main>
     <section class="card">
-      <div class="form-header"><div id="rideTitle" class="form-title">即時叫車</div><div class="form-header-actions"><div class="form-label-small top-taxi-mini-logo"><span>TOP</span> Taxi</div><button id="clearRideTrip" class="trip-reset-btn" type="button">清除本次行程</button></div></div>
+      <div class="form-header"><div id="rideTitle" class="form-title">即時叫車</div><div class="form-header-actions"><div class="form-label-small top-taxi-mini-logo"><span>TOP</span> Taxi</div></div></div>
       <p class="sub">選擇地址後，系統會依 Google 即時路線重新預估車資</p>
 
       <div class="ride-service-switch" role="group" aria-label="選擇即時服務">
@@ -1394,7 +1414,7 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
           onclick="setRideService('driver')"
         >代駕服務</button>
       </div>
-      <div class="field"><label class="label" for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><div class="autocomplete"><input id="pickup" class="input" autocomplete="off" placeholder="請輸入上車地址或地標"><div id="pickupSuggestions" class="suggestions" hidden></div></div><div id="pickupStatus" class="status"></div>
+      <div class="field"><div class="pickup-label-row"><label class="label" for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><button id="clearRideTrip" class="trip-reset-btn pickup-reset-btn" type="button">清除本次行程</button></div><div class="autocomplete"><input id="pickup" class="input" autocomplete="off" placeholder="請輸入上車地址或地標"><div id="pickupSuggestions" class="suggestions" hidden></div></div><div id="pickupStatus" class="status"></div>
         <button id="useLocation" class="location-inline-btn" type="button">
           <span class="location-inline-icon">⌖</span>
           <span id="useLocationText">使用目前位置</span>
