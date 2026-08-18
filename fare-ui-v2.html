@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f2f3f5">
+<title>TOP Taxi｜車資試算 UI V2 測試</title>
+<style>html,body{margin:0;min-height:100%;background:#f2f3f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC",Arial,sans-serif}.loading{min-height:100vh;display:grid;place-items:center;color:#8d8d94;font-size:13px;font-weight:700}</style>
+</head>
+<body>
+<div class="loading">TOP Taxi 載入中…</div>
+<script>
+(async function(){
+ const response=await fetch('./fare.html?v=20260818-1815',{cache:'no-store'});
+ if(!response.ok)throw new Error('Fare base load failed: '+response.status);
+ let html=await response.text();
+ const patch=`
+<style id="topTaxiFareUIV220260818">
+html,body{background:#f2f3f5!important}
+body{min-height:100vh}
+.hero{display:none!important}
+.page{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!important}
+.fare-card{border-radius:22px!important;box-shadow:0 18px 50px rgba(0,0,0,.10)!important}
+.form-header{align-items:center!important;margin-bottom:0!important}
+#serviceTitle{display:flex;align-items:center;gap:10px;color:#17171b!important;font-size:18px!important;font-weight:950!important;letter-spacing:.1px}
+#serviceTitle::before{content:"";width:4px;height:23px;flex:0 0 4px;border-radius:999px;background:var(--red);box-shadow:0 2px 7px rgba(255,31,45,.18)}
+.form-header-actions{display:flex!important;flex-direction:row!important;align-items:center!important;gap:0!important}
+.form-header-actions .form-label-small{font-size:0!important;letter-spacing:0!important;color:#17171b!important;font-weight:900!important;white-space:nowrap}
+.form-header-actions .form-label-small::before{content:"TOP";color:var(--red);font-size:13px;font-weight:950}
+.form-header-actions .form-label-small::after{content:" Taxi";color:#17171b;font-size:13px;font-weight:900}
+.form-header-actions #clearFareTrip{display:none!important}
+.service-switch{grid-template-columns:1fr 1fr!important;gap:4px!important;margin:16px 0 18px!important;padding:5px!important;border:1px solid #e3e3e7!important;border-radius:17px!important;background:linear-gradient(180deg,#fbfbfc 0%,#f2f2f4 100%)!important;box-shadow:0 7px 18px rgba(20,20,24,.08),inset 0 1px 0 rgba(255,255,255,.95)!important}
+.service-switch-btn{min-height:49px!important;padding:0 12px!important;border:1px solid transparent!important;border-radius:13px!important;background:transparent!important;color:#55555d!important;font-size:15px!important;font-weight:900!important;letter-spacing:.1px;box-shadow:none!important;transition:transform .14s ease,background .18s ease,color .18s ease,box-shadow .18s ease,border-color .18s ease!important}
+.service-switch-btn:active{transform:scale(.985)}
+.service-switch-btn.active{border-color:rgba(181,0,21,.18)!important;background:linear-gradient(180deg,#ff263a 0%,#e5001c 100%)!important;color:#fff!important;box-shadow:0 7px 16px rgba(218,0,27,.24),inset 0 1px 0 rgba(255,255,255,.24)!important}
+.fare-pickup-label-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-bottom:8px}
+.fare-pickup-label-row>label{margin:0!important}
+.fare-pickup-reset-btn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-right:4px;padding:3px 0 3px 2px!important;border:0!important;background:transparent!important;color:#8d8d94!important;font-size:11px!important;font-weight:750!important;line-height:1.2;white-space:nowrap}
+.fare-pickup-reset-icon{width:15px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+@media(max-width:390px){#serviceTitle{gap:9px}#serviceTitle::before{height:21px}.form-header-actions .form-label-small::before,.form-header-actions .form-label-small::after{font-size:12.5px}.service-switch-btn{min-height:47px!important;font-size:14.5px!important}.fare-pickup-reset-btn{margin-right:3px;font-size:10.5px!important}.fare-pickup-reset-icon{width:14.5px;height:13.5px}}
+</style>`;
+ html=html.replace('</head>',patch+'</head>');
+ html=html.replace('<div id="serviceTitle" class="form-title">💰 車資試算</div>','<div id="serviceTitle" class="form-title">車資試算</div>');
+ html=html.replace('🚕 一般搭車','一般搭車').replace('🚘 代駕服務','代駕服務');
+ const pickupOld='<label>\n            📍 上車地點\n        </label>';
+ const pickupNew='<div class="fare-pickup-label-row"><label>📍 上車地點</label><button id="clearFareTripV2" class="fare-pickup-reset-btn" type="button"><svg class="fare-pickup-reset-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4.8c0-.45.35-.8.8-.8h4.4c.45 0 .8.35.8.8V7"/><path d="M6.5 8l.85 11.2c.04.46.4.8.86.8h7.58c.46 0 .82-.34.86-.8L17.5 8"/><path d="M10 10.5v6.5M14 10.5v6.5"/></svg><span>清除本次行程</span></button></div>';
+ html=html.replace(pickupOld,pickupNew);
+ document.open();document.write(html);document.close();
+ setTimeout(()=>{const proxy=document.getElementById('clearFareTripV2');const original=document.getElementById('clearFareTrip');if(proxy&&original)proxy.addEventListener('click',()=>original.click());},0);
+})().catch(error=>{console.error(error);document.body.innerHTML='<div class="loading">頁面載入失敗，請重新整理</div>';});
+</script>
+</body>
+</html>
