@@ -1,0 +1,44 @@
+name: Build Ride UI V2 Test 20260818
+
+'on':
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/build-ride-ui-v2-20260818.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Build ride UI V2 test page
+        run: python3 .github/scripts/build_ride_ui_v2_20260818.py
+      - name: Verify test page
+        run: |
+          set -euo pipefail
+          git diff --check
+          test -f ride-ui-v2.html
+          grep -q 'id="topTaxiRideUIRefresh20260818"' ride-ui-v2.html
+          grep -q '>一般搭車</button>' ride-ui-v2.html
+          grep -q '>代駕服務</button>' ride-ui-v2.html
+          grep -q '<div id="rideTitle" class="form-title">即時叫車</div>' ride-ui-v2.html
+          grep -q '<div class="form-label-small top-taxi-mini-logo"><span>TOP</span> Taxi</div>' ride-ui-v2.html
+          if git diff -- ride.html | grep -q .; then echo 'ride.html was modified unexpectedly'; exit 1; fi
+      - name: Commit test page only
+        run: |
+          set -euo pipefail
+          rm .github/workflows/build-ride-ui-v2-20260818.yml
+          rm .github/scripts/build_ride_ui_v2_20260818.py
+          git config user.name 'TOP Taxi automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ride-ui-v2.html .github/workflows/build-ride-ui-v2-20260818.yml .github/scripts/build_ride_ui_v2_20260818.py
+          git commit -m 'test: add ride UI V2 mobile preview'
+          git push origin HEAD:main
