@@ -1,0 +1,257 @@
+/* TOP Taxi Dispatch Message Formatter V3 | 2026-08-19 */
+(function(){
+  'use strict';
+
+  const clean = (lines) => {
+    const out=[];
+    for(const raw of lines||[]){
+      const line=String(raw??'').replace(/\s+$/,'');
+      if(!line.trim() && (!out.length || !out[out.length-1].trim())) continue;
+      out.push(line);
+    }
+    while(out.length && !out[0].trim()) out.shift();
+    while(out.length && !out[out.length-1].trim()) out.pop();
+    return out;
+  };
+
+  const splitBlocks = (text) => {
+    if(typeof window.topTaxiSplitAddressBlocksV2==='function'){
+      return window.topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
+    }
+    const body=[],blocks=[];let block=null;
+    const flush=()=>{if(block&&block.length){blocks.push(block);block=null;}};
+    for(const raw of String(text||'').split('\n')){
+      const t=String(raw??'').trim();
+      if(/^(📍|🟡|🏁)\s/.test(t)){flush();block=[raw];continue;}
+      if(block){if(!t){flush();body.push(raw);}else block.push(raw);continue;}
+      body.push(raw);
+    }
+    flush();
+    return {body,blocks};
+  };
+
+  const valueAfter = (lines,prefix) => {
+    const line=(lines||[]).map(x=>String(x||'').trim()).find(x=>x.startsWith(prefix));
+    return line ? line.slice(prefix.length).trim() : '';
+  };
+  const moneyExists = (value) => /\d/.test(String(value||''));
+  const normalizeMoney = (value) => String(value||'').replace(/NT\$/g,'$').trim();
+  const normalizeDistance = (value) => String(value||'').replace(/^約\s*/,'').trim();
+  const normalizeDuration = (value) => String(value||'').replace(/^約\s*/,'').trim();
+  const pushBlockList = (out,blocks) => {
+    (blocks||[]).forEach((b,idx)=>{
+      if(!b||!b.length) return;
+      out.push('');
+      out.push(...b);
+    });
+  };
+  const renameHead = (block,label) => {
+    if(!block||!block.length) return block;
+    const next=[...block];
+    const head=String(next[0]||'');
+    const sep=head.indexOf('｜');
+    const suffix=sep>=0?head.slice(sep):'';
+    next[0]=`${label}${suffix}`;
+    return next;
+  };
+  const compactEstimate = ({service,fare,route,distance,duration,noteLabel='車資',extraLine=''}) => {
+    if(!moneyExists(fare)) return [];
+    const out=[`💰 ${service}｜${normalizeMoney(fare)}`];
+    if(route || distance || duration){
+      out.push(`🛣️ ${route||'路線未提供'}｜${normalizeDistance(distance)||'--'}｜${normalizeDuration(duration)||'--'}`);
+    }
+    if(extraLine) out.push(extraLine);
+    out.push('',`系統預估${noteLabel}僅供參考，實際費用依當日行程狀況為準。`);
+    return out;
+  };
+
+  window.topTaxiFormatFareMessageV2 = function(text,mode){
+    const service=mode==='driver'?'代駕服務':'一般搭車';
+    const lines=String(text||'').split('\n');
+    const split=splitBlocks(text);
+    const fare=valueAfter(lines,'💰 預估車資：');
+    const route=valueAfter(lines,'🛣️ 行車路線：');
+    const distance=valueAfter(lines,'📏 行駛距離：')||valueAfter(lines,'📏 距離：');
+    const duration=valueAfter(lines,'⏱️ 預估時間：');
+    const out=['TOP Taxi｜車資試算'];
+    const estimate=compactEstimate({service,fare,route,distance,duration,noteLabel:'車資'});
+    if(estimate.length) out.push('',...estimate);
+    out.push('','💬 禁菸、寵物、輪椅、收據等需求，請直接於 LINE 聊天室告知客服。','', '━━━━━━━━━━','',`⚡️ 即時｜${service}`);
+    const blocks=(split.blocks||[]).filter(b=>!String(b?.[0]||'').includes('未提供'));
+    pushBlockList(out,blocks);
+    return clean(out).join('\n');
+  };
+
+  window.topTaxiFormatRideMessageV2 = function(text){
+    const service=(typeof rideService!=='undefined' && rideService==='driver')?'代駕服務':'一般搭車';
+    const lines=String(text||'').split('\n');
+    const split=splitBlocks(text);
+    const fare=valueAfter(lines,'💰 預估車資：');
+    const route=valueAfter(lines,'🛣️ 行車路線：');
+    const distance=valueAfter(lines,'📏 距離：')||valueAfter(lines,'📏 行駛距離：');
+    const duration=valueAfter(lines,'⏱️ 預估時間：');
+    const extras=valueAfter(lines,'➕ 加價項目：');
+    const out=['TOP Taxi｜即時叫車'];
+    const estimate=compactEstimate({service,fare,route,distance,duration,noteLabel:'車資',extraLine:extras?`➕ 加價項目｜${extras}`:''});
+    if(estimate.length) out.push('',...estimate);
+    out.push('','━━━━━━━━━━','',`⚡️ 即時｜${service}`);
+    const blocks=(split.blocks||[]).filter(b=>!String(b?.[0]||'').includes('未提供'));
+    pushBlockList(out,blocks);
+
+    const passenger=valueAfter(lines,'👥 乘車人數：')||valueAfter(lines,'👥 乘客人數：');
+    const luggage=valueAfter(lines,'🧳 行李件數：');
+    let memo='';
+    for(let i=0;i<lines.length;i++){
+      if(String(lines[i]||'').trim()==='💡 特殊需求'){
+        memo=String(lines[i+1]||'').trim();
+        break;
+      }
+    }
+    const payment=valueAfter(lines,'💳 付款方式：');
+    if(passenger && !/^1\s*人?$/.test(passenger)) out.push('',`👥 乘客人數｜${passenger}`);
+    if(luggage && !/無行李/.test(luggage)) out.push('',`🧳 行李件數｜${luggage}`);
+    if(memo && memo!=='無') out.push('',`💡 特殊需求｜${memo}`);
+    if(payment && /後結/.test(payment)) out.push('',`💳 付款方式｜${payment}`);
+    return clean(out).join('\n');
+  };
+
+  window.topTaxiFormatBookingMessageV2 = function(ctx){
+    ctx=ctx||{};
+    const service=ctx.bookingService==='driver'?'代駕服務':'一般搭車';
+    const fareLines=String(ctx.fareDetails||'').split('\n');
+    const fare=valueAfter(fareLines,'💰 預估車資：');
+    const route=valueAfter(fareLines,'🛣️ 行車路線：');
+    const distance=valueAfter(fareLines,'📏 距離：')||valueAfter(fareLines,'📏 行駛距離：');
+    const duration=valueAfter(fareLines,'⏱️ 預估時間：');
+    const extras=valueAfter(fareLines,'➕ 加價項目：');
+    const out=['TOP Taxi｜預約叫車'];
+    const estimate=compactEstimate({service,fare,route,distance,duration,noteLabel:'車資',extraLine:extras?`➕ 加價項目｜${extras}`:''});
+    if(estimate.length) out.push('',...estimate);
+    out.push('','━━━━━━━━━━','',`📅 預約｜${service}`,`🕐 ${ctx.bookDate||''} ${ctx.bookTime||''}`.trim());
+    if(ctx.pickupDispatchHeader && ctx.pickupDispatchText){
+      out.push('',ctx.pickupDispatchHeader,ctx.pickupDispatchText);
+      if(ctx.pickupNote) out.push(`📌 上車補充｜${ctx.pickupNote}`);
+    }
+    if(ctx.waypointDetails) out.push('',...clean(String(ctx.waypointDetails).split('\n')));
+    if(ctx.dropoffDetails) out.push('',...clean(String(ctx.dropoffDetails).split('\n')));
+
+    const passengerLines=clean(String(ctx.passengerDetails||'').split('\n'));
+    passengerLines.forEach(line=>{
+      const t=String(line||'').trim();
+      if(t.startsWith('👥 乘車人數：')||t.startsWith('👥 乘客人數：')){
+        const v=t.slice(t.indexOf('：')+1).trim();
+        if(v && !/^1\s*人?$/.test(v)) out.push('',`👥 乘客人數｜${v}`);
+      }else if(t.startsWith('🧳 行李件數：')){
+        const v=t.slice(t.indexOf('：')+1).trim();
+        if(v && !/無行李/.test(v)) out.push('',`🧳 行李件數｜${v}`);
+      }
+    });
+    if(ctx.memo && ctx.memo!=='無') out.push('',`💡 特殊需求｜${ctx.memo}`);
+    if(ctx.payment && /後結/.test(String(ctx.payment))) out.push('',`💳 付款方式｜${ctx.payment}`);
+    return clean(out).join('\n');
+  };
+
+  window.topTaxiFormatErrandMessageV2 = function(text){
+    const task=(typeof TASKS!=='undefined' && typeof taskType!=='undefined' && TASKS[taskType])?TASKS[taskType]:'跑腿';
+    const type=(typeof taskType!=='undefined')?taskType:'other';
+    const icon={purchase:'🛒',delivery:'📦',queue:'🧾',pet:'🐾',move:'📦',other:'🛵'}[type]||'🛵';
+    const lines=String(text||'').split('\n');
+    const split=splitBlocks(text);
+    const fareLine=(lines||[]).map(x=>String(x||'').trim()).find(x=>/^💰 預估(?:跑腿|搬家)費：/.test(x))||'';
+    const fare=fareLine.includes('：')?fareLine.slice(fareLine.indexOf('：')+1).trim():'';
+    const fareName=type==='move'?'預估搬家費':'預估跑腿費';
+    const route=valueAfter(lines,'🛣️ 行車路線：');
+    const distance=valueAfter(lines,'📏 距離：');
+    const duration=valueAfter(lines,'⏱️ 預估時間：');
+    const out=['TOP Taxi｜跑腿服務'];
+    if(moneyExists(fare)){
+      out.push('',`💰 ${fareName}｜${normalizeMoney(fare)}`);
+      if(route||distance||duration) out.push(`🛣️ ${route||'路線未提供'}｜${normalizeDistance(distance)||'--'}｜${normalizeDuration(duration)||'--'}`);
+      out.push('','系統預估費用僅供參考，實際費用依當日行程狀況為準。');
+    }
+    out.push('','━━━━━━━━━━','');
+    const reserve=(typeof errandMode!=='undefined' && errandMode==='reserve');
+    if(reserve){
+      out.push(`📅 預約｜${icon} ${task}`);
+      let d='',tm='';
+      try{d=document.querySelector('#errandDate')?.value||'';tm=document.querySelector('#errandTime')?.value||'';}catch(e){}
+      out.push(`🕐 ${d} ${tm}`.trim());
+    }else{
+      out.push(`⚡ 即時｜${icon} ${task}`);
+    }
+
+    const nearPurchase=type==='purchase' && typeof purchaseLocationMode!=='undefined' && purchaseLocationMode==='unspecified';
+    if(nearPurchase) out.push('','⚠️ 購買地點｜送達地點附近購買');
+
+    let hasFinal=false;
+    try{hasFinal=typeof addressValue==='function' && !!addressValue('final');}catch(e){}
+    const rawBlocks=(split.blocks||[]).filter(b=>!String(b?.[0]||'').includes('未提供'));
+    const p1Label={purchase:'📍 購買地點',delivery:'📍 取件地點',queue:'📍 排隊地點',pet:'📍 接送起點',move:'📍 搬出地點',other:'📍 處理地點'}[type]||'📍 處理地點';
+    const finalLabel=type==='move'?'🏁 搬入地點':'🏁 送達地點';
+    const blocks=[];
+    rawBlocks.forEach((b,idx)=>{
+      let label;
+      if(!nearPurchase && idx===0) label=p1Label;
+      else if(hasFinal && idx===rawBlocks.length-1) label=finalLabel;
+      else label=`🟡 停靠點 ${nearPurchase?idx+1:idx}`;
+      blocks.push(renameHead(b,label));
+    });
+    pushBlockList(out,blocks);
+
+    const body=clean(split.body||[]);
+    const skipLine=(t)=>{
+      return !t ||
+        /^TOP Taxi/.test(t) ||
+        t.startsWith('📋 服務類型：') ||
+        t.startsWith('🛵 任務類型：') ||
+        t.startsWith('📅 預約日期：') ||
+        t.startsWith('⏰ 預約時間：') ||
+        t.startsWith('📡 TOP Taxi｜') ||
+        t==='━━━━━━━━━━' ||
+        /需求已送出/.test(t) ||
+        t.startsWith('🛣️ 行車路線：') ||
+        t.startsWith('📏 距離：') ||
+        t.startsWith('⏱️ 預估時間：') ||
+        /^💰 預估(?:跑腿|搬家)費：/.test(t) ||
+        (nearPurchase && t==='⚠️ 購買地點｜送達地點附近購買') ||
+        (nearPurchase && t==='請於送達地點附近就近購買，實際店家依商品供應狀況選擇。');
+    };
+    const misc=[];
+    for(let i=0;i<body.length;i++){
+      const t=String(body[i]||'').trim();
+      if(skipLine(t)) continue;
+      if(t==='💡 任務內容'){
+        const content=String(body[i+1]||'').trim();
+        i++;
+        if(content){
+          const label={purchase:'🛍️ 代買內容',delivery:'📦 配送內容',queue:'🧾 排隊內容',pet:'💡 其他需求',move:'📦 搬運內容',other:'📝 任務內容'}[type]||'📝 任務內容';
+          misc.push(`${label}｜${content}`);
+        }
+        continue;
+      }
+      if(t.startsWith('💳 付款方式：')){
+        const v=t.slice('💳 付款方式：'.length).trim();
+        if(/後結/.test(v)) misc.push(`💳 付款方式｜${v}`);
+        continue;
+      }
+      if(t.startsWith('需要代墊｜')){
+        let v=t.slice('需要代墊｜'.length).replace(/・後結客戶/g,'').replace(/NT\$/g,'$').trim();
+        misc.push(`💰 代墊金額｜${v}`);
+        continue;
+      }
+      if(t.startsWith('其他需求｜')){ misc.push(`💡 其他需求｜${t.slice('其他需求｜'.length).trim()}`); continue; }
+      if(t.startsWith('寵物｜')){ misc.push(`🐾 寵物資訊｜${t.slice('寵物｜'.length).trim()}`); continue; }
+      if(t.startsWith('提籠／提袋｜')){ misc.push(`🧺 提籠／提袋｜${t.slice('提籠／提袋｜'.length).trim()}`); continue; }
+      if(t.startsWith('搬運方式｜')){ misc.push(`📦 搬運方式｜${t.slice('搬運方式｜'.length).trim()}`); continue; }
+      if(t.startsWith('電梯｜')){ misc.push(`🏢 電梯｜${t.slice('電梯｜'.length).trim()}`); continue; }
+      if(t.startsWith('搬家物品照片｜')){ misc.push(`📷 照片｜${t.slice('搬家物品照片｜'.length).trim()}`); continue; }
+      if(t.startsWith('等待計費｜')){ misc.push('⏱️ 等待需求｜需現場持續排隊'); continue; }
+      if(t.startsWith('聯絡人｜')){ misc.push(`👤 ${t}`); continue; }
+      if(t.startsWith('📷 拍照回報｜')){ misc.push(t); continue; }
+      if(t.startsWith('送達方式｜')||t.startsWith('放置位置｜')) continue; // already retained inside final address block
+      misc.push(t);
+    }
+    misc.forEach(line=>{ if(line) out.push('',line); });
+    return clean(out).join('\n');
+  };
+})();
