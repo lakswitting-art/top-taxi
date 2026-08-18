@@ -1,0 +1,41 @@
+name: Apply Booking UI V2
+on:
+  push:
+    paths:
+      - '.booking-ui-v2-trigger'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply approved booking UI V2
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          css='''\n<style id="topTaxiBookingUIV220260818">\nhtml,body{background:#f2f3f5!important}\nbody{min-height:100vh}\n.hero{display:none!important}\n.page{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!important}\n.booking-card{border-radius:22px!important;box-shadow:0 18px 50px rgba(0,0,0,.10)!important}\n.form-header{align-items:center!important;margin-bottom:0!important}\n#bookingTitle{display:flex;align-items:center;gap:10px;color:#17171b!important;font-size:18px!important;font-weight:950!important;letter-spacing:.1px}\n#bookingTitle::before{content:"";width:4px;height:23px;flex:0 0 4px;border-radius:999px;background:var(--red);box-shadow:0 2px 7px rgba(255,31,45,.18)}\n.form-header-actions{display:flex!important;flex-direction:row!important;align-items:center!important;gap:0!important}\n.form-header-actions .form-label-small{font-size:0!important;letter-spacing:0!important;color:#17171b!important;font-weight:900!important;white-space:nowrap}\n.form-header-actions .form-label-small::before{content:"TOP";color:var(--red);font-size:13px;font-weight:950}\n.form-header-actions .form-label-small::after{content:" Taxi";color:#17171b;font-size:13px;font-weight:900}\n.form-header-actions #clearBookingTrip{display:none!important}\n.service-switch{grid-template-columns:1fr 1fr!important;gap:4px!important;margin:16px 0 18px!important;padding:5px!important;border:1px solid #e3e3e7!important;border-radius:17px!important;background:linear-gradient(180deg,#fbfbfc 0%,#f2f2f4 100%)!important;box-shadow:0 7px 18px rgba(20,20,24,.08),inset 0 1px 0 rgba(255,255,255,.95)!important}\n.service-option{min-height:49px!important;padding:0 12px!important;border:1px solid transparent!important;border-radius:13px!important;background:transparent!important;color:#55555d!important;font-size:15px!important;font-weight:900!important;letter-spacing:.1px;box-shadow:none!important}\n.service-option.active{border-color:rgba(181,0,21,.18)!important;background:linear-gradient(180deg,#ff263a 0%,#e5001c 100%)!important;color:#fff!important;box-shadow:0 7px 16px rgba(218,0,27,.24),inset 0 1px 0 rgba(255,255,255,.24)!important}\n.booking-date-row label{display:flex!important;align-items:center!important;gap:7px!important}\n.booking-date-row label::before{content:none!important;display:none!important}\n.pickup-label-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-bottom:8px}\n.pickup-label-row>label{margin:0!important}\n.pickup-reset-btn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-right:4px;padding:3px 0 3px 2px!important;color:#8d8d94!important;font-size:11px!important;font-weight:750!important;line-height:1.2;white-space:nowrap}\n.pickup-reset-icon{width:15px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}\n.booking-saved-place-line .saved-address-chip{color:#66666c!important;background:#f3f3f5!important;border-color:#e3e3e7!important;box-shadow:none!important}\n.booking-saved-place-line .saved-address-chip.active{color:#55555b!important;background:#e9e9ed!important;border-color:#d9d9de!important;box-shadow:none!important}\n@media(max-width:390px){#bookingTitle{gap:9px}#bookingTitle::before{height:21px}.form-header-actions .form-label-small::before,.form-header-actions .form-label-small::after{font-size:12.5px}.service-option{min-height:47px!important;font-size:14.5px!important}.pickup-reset-btn{margin-right:3px;font-size:10.5px!important}.pickup-reset-icon{width:14.5px;height:13.5px}}\n</style>\n'''
+          if 'id="topTaxiBookingUIV220260818"' not in s:
+              s=s.replace('</head>',css+'</head>',1)
+          s=s.replace('<div class="form-title" id="bookingTitle">🚕 預約叫車</div>','<div class="form-title" id="bookingTitle">預約叫車</div>')
+          s=s.replace('🚕 一般搭車','一般搭車').replace('🚘 代駕服務','代駕服務')
+          s=s.replace('<div class="row">','<div class="row booking-date-row">',1)
+          s=s.replace('📅 預約日期 <span class="field-tag required-tag">必填</span>','預約日期 <span class="field-tag required-tag">必填</span>')
+          s=s.replace('⏰ 預約時間 <span class="field-tag required-tag">必填</span>','預約時間 <span class="field-tag required-tag">必填</span>')
+          old='''<label for="pickup">\n                📍 上車地點 <span class="field-tag required-tag">必填</span>\n            </label>'''
+          new='''<div class="pickup-label-row"><label for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><button id="clearBookingTripV2" class="trip-reset-btn pickup-reset-btn" type="button"><svg class="pickup-reset-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4.8c0-.45.35-.8.8-.8h4.4c.45 0 .8.35.8.8V7"/><path d="M6.5 8l.85 11.2c.04.46.4.8.86.8h7.58c.46 0 .82-.34.86-.8L17.5 8"/><path d="M10 10.5v6.5M14 10.5v6.5"/></svg><span>清除本次行程</span></button></div>'''
+          s=s.replace(old,new,1)
+          hook='''\n<script>document.addEventListener('DOMContentLoaded',()=>{const p=document.getElementById('clearBookingTripV2'),o=document.getElementById('clearBookingTrip');if(p&&o)p.addEventListener('click',()=>o.click());});</script>\n'''
+          if 'clearBookingTripV2' in s and "const p=document.getElementById('clearBookingTripV2')" not in s:
+              s=s.replace('</body>',hook+'</body>',1)
+          p.write_text(s)
+          PY
+      - name: Commit production booking UI
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git diff --cached --quiet || git commit -m "Promote approved booking UI V2 to production"
+          git push
