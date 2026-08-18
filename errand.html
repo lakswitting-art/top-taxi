@@ -4,15 +4,9 @@
 <body>
 <script>
 (async()=>{
-  const r=await fetch('./errand-shell-v2.html?v=20260818-2245',{cache:'no-store'});
+  const r=await fetch('./errand-shell-v2.html?v=20260818-2318',{cache:'no-store'});
   if(!r.ok) throw new Error('shell load failed');
-  let s=await r.text();
-  const old=`#reserveFields{gap:10px!important;padding-right:10px!important}#reserveFields .input-group{min-width:0!important}#reserveFields input{width:100%!important;text-align:center!important;padding-left:8px!important;padding-right:8px!important}\n#reserveFields input::-webkit-date-and-time-value{text-align:center!important;margin:0 auto!important;width:100%!important}\n#reserveFields input::-webkit-datetime-edit{display:block!important;text-align:center!important;width:100%!important}\n#reserveFields input::-webkit-calendar-picker-indicator{margin-left:0!important}`;
-  const neu=`#reserveFields{gap:18px!important;padding-right:0!important}#reserveFields .input-group{min-width:0!important}#errandDate,#errandTime{width:100%!important;min-height:42px!important;height:42px!important;font-size:14px!important;padding:0 9px!important;text-align:center!important}\n#errandDate::-webkit-date-and-time-value,#errandTime::-webkit-date-and-time-value{text-align:center!important;margin:0 auto!important;width:100%!important}\n#errandDate::-webkit-datetime-edit,#errandTime::-webkit-datetime-edit{display:block!important;text-align:center!important;width:100%!important}\n#errandDate::-webkit-calendar-picker-indicator,#errandTime::-webkit-calendar-picker-indicator{margin-left:0!important}`;
-  s=s.replace(old,neu);
-  const target=`const clearCandidates=Array.from(document.querySelectorAll('button,a,[role="button"]')).filter(el=>/清除(?:本次)?行程/.test(text(el)));`;
-  const inject=`const dateLabel=document.querySelector('label[for="errandDate"]');if(dateLabel)dateLabel.innerHTML='預約日期 <span class="field-tag required-tag">必填</span>';const timeLabel=document.querySelector('label[for="errandTime"]');if(timeLabel)timeLabel.innerHTML='預約時間 <span class="field-tag required-tag">必填</span>';`+target;
-  s=s.replace(target,inject);
+  const s=await r.text();
   document.open();document.write(s);document.close();
 })().catch(e=>{console.error(e);document.body.textContent='頁面載入失敗，請重新整理';});
 </script>
