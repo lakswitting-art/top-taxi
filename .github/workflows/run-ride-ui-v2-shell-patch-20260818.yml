@@ -1,0 +1,35 @@
+name: Run Ride UI V2 Shell Patch 20260818
+
+'on':
+  push:
+    paths:
+      - '.github/workflows/run-ride-ui-v2-shell-patch-20260818.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply patch
+        run: python3 .github/scripts/patch_ride_ui_v2_shell_20260818.py
+      - name: Verify and commit
+        run: |
+          set -euo pipefail
+          git diff --check
+          test -z "$(git diff --name-only -- ride.html)"
+          grep -q 'topTaxiRideUIShell20260818' ride-ui-v2.html
+          if grep -q '<header class="hero">' ride-ui-v2.html; then exit 1; fi
+          rm .github/scripts/patch_ride_ui_v2_shell_20260818.py
+          rm .github/workflows/run-ride-ui-v2-shell-patch-20260818.yml
+          rm -f .github/workflows/patch-ride-ui-v2-shell-20260818.yml
+          git config user.name 'TOP Taxi automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ride-ui-v2.html .github/scripts/patch_ride_ui_v2_shell_20260818.py .github/workflows/run-ride-ui-v2-shell-patch-20260818.yml .github/workflows/patch-ride-ui-v2-shell-20260818.yml
+          git commit -m 'test: remove ride V2 hero and keep saved address chips gray'
+          git push origin HEAD:main
