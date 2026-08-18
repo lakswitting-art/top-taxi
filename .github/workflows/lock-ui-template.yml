@@ -1,0 +1,42 @@
+name: Lock TOP Taxi UI Template
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/lock-ui-template.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Normalize fare address field to shared size
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('fare.html')
+          s = p.read_text(encoding='utf-8')
+          replacements = {
+              'min-height: 50px;\n    padding: 0 44px 0 42px;': 'min-height: 46px;\n    padding: 0 44px 0 42px;',
+              'top: 25px;\n    left: 15px;': 'top: 23px;\n    left: 15px;',
+              'top: 25px;\n    right: 9px;': 'top: 23px;\n    right: 9px;',
+              '    min-height: 50px;\n\n    display: block;': '    min-height: 46px;\n\n    display: block;'
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'anchor not found: {old!r}')
+              s = s.replace(old, new, 1)
+          marker = '/* TOP TAXI UI TEMPLATE LOCK 2026-08-18 */'
+          if marker not in s:
+              s = s.replace('</head>', f'<style id="topTaxiUnifiedFieldLock20260818">\n{marker}\n.address-input{{width:100%!important;min-height:46px!important;height:46px!important;box-sizing:border-box!important}}\n</style>\n</head>', 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit finalized UI template
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add fare.html
+          git diff --cached --quiet && exit 0
+          git commit -m 'fix: lock shared TOP Taxi field sizing'
+          git push
