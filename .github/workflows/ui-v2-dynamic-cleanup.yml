@@ -1,0 +1,54 @@
+name: UI V2 Dynamic Cleanup
+on:
+  push:
+    paths:
+      - '.ui-v2-dynamic-cleanup-trigger'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch dynamic titles and ride version
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def patch(path, replacements):
+              p=Path(path)
+              s=p.read_text(encoding='utf-8')
+              original=s
+              for old,new in replacements:
+                  if old not in s:
+                      print(f'WARN anchor not found in {path}: {old[:80]!r}')
+                  s=s.replace(old,new)
+              if s!=original:
+                  p.write_text(s,encoding='utf-8')
+                  print('patched',path)
+              else:
+                  print('no changes',path)
+
+          patch('index.html',[
+              ('? "🚘 預約代駕"\n        : "🚕 預約叫車";', '? "預約代駕"\n        : "預約叫車";'),
+          ])
+
+          patch('fare.html',[
+              ('? "🚘 代駕試算"\n            : "💰 車資試算";', '? "代駕試算"\n            : "車資試算";'),
+          ])
+
+          patch('ride.html',[
+              ("./ride-ui-v2-base.html?v=20260818-1508", "./ride-ui-v2-base.html?v=20260818-1908"),
+          ])
+          PY
+      - name: Commit changes
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html fare.html ride.html
+          if git diff --cached --quiet; then
+            echo 'No changes to commit'
+          else
+            git commit -m 'Clean dynamic service titles and refresh ride UI V2'
+            git push
+          fi
