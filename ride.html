@@ -14,7 +14,7 @@
   <div class="loading">TOP Taxi 載入中…</div>
   <script>
   (async function(){
-    const response=await fetch('./ride-ui-v2-base.html?v=20260818-1508',{cache:'no-store'});
+    const response=await fetch('./ride-ui-v2-base.html?v=20260818-1908',{cache:'no-store'});
     if(!response.ok)throw new Error('Ride UI base load failed: '+response.status);
     let html=await response.text();
 
