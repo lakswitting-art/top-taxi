@@ -1,0 +1,49 @@
+name: Deploy Fare UI V2
+
+on:
+  push:
+    paths:
+      - '.fare-ui-v2-deploy-trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch fare.html
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('fare.html')
+          s = p.read_text(encoding='utf-8')
+
+          style = '''\n<style id="topTaxiFareUIV220260818">\nhtml,body{background:#f2f3f5!important}\nbody{min-height:100vh}\n.hero{display:none!important}\n.page{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!important}\n.fare-card{border-radius:22px!important;box-shadow:0 18px 50px rgba(0,0,0,.10)!important}\n.form-header{align-items:center!important;margin-bottom:0!important}\n#serviceTitle{display:flex;align-items:center;gap:10px;color:#17171b!important;font-size:18px!important;font-weight:950!important;letter-spacing:.1px}\n#serviceTitle::before{content:"";width:4px;height:23px;flex:0 0 4px;border-radius:999px;background:var(--red);box-shadow:0 2px 7px rgba(255,31,45,.18)}\n.form-header-actions{display:flex!important;flex-direction:row!important;align-items:center!important;gap:0!important}\n.form-header-actions .form-label-small{font-size:0!important;letter-spacing:0!important;color:#17171b!important;font-weight:900!important;white-space:nowrap}\n.form-header-actions .form-label-small::before{content:"TOP";color:var(--red);font-size:13px;font-weight:950}\n.form-header-actions .form-label-small::after{content:" Taxi";color:#17171b;font-size:13px;font-weight:900}\n.form-header-actions #clearFareTrip{display:none!important}\n.service-switch{grid-template-columns:1fr 1fr!important;gap:4px!important;margin:16px 0 18px!important;padding:5px!important;border:1px solid #e3e3e7!important;border-radius:17px!important;background:linear-gradient(180deg,#fbfbfc 0%,#f2f2f4 100%)!important;box-shadow:0 7px 18px rgba(20,20,24,.08),inset 0 1px 0 rgba(255,255,255,.95)!important}\n.service-switch-btn{min-height:49px!important;padding:0 12px!important;border:1px solid transparent!important;border-radius:13px!important;background:transparent!important;color:#55555d!important;font-size:15px!important;font-weight:900!important;letter-spacing:.1px;box-shadow:none!important;transition:transform .14s ease,background .18s ease,color .18s ease,box-shadow .18s ease,border-color .18s ease!important}\n.service-switch-btn:active{transform:scale(.985)}\n.service-switch-btn.active{border-color:rgba(181,0,21,.18)!important;background:linear-gradient(180deg,#ff263a 0%,#e5001c 100%)!important;color:#fff!important;box-shadow:0 7px 16px rgba(218,0,27,.24),inset 0 1px 0 rgba(255,255,255,.24)!important}\n.fare-pickup-label-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-bottom:8px}\n.fare-pickup-label-row>label{margin:0!important}\n.fare-pickup-reset-btn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-right:4px;padding:3px 0 3px 2px!important;border:0!important;background:transparent!important;color:#8d8d94!important;font-size:11px!important;font-weight:750!important;line-height:1.2;white-space:nowrap}\n.fare-pickup-reset-icon{width:15px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}\n@media(max-width:390px){#serviceTitle{gap:9px}#serviceTitle::before{height:21px}.form-header-actions .form-label-small::before,.form-header-actions .form-label-small::after{font-size:12.5px}.service-switch-btn{min-height:47px!important;font-size:14.5px!important}.fare-pickup-reset-btn{margin-right:3px;font-size:10.5px!important}.fare-pickup-reset-icon{width:14.5px;height:13.5px}}\n</style>\n'''
+
+          if 'id="topTaxiFareUIV220260818"' not in s:
+              s = s.replace('</head>', style + '</head>', 1)
+
+          s = s.replace('<div id="serviceTitle" class="form-title">💰 車資試算</div>', '<div id="serviceTitle" class="form-title">車資試算</div>')
+          s = s.replace('🚕 一般搭車', '一般搭車', 1)
+          s = s.replace('🚘 代駕服務', '代駕服務', 1)
+
+          pickup_old = '''<label>\n            📍 上車地點\n        </label>'''
+          pickup_new = '''<div class="fare-pickup-label-row"><label>📍 上車地點</label><button id="clearFareTripV2" class="fare-pickup-reset-btn" type="button"><svg class="fare-pickup-reset-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4.8c0-.45.35-.8.8-.8h4.4c.45 0 .8.35.8.8V7"/><path d="M6.5 8l.85 11.2c.04.46.4.8.86.8h7.58c.46 0 .82-.34.86-.8L17.5 8"/><path d="M10 10.5v6.5M14 10.5v6.5"/></svg><span>清除本次行程</span></button></div>'''
+          if pickup_old in s:
+              s = s.replace(pickup_old, pickup_new, 1)
+
+          if "clearFareTripV2" in s and "proxyFareResetV2" not in s:
+              hook = '''\n<script id="proxyFareResetV2">\ndocument.addEventListener('DOMContentLoaded',function(){const proxy=document.getElementById('clearFareTripV2');const original=document.getElementById('clearFareTrip');if(proxy&&original)proxy.addEventListener('click',()=>original.click());});\n</script>\n'''
+              s = s.replace('</body>', hook + '</body>', 1)
+
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit deployment
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fare.html
+          git diff --cached --quiet || git commit -m "Deploy Fare UI V2"
+          git push
