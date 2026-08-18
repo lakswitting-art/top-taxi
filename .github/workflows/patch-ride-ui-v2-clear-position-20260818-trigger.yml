@@ -1,0 +1,47 @@
+name: Patch Ride UI V2 Clear Position Trigger 20260818
+'on':
+  push:
+    paths:
+      - '.github/workflows/patch-ride-ui-v2-clear-position-20260818-trigger.yml'
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply clear position patch if needed
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('ride-ui-v2.html')
+          s=p.read_text(encoding='utf-8')
+          if 'pickup-label-row' not in s:
+              old='<div class="form-header"><div id="rideTitle" class="form-title">即時叫車</div><div class="form-header-actions"><div class="form-label-small top-taxi-mini-logo"><span>TOP</span> Taxi</div><button id="clearRideTrip" class="trip-reset-btn" type="button">清除本次行程</button></div></div>'
+              new='<div class="form-header"><div id="rideTitle" class="form-title">即時叫車</div><div class="form-header-actions"><div class="form-label-small top-taxi-mini-logo"><span>TOP</span> Taxi</div></div></div>'
+              if old not in s: raise SystemExit('header target missing')
+              s=s.replace(old,new,1)
+              old2='<div class="field"><label class="label" for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><div class="autocomplete">'
+              new2='<div class="field"><div class="pickup-label-row"><label class="label" for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><button id="clearRideTrip" class="trip-reset-btn pickup-reset-btn" type="button">清除本次行程</button></div><div class="autocomplete">'
+              if old2 not in s: raise SystemExit('pickup target missing')
+              s=s.replace(old2,new2,1)
+              css='''\n<style id="topTaxiRidePickupReset20260818">\n.pickup-label-row{display:flex;align-items:center;justify-content:space-between;gap:12px}\n.pickup-label-row .label{margin:0}\n.pickup-reset-btn{flex:0 0 auto;color:#8d8d94;font-size:11px;font-weight:750}\n@media(max-width:390px){.pickup-reset-btn{font-size:10.5px}}\n</style>\n'''
+              s=s.replace('</head>',css+'\n</head>',1)
+              p.write_text(s,encoding='utf-8')
+          PY
+      - name: Verify and commit
+        run: |
+          set -euo pipefail
+          git diff --check
+          test -z "$(git diff --name-only -- ride.html)"
+          grep -q 'pickup-label-row' ride-ui-v2.html
+          rm .github/workflows/patch-ride-ui-v2-clear-position-20260818-trigger.yml
+          rm -f .github/workflows/patch-ride-ui-v2-clear-position-20260818.yml
+          rm -f .github/workflows/.trigger-ride-ui-clear-position-20260818.yml
+          git config user.name 'TOP Taxi automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ride-ui-v2.html .github/workflows
+          git commit -m 'test: position clear action beside pickup label'
+          git push origin HEAD:main
