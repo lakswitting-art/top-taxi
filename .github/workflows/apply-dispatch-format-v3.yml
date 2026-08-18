@@ -1,0 +1,36 @@
+name: Apply dispatch format v3
+on:
+  push:
+    paths:
+      - '.github/workflows/apply-dispatch-format-v3.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Apply formatter loader
+        run: python .github/scripts/apply-dispatch-format-v3.py
+      - name: Verify
+        run: |
+          set -e
+          grep -F 'dispatch-format-v3.js?v=20260819-001' index.html
+          grep -F 'dispatch-format-v3.js?v=20260819-001' fare.html
+          grep -F 'dispatch-format-v3.js?v=20260819-001' ride.html
+          grep -F 'dispatch-format-v3.js?v=20260819-001' errand-shell-v2.html
+          git diff --check
+      - name: Commit deployment
+        run: |
+          if git diff --quiet; then
+            echo 'No changes needed'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html fare.html ride.html errand-shell-v2.html
+          git commit -m 'feat: deploy unified dispatch format v3'
+          git push origin main
