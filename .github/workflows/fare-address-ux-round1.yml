@@ -1,4 +1,95 @@
-name: Fare Address UX Round 1
+name: Temporary Ride UI V2 Reset Polish
+
+'on':
+  push:
+    paths:
+      - '.github/workflows/fare-address-ux-round1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Patch ride UI V2 clear action
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('ride-ui-v2.html')
+          s = p.read_text(encoding='utf-8')
+          original = s
+
+          old_btn = '<button id="clearRideTrip" class="trip-reset-btn pickup-reset-btn" type="button">清除本次行程</button>'
+          new_btn = '<button id="clearRideTrip" class="trip-reset-btn pickup-reset-btn" type="button"><svg class="pickup-reset-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5"/></svg><span>清除本次行程</span></button>'
+          if old_btn not in s:
+              raise SystemExit('Expected clear button not found')
+          s = s.replace(old_btn, new_btn, 1)
+
+          new_style = '''<style id="topTaxiRidePickupReset20260818">
+.pickup-label-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  width:100%;
+}
+.pickup-label-row .label{margin:0}
+.pickup-reset-btn{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  margin-right:4px;
+  padding:3px 0 3px 2px;
+  color:#8d8d94;
+  font-size:11px;
+  font-weight:750;
+  line-height:1.2;
+  white-space:nowrap;
+}
+.pickup-reset-icon{
+  width:13px;
+  height:13px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.75;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  flex:0 0 auto;
+}
+.pickup-reset-btn:active{opacity:.55}
+@media(max-width:390px){
+  .pickup-reset-btn{margin-right:3px;font-size:10.5px}
+  .pickup-reset-icon{width:12.5px;height:12.5px}
+}
+</style>'''
+
+          s, n = re.subn(
+              r'<style id="topTaxiRidePickupReset20260818">.*?</style>',
+              new_style,
+              s,
+              count=1,
+              flags=re.S,
+          )
+          if n != 1:
+              raise SystemExit(f'Expected one reset style block, got {n}')
+          if s == original:
+              raise SystemExit('No changes made')
+
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Restore workflow and commit
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          original = '''name: Fare Address UX Round 1
 
 'on':
   push:
@@ -29,4 +120,17 @@ jobs:
           git config user.email 'actions@users.noreply.github.com'
           git add fare.html .github/workflows/fare-address-ux-round1.yml
           git commit -m 'feat: improve fare mobile address suggestion scrolling'
+          git push origin HEAD:main
+'''
+          Path('.github/workflows/fare-address-ux-round1.yml').write_text(original, encoding='utf-8')
+          PY
+          set -euo pipefail
+          git diff --check
+          test -z "$(git diff --name-only -- ride.html)"
+          grep -q 'pickup-reset-icon' ride-ui-v2.html
+          grep -q 'margin-right:4px' ride-ui-v2.html
+          git config user.name 'TOP Taxi automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ride-ui-v2.html .github/workflows/fare-address-ux-round1.yml
+          git commit -m 'test: add trash icon and align ride reset action'
           git push origin HEAD:main
