@@ -84,6 +84,8 @@
     if(!html.includes(oldButton))throw new Error('Ride reset button anchor not found');
 
     html=html.replace(oldStyle,newStyle).replace(oldButton,newButton);
+    html=html.replace('<p class="sub">選擇地址後，系統會依 Google 即時路線重新預估車資</p>','');
+    html=html.replace('#rideTitle{\n  display:flex;\n  align-items:center;\n  gap:10px;\n}', '#rideTitle{\n  display:flex;\n  align-items:center;\n  gap:10px;\n  color:#17171b !important;\n  font-size:18px !important;\n  font-weight:950 !important;\n  letter-spacing:.1px;\n}');
     document.open();
     document.write(html);
     document.close();
