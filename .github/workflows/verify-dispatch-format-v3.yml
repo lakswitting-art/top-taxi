@@ -1,0 +1,24 @@
+name: Verify dispatch format v3
+on:
+  push:
+    paths:
+      - '.github/workflows/verify-dispatch-format-v3.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Check JavaScript syntax
+        run: node --check dispatch-format-v3.js
+      - name: Verify production loaders
+        run: |
+          set -e
+          grep -F 'dispatch-format-v3.js?v=20260819-001' index.html
+          grep -F 'dispatch-format-v3.js?v=20260819-001' fare.html
+          grep -F 'dispatch-format-v3.js?v=20260819-001' ride.html
+          grep -F 'dispatch-format-v3.js?v=20260819-001' errand-shell-v2.html
+          grep -F '請於送達地點附近就近購買，實際店家依商品供應狀況選擇。' errand-base.html
