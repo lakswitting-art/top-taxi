@@ -84,6 +84,16 @@
     if(!html.includes(oldButton))throw new Error('Ride reset button anchor not found');
 
     html=html.replace(oldStyle,newStyle).replace(oldButton,newButton);
+
+    // Align the ride header with the approved booking V2 header:
+    // no duplicate explanatory sentence, same title size/weight/spacing.
+    html=html.replace('<p class="sub">選擇地址後，系統會依 Google 即時路線重新預估車資</p>','');
+    html=html.replace('</head>',`<style id="topTaxiRideBookingHeaderMatch20260818">
+.form-header{align-items:center!important;margin-bottom:0!important}
+#rideTitle{color:#17171b!important;font-size:18px!important;font-weight:950!important;letter-spacing:.1px!important}
+@media(max-width:390px){#rideTitle{font-size:18px!important}}
+</style></head>`);
+
     document.open();
     document.write(html);
     document.close();
