@@ -33,8 +33,8 @@ body{min-height:100vh}
 .service-option{min-height:49px!important;padding:0 12px!important;border:1px solid transparent!important;border-radius:13px!important;background:transparent!important;color:#55555d!important;font-size:15px!important;font-weight:900!important;letter-spacing:.1px;box-shadow:none!important;transition:transform .14s ease,background .18s ease,color .18s ease,box-shadow .18s ease,border-color .18s ease!important}
 .service-option:active{transform:scale(.985)}
 .service-option.active{border-color:rgba(181,0,21,.18)!important;background:linear-gradient(180deg,#ff263a 0%,#e5001c 100%)!important;color:#fff!important;box-shadow:0 7px 16px rgba(218,0,27,.24),inset 0 1px 0 rgba(255,255,255,.24)!important}
-.booking-date-row label{display:flex!important;align-items:center!important;gap:8px!important}
-.booking-date-row label::before{content:"";width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#d7192d;box-shadow:0 1px 3px rgba(215,25,45,.12)}
+.booking-date-row label{display:flex!important;align-items:center!important;gap:7px!important}
+.booking-date-row label::before{content:none!important;display:none!important}
 .pickup-label-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-bottom:8px}
 .pickup-label-row>label{margin:0!important}
 .pickup-reset-btn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-right:4px;padding:3px 0 3px 2px!important;color:#8d8d94!important;font-size:11px!important;font-weight:750!important;line-height:1.2;white-space:nowrap}
@@ -42,7 +42,7 @@ body{min-height:100vh}
 .booking-saved-place-line .saved-address-chip{color:#66666c!important;background:#f3f3f5!important;border-color:#e3e3e7!important;box-shadow:none!important;-webkit-tap-highlight-color:transparent}
 .booking-saved-place-line .saved-address-chip.active{color:#55555b!important;background:#e9e9ed!important;border-color:#d9d9de!important;box-shadow:none!important}
 .booking-saved-place-line .saved-address-chip:focus,.booking-saved-place-line .saved-address-chip:focus-visible{outline:none!important;box-shadow:0 0 0 2px rgba(0,0,0,.055)!important}
-@media(max-width:390px){#bookingTitle{gap:9px}#bookingTitle::before{height:21px}.form-header-actions .form-label-small::before,.form-header-actions .form-label-small::after{font-size:12.5px}.service-option{min-height:47px!important;font-size:14.5px!important}.booking-date-row label::before{width:5.5px;height:5.5px;flex-basis:5.5px}.pickup-reset-btn{margin-right:3px;font-size:10.5px!important}.pickup-reset-icon{width:14.5px;height:13.5px}}
+@media(max-width:390px){#bookingTitle{gap:9px}#bookingTitle::before{height:21px}.form-header-actions .form-label-small::before,.form-header-actions .form-label-small::after{font-size:12.5px}.service-option{min-height:47px!important;font-size:14.5px!important}.pickup-reset-btn{margin-right:3px;font-size:10.5px!important}.pickup-reset-icon{width:14.5px;height:13.5px}}
 </style>`;
  html=html.replace('</head>',patch+'</head>');
  html=html.replace('<div class="form-title" id="bookingTitle">🚕 預約叫車</div>','<div class="form-title" id="bookingTitle">預約叫車</div>');
