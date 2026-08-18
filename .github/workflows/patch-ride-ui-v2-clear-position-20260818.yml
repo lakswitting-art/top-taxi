@@ -1,0 +1,65 @@
+name: Patch Ride UI V2 Clear Position 20260818
+
+'on':
+  push:
+    paths:
+      - '.github/workflows/patch-ride-ui-v2-clear-position-20260818.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Move clear trip action beside pickup label
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('ride-ui-v2.html')
+          s = path.read_text(encoding='utf-8')
+          original = s
+
+          old_header = '<div class="form-header"><div id="rideTitle" class="form-title">即時叫車</div><div class="form-header-actions"><div class="form-label-small top-taxi-mini-logo"><span>TOP</span> Taxi</div><button id="clearRideTrip" class="trip-reset-btn" type="button">清除本次行程</button></div></div>'
+          new_header = '<div class="form-header"><div id="rideTitle" class="form-title">即時叫車</div><div class="form-header-actions"><div class="form-label-small top-taxi-mini-logo"><span>TOP</span> Taxi</div></div></div>'
+          if old_header not in s:
+              raise SystemExit('Expected header markup not found')
+          s = s.replace(old_header, new_header, 1)
+
+          old_pickup = '<div class="field"><label class="label" for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><div class="autocomplete">'
+          new_pickup = '<div class="field"><div class="pickup-label-row"><label class="label" for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><button id="clearRideTrip" class="trip-reset-btn pickup-reset-btn" type="button">清除本次行程</button></div><div class="autocomplete">'
+          if old_pickup not in s:
+              raise SystemExit('Expected pickup markup not found')
+          s = s.replace(old_pickup, new_pickup, 1)
+
+          style = '''\n<style id="topTaxiRidePickupReset20260818">\n.pickup-label-row{\n  display:flex;\n  align-items:center;\n  justify-content:space-between;\n  gap:12px;\n}\n.pickup-label-row .label{margin:0}\n.pickup-reset-btn{\n  flex:0 0 auto;\n  color:#8d8d94;\n  font-size:11px;\n  font-weight:750;\n}\n@media(max-width:390px){\n  .pickup-reset-btn{font-size:10.5px}\n}\n</style>\n'''
+          if 'topTaxiRidePickupReset20260818' not in s:
+              s = s.replace('</head>', style + '\n</head>', 1)
+
+          if s == original:
+              raise SystemExit('No changes made')
+          if s.count('id="clearRideTrip"') != 1:
+              raise SystemExit('clearRideTrip should exist exactly once')
+          if 'pickup-label-row' not in s:
+              raise SystemExit('pickup label row missing')
+
+          path.write_text(s, encoding='utf-8')
+          PY
+      - name: Verify production stays untouched and commit
+        run: |
+          set -euo pipefail
+          git diff --check
+          test -z "$(git diff --name-only -- ride.html)"
+          grep -q 'pickup-label-row' ride-ui-v2.html
+          grep -q 'id="clearRideTrip" class="trip-reset-btn pickup-reset-btn"' ride-ui-v2.html
+          rm .github/workflows/patch-ride-ui-v2-clear-position-20260818.yml
+          git config user.name 'TOP Taxi automation'
+          git config user.email 'actions@users.noreply.github.com'
+          git add ride-ui-v2.html .github/workflows/patch-ride-ui-v2-clear-position-20260818.yml
+          git commit -m 'test: move ride V2 clear action beside pickup label'
+          git push origin HEAD:main
