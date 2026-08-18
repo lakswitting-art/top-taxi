@@ -1278,6 +1278,87 @@ body {
 }
 </style>
 
+
+<style id="topTaxiRideUIRefresh20260818">
+/* TOP Taxi｜Ride UI Refresh 2026-08-18
+   Scope: card title + small wordmark + service selector only.
+   Functional controls and ride logic remain unchanged. */
+#rideTitle{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+#rideTitle::before{
+  content:"";
+  width:4px;
+  height:23px;
+  flex:0 0 4px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#ff3142 0%,#e10019 100%);
+  box-shadow:0 2px 7px rgba(225,0,25,.18);
+}
+.top-taxi-mini-logo{
+  color:#17171b !important;
+  font-size:13px !important;
+  font-weight:900 !important;
+  letter-spacing:0 !important;
+  line-height:1.1;
+  white-space:nowrap;
+}
+.top-taxi-mini-logo span{
+  color:var(--red);
+}
+
+/* Figure 2 direction: soft elevated premium segmented control, no emoji. */
+.ride-service-switch{
+  grid-template-columns:1fr 1fr !important;
+  gap:4px !important;
+  margin:16px 0 18px !important;
+  padding:5px !important;
+  border:1px solid #e3e3e7 !important;
+  border-radius:17px !important;
+  background:linear-gradient(180deg,#fbfbfc 0%,#f2f2f4 100%) !important;
+  box-shadow:
+    0 7px 18px rgba(20,20,24,.08),
+    inset 0 1px 0 rgba(255,255,255,.95) !important;
+}
+.ride-service-option{
+  min-height:49px !important;
+  padding:0 12px !important;
+  border:1px solid transparent !important;
+  border-radius:13px !important;
+  background:transparent !important;
+  color:#55555d !important;
+  font-size:15px !important;
+  font-weight:900 !important;
+  letter-spacing:.1px;
+  box-shadow:none !important;
+  transition:
+    transform .14s ease,
+    background .18s ease,
+    color .18s ease,
+    box-shadow .18s ease,
+    border-color .18s ease !important;
+}
+.ride-service-option:active{
+  transform:scale(.985);
+}
+.ride-service-option.active{
+  border-color:rgba(181,0,21,.18) !important;
+  background:linear-gradient(180deg,#ff263a 0%,#e5001c 100%) !important;
+  color:#fff !important;
+  box-shadow:
+    0 7px 16px rgba(218,0,27,.24),
+    inset 0 1px 0 rgba(255,255,255,.24) !important;
+}
+@media(max-width:390px){
+  #rideTitle{gap:9px}
+  #rideTitle::before{height:21px}
+  .top-taxi-mini-logo{font-size:12.5px !important}
+  .ride-service-option{min-height:47px !important;font-size:14.5px !important}
+}
+</style>
+
 </head>
 <body>
   <header class="hero">
@@ -1290,7 +1371,7 @@ body {
   </header>
   <main>
     <section class="card">
-      <div class="form-header"><div id="rideTitle" class="form-title">🚕 即時叫車</div><div class="form-header-actions"><div class="form-label-small">TOP TAXI RIDE</div><button id="clearRideTrip" class="trip-reset-btn" type="button">清除本次行程</button></div></div>
+      <div class="form-header"><div id="rideTitle" class="form-title">即時叫車</div><div class="form-header-actions"><div class="form-label-small top-taxi-mini-logo"><span>TOP</span> Taxi</div><button id="clearRideTrip" class="trip-reset-btn" type="button">清除本次行程</button></div></div>
       <p class="sub">選擇地址後，系統會依 Google 即時路線重新預估車資</p>
 
       <div class="ride-service-switch" role="group" aria-label="選擇即時服務">
@@ -1300,7 +1381,7 @@ body {
           class="ride-service-option active"
           aria-pressed="true"
           onclick="setRideService('taxi')"
-        >🚕 一般搭車</button>
+        >一般搭車</button>
 
         <button
           type="button"
@@ -1308,7 +1389,7 @@ body {
           class="ride-service-option"
           aria-pressed="false"
           onclick="setRideService('driver')"
-        >🚘 代駕服務</button>
+        >代駕服務</button>
       </div>
       <div class="field"><label class="label" for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><div class="autocomplete"><input id="pickup" class="input" autocomplete="off" placeholder="請輸入上車地址或地標"><div id="pickupSuggestions" class="suggestions" hidden></div></div><div id="pickupStatus" class="status"></div>
         <button id="useLocation" class="location-inline-btn" type="button">
@@ -2674,8 +2755,8 @@ body {
       }
 
       $("#rideTitle").textContent=isDriver
-        ?"🚘 即時代駕"
-        :"🚕 即時叫車";
+        ?"即時代駕"
+        :"即時叫車";
 
       document.title=isDriver
         ?"TOP Taxi｜24H 即時代駕"
