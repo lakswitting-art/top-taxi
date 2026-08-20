@@ -60,56 +60,6 @@
       /document\.(?:open|write|close)\s*\(/i.test(html);
   }
 
-  function nestedFetchGuardScript(){
-    const liffId = JSON.stringify(String(cfg.liffId)).replace(/</g, "\\u003c");
-    return `<script>(function(){
-      const DEMO_LIFF_ID=${liffId};
-      const nativeFetch=window.fetch.bind(window);
-      const forbidden=[
-        /2011008197-[A-Za-z0-9]+/,
-        /lakswitting\\.app\\.n8n\\.cloud\\/webhook/i,
-        /topTaxiAddresses/,
-        /topTaxiCustomerPreferences/
-      ];
-      function sanitize(input){
-        let html=String(input||"");
-        html=html
-          .replace(/2011008197-[A-Za-z0-9]+/g,DEMO_LIFF_ID)
-          .replace(/https:\\/\\/lakswitting\\.app\\.n8n\\.cloud\\/webhook\\/[A-Za-z0-9-]+/gi,"https://demo.invalid/webhook")
-          .replace(/topTaxiAddresses/g,"topTaxiDemoAddresses")
-          .replace(/topTaxiCustomerPreferences/g,"topTaxiDemoCustomerPreferences")
-          .replace(/<title>([\\s\\S]*?)<\\/title>/i,function(match,title){
-            return /｜DEMO\\s*$/i.test(String(title||"").trim()) ? match : "<title>"+title+"｜DEMO</title>";
-          });
-        if(/static\\.line-scdn\\.net\\/liff/i.test(html)){
-          html=html.replace(
-            /(<script\\b[^>]*src=["']https:\\/\\/static\\.line-scdn\\.net\\/liff\\/[^"']+["'][^>]*><\\/script>)/i,
-            '$1<scr'+'ipt>window.__TOP_TAXI_DEMO_PATCH_LIFF__&&window.__TOP_TAXI_DEMO_PATCH_LIFF__();<'+'/scr'+'ipt>'
-          );
-        }
-        const remaining=forbidden.find(function(re){return re.test(html);});
-        if(remaining) throw new Error("DEMO nested source isolation failed: "+remaining);
-        return html;
-      }
-      function targetUrl(input){
-        try{return new URL(typeof input==="string"?input:(input&&input.url)||"",location.href);}
-        catch(_){return null;}
-      }
-      window.fetch=async function(input,init){
-        const response=await nativeFetch(input,init);
-        const url=targetUrl(input);
-        if(!url||url.origin!==location.origin||/\\/demo\\//i.test(url.pathname)||!/\\.html$/i.test(url.pathname)) return response;
-        const text=await response.clone().text();
-        const safe=sanitize(text);
-        const headers=new Headers(response.headers);
-        headers.delete("content-length");
-        headers.delete("content-encoding");
-        return new Response(safe,{status:response.status,statusText:response.statusText,headers:headers});
-      };
-      window.__TOP_TAXI_DEMO_SANITIZE_HTML__=sanitize;
-    })();</script>`;
-  }
-
   async function boot(){
     try {
       const sourceUrl = new URL(cfg.source, location.href);
@@ -163,6 +113,7 @@
       }
 
       const runtimeUrl = new URL("./demo.js?v="+DEMO_BUILD, location.href).href;
+      const nestedGuardUrl = new URL("./nested-guard.js?v="+DEMO_BUILD, location.href).href;
       const cssUrl = new URL("./demo.css?v="+DEMO_BUILD, location.href).href;
       const productionBase = new URL("../", location.href).href;
       const runtimeConfig = JSON.stringify({
@@ -176,7 +127,7 @@
         '<base href="'+productionBase+'">' +
         '<link rel="stylesheet" href="'+cssUrl+'">' +
         '<script>window.TOP_TAXI_DEMO_RUNTIME_CONFIG='+runtimeConfig+';<\/script>' +
-        nestedFetchGuardScript() +
+        '<script src="'+nestedGuardUrl+'"><\/script>' +
         '<script src="'+runtimeUrl+'"><\/script>';
 
       if (!/<head[\s>]/i.test(html)) throw new Error("Production source 缺少 head");
