@@ -3,7 +3,7 @@
 
   const cfg = window.TOP_TAXI_DEMO_PAGE;
   const loading = document.getElementById("demoLoading");
-  const DEMO_BUILD = "20260821-0201";
+  const DEMO_BUILD = "20260821-0230";
 
   function fail(message, error){
     console.error("TOP Taxi DEMO loader:", message, error || "");
@@ -51,7 +51,6 @@
 
     const remaining = forbiddenAfterTransform.find(re => re.test(html));
     if (remaining) throw new Error("偵測到未隔離的正式環境識別，已阻止執行：" + remaining);
-
     return html;
   }
 
@@ -60,11 +59,32 @@
       /document\.(?:open|write|close)\s*\(/i.test(html);
   }
 
+  function patchFare(html){
+    html = html.replace(
+      /showStatus\(\s*"Google 地址搜尋載入失敗，請確認 API Key 與 API 設定。"\s*,\s*true\s*\);/,
+      'showStatus("DEMO Google 初始化失敗：" + (error?.name ? error.name + "｜" : "") + (error?.message || String(error)), true);'
+    );
+
+    const beforeRoutes = html;
+    html = html.replace(
+      /const\s*{\s*Route\s*}\s*=\s*await\s*google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/,
+      'google.maps.importLibrary("routes").then(({Route})=>{RouteClass=Route;}).catch((error)=>{console.warn("DEMO Routes library delayed:",error);});'
+    );
+    if (html === beforeRoutes) throw new Error("Demo Fare 找不到 Routes 初始化區塊，已停止載入");
+
+    const beforeBoot = html;
+    html = html.replace(
+      /window\.addEventListener\(\s*["']load["']\s*,\s*initGoogle\s*\);/,
+      'window.__TOP_TAXI_DEMO_FARE_INIT_GOOGLE__ = initGoogle;'
+    );
+    if (html === beforeBoot) throw new Error("Demo Fare 找不到 Google 啟動鉤子，已停止載入");
+    return html;
+  }
+
   async function boot(){
     try {
       const sourceUrl = new URL(cfg.source, location.href);
       sourceUrl.searchParams.set("__demo_source", Date.now().toString());
-
       const response = await fetch(sourceUrl.href, { cache:"no-store", credentials:"same-origin" });
       if (!response.ok) throw new Error("Production source HTTP " + response.status);
 
@@ -80,33 +100,7 @@
       }
 
       html = transformHtml(html, { injectLiffPatch:false });
-
-      if (String(cfg.type) === "fare") {
-        html = html.replace(
-          /showStatus\(\s*"Google 地址搜尋載入失敗，請確認 API Key 與 API 設定。"\s*,\s*true\s*\);/,
-          'showStatus("DEMO Google 初始化失敗：" + (error?.name ? error.name + "｜" : "") + (error?.message || String(error)), true);'
-        );
-
-        const fareBeforeRoutesPatch = html;
-        html = html.replace(
-          /const\s*{\s*Route\s*}\s*=\s*await\s*google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/,
-          'google.maps.importLibrary("routes").then(({Route})=>{RouteClass=Route;}).catch((error)=>{console.warn("DEMO Routes library delayed:",error);});'
-        );
-
-        if (html === fareBeforeRoutesPatch) {
-          throw new Error("Demo Fare 找不到 Routes 初始化區塊，已停止載入");
-        }
-
-        const fareBeforeGoogleBootPatch = html;
-        html = html.replace(
-          /window\.addEventListener\(\s*["']load["']\s*,\s*initGoogle\s*\);/,
-          'window.__TOP_TAXI_DEMO_FARE_INIT_GOOGLE__ = initGoogle;'
-        );
-
-        if (html === fareBeforeGoogleBootPatch) {
-          throw new Error("Demo Fare 找不到 Google 啟動鉤子，已停止載入");
-        }
-      }
+      if (String(cfg.type) === "fare") html = patchFare(html);
 
       if (sourceHasLiffSdk && !html.includes(String(cfg.liffId))) {
         throw new Error("Demo LIFF ID 未成功套用");
@@ -133,46 +127,41 @@
       if (!/<head[\s>]/i.test(html)) throw new Error("Production source 缺少 head");
       html = html.replace(/<head([^>]*)>/i, "<head$1>" + injection);
 
-      if (sourceHasLiffSdk) {
-        html = transformHtml(html, { injectLiffPatch:true });
-      }
+      if (sourceHasLiffSdk) html = transformHtml(html, { injectLiffPatch:true });
 
       if (String(cfg.type) === "fare") {
         if (!/<\/body>/i.test(html)) throw new Error("Demo Fare source 缺少 body 結尾");
-
         const fareEndBoot =
           '<script>(function(){' +
-          'let tries=0;let busy=false;' +
+          'let started=false;' +
           'const sleep=(ms)=>new Promise((resolve)=>setTimeout(resolve,ms));' +
+          'const ready=()=>!!(document.querySelector("#pickupBox .address-input")&&document.querySelector("#dropoffBox .address-input"));' +
           'async function start(){' +
-          'if(busy)return;busy=true;' +
+          'if(started||ready())return;started=true;' +
           'try{' +
-          'while(++tries<=120){' +
-          'if(typeof pickupController!=="undefined"&&pickupController){return;}' +
-          'if(!document.getElementById("pickupBox")){await sleep(100);continue;}' +
+          'for(let tries=0;tries<120;tries++){' +
+          'if(ready())return;' +
+          'if(typeof window.google?.maps?.importLibrary!=="function"){await sleep(100);continue;}' +
           'try{' +
-          'if(typeof window.google?.maps?.importLibrary==="function"){' +
           'await window.google.maps.importLibrary("places");' +
-          'if(typeof window.__TOP_TAXI_DEMO_FARE_INIT_GOOGLE__==="function"){' +
-          'await window.__TOP_TAXI_DEMO_FARE_INIT_GOOGLE__();' +
-          '}' +
-          'if(typeof pickupController!=="undefined"&&pickupController){return;}' +
+          'const init=window.__TOP_TAXI_DEMO_FARE_INIT_GOOGLE__;' +
+          'if(typeof init==="function"){' +
+          'await init();' +
+          'if(ready())return;' +
           '}' +
           '}catch(error){' +
           'console.error("DEMO Fare Google bootstrap error:",error);' +
-          'if(typeof showStatus==="function"){' +
-          'showStatus("DEMO Google 初始化失敗："+(error?.name?error.name+"｜":"")+(error?.message||String(error)),true);' +
-          '}' +
+          'if(typeof showStatus==="function")showStatus("DEMO Google 初始化失敗："+(error?.name?error.name+"｜":"")+(error?.message||String(error)),true);' +
           '}' +
           'await sleep(250);' +
           '}' +
           'if(typeof showStatus==="function")showStatus("DEMO Google 地址系統載入逾時，請重新開啟頁面。",true);' +
-          '}finally{busy=false;}' +
+          '}finally{started=false;}' +
           '}' +
           'const launch=()=>setTimeout(start,0);' +
           'if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",launch,{once:true});else launch();' +
+          'window.addEventListener("load",launch,{once:true});' +
           '})();<\/script>';
-
         html = html.replace(/<\/body>/i, fareEndBoot + '</body>');
       }
 
