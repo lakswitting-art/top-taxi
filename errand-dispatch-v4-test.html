@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TOP Taxi｜跑腿派車單 V4 測試</title>
+<style>html,body{margin:0;min-height:100%;background:#f2f3f5;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC",Arial,sans-serif}.loading{min-height:100vh;display:grid;place-items:center;color:#8d8d94;font-size:13px;font-weight:700}</style>
+</head>
+<body>
+<div class="loading">TOP Taxi 跑腿派車單測試載入中…</div>
+<script>
+(async function(){
+  const response=await fetch('./errand-base.html?v=20260818-2145',{cache:'no-store'});
+  if(!response.ok) throw new Error('Errand base load failed: '+response.status);
+  let html=await response.text();
+  const testStyle=`<style id="errandDispatchV4TestStyle">
+#messageBox.errand-dispatch-test-output{display:block!important;margin:0 auto 16px!important;max-width:720px!important;padding:14px 15px!important;border:1px solid #d9d9de!important;border-radius:14px!important;background:#fff!important;color:#17171b!important;font-size:13px!important;line-height:1.65!important;font-weight:600!important;white-space:pre-wrap!important;word-break:break-word!important;box-shadow:0 8px 24px rgba(0,0,0,.06)!important}
+#messageBox.errand-dispatch-test-output::before{content:"🧪 派車單 Dry-run｜不送 LINE、不進 n8n";display:block;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid #ececf0;color:#b00016;font-size:12px;font-weight:900;white-space:normal}
+</style>`;
+  const testPatch=`<script id="errandDispatchV4TestPatch">(function(){
+function showDispatchTestMessage(message){
+  const box=document.querySelector('#messageBox');
+  if(!box)return;
+  box.classList.add('errand-dispatch-test-output');
+  box.textContent=String(message||'');
+  box.style.display='block';
+  try{document.querySelector('#confirmOverlay').hidden=true;document.body.style.overflow='';}catch(e){}
+  setTimeout(()=>box.scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+window.sendErrand=async function(){
+  try{
+    const orderData=await buildOrderData();
+    window.TOP_TAXI_LAST_ORDER_DATA=orderData;
+    const raw=dispatchMessage(orderData);
+    const message=window.topTaxiFormatErrandMessageV2(raw);
+    window.TOP_TAXI_TEST_MESSAGE=message;
+    showDispatchTestMessage(message);
+  }catch(e){
+    console.error('ERRAND DISPATCH V4 TEST ERROR:',e);
+    alert('測試派車單產生失敗，請重新整理後再試。');
+  }
+};
+})();<\/script>`;
+  html=html.replace('</head>',testStyle+'</head>');
+  html=html.replace('</body>','<script src="./dispatch-format-v3.js?v=20260819-001"><\/script><script src="./dispatch-format-v4.js?v=20260819-0055"><\/script>'+testPatch+'</body>');
+  document.open();document.write(html);document.close();
+})().catch(error=>{console.error(error);document.body.innerHTML='<div class="loading">測試頁載入失敗，請重新整理</div>'});
+</script>
+</body>
+</html>
