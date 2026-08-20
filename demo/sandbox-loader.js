@@ -3,6 +3,7 @@
 
   const cfg = window.TOP_TAXI_DEMO_PAGE;
   const loading = document.getElementById("demoLoading");
+  const DEMO_BUILD = "20260821-0201";
 
   function fail(message, error){
     console.error("TOP Taxi DEMO loader:", message, error || "");
@@ -28,6 +29,87 @@
     /topTaxiCustomerPreferences/
   ];
 
+  function transformHtml(input, options){
+    const opts = options || {};
+    let html = String(input || "");
+
+    html = html
+      .replace(/2011008197-[A-Za-z0-9]+/g, String(cfg.liffId))
+      .replace(/https:\/\/lakswitting\.app\.n8n\.cloud\/webhook\/[A-Za-z0-9-]+/gi, "https://demo.invalid/webhook")
+      .replace(/topTaxiAddresses/g, "topTaxiDemoAddresses")
+      .replace(/topTaxiCustomerPreferences/g, "topTaxiDemoCustomerPreferences")
+      .replace(/<title>([\s\S]*?)<\/title>/i, function(match, title){
+        return /｜DEMO\s*$/i.test(String(title || "").trim()) ? match : "<title>"+title+"｜DEMO</title>";
+      });
+
+    if (opts.injectLiffPatch && /static\.line-scdn\.net\/liff/i.test(html)) {
+      html = html.replace(
+        /(<script\b[^>]*src=["']https:\/\/static\.line-scdn\.net\/liff\/[^"']+["'][^>]*><\/script>)/i,
+        '$1<script>window.__TOP_TAXI_DEMO_PATCH_LIFF__&&window.__TOP_TAXI_DEMO_PATCH_LIFF__();<\/script>'
+      );
+    }
+
+    const remaining = forbiddenAfterTransform.find(re => re.test(html));
+    if (remaining) throw new Error("偵測到未隔離的正式環境識別，已阻止執行：" + remaining);
+
+    return html;
+  }
+
+  function isTrustedHtmlBootstrap(html){
+    return /\bfetch\s*\(\s*["'`]\.\/?[^"'`]+\.html(?:\?[^"'`]*)?["'`]/i.test(html) &&
+      /document\.(?:open|write|close)\s*\(/i.test(html);
+  }
+
+  function nestedFetchGuardScript(){
+    const liffId = JSON.stringify(String(cfg.liffId)).replace(/</g, "\\u003c");
+    return `<script>(function(){
+      const DEMO_LIFF_ID=${liffId};
+      const nativeFetch=window.fetch.bind(window);
+      const forbidden=[
+        /2011008197-[A-Za-z0-9]+/,
+        /lakswitting\\.app\\.n8n\\.cloud\\/webhook/i,
+        /topTaxiAddresses/,
+        /topTaxiCustomerPreferences/
+      ];
+      function sanitize(input){
+        let html=String(input||"");
+        html=html
+          .replace(/2011008197-[A-Za-z0-9]+/g,DEMO_LIFF_ID)
+          .replace(/https:\\/\\/lakswitting\\.app\\.n8n\\.cloud\\/webhook\\/[A-Za-z0-9-]+/gi,"https://demo.invalid/webhook")
+          .replace(/topTaxiAddresses/g,"topTaxiDemoAddresses")
+          .replace(/topTaxiCustomerPreferences/g,"topTaxiDemoCustomerPreferences")
+          .replace(/<title>([\\s\\S]*?)<\\/title>/i,function(match,title){
+            return /｜DEMO\\s*$/i.test(String(title||"").trim()) ? match : "<title>"+title+"｜DEMO</title>";
+          });
+        if(/static\\.line-scdn\\.net\\/liff/i.test(html)){
+          html=html.replace(
+            /(<script\\b[^>]*src=["']https:\\/\\/static\\.line-scdn\\.net\\/liff\\/[^"']+["'][^>]*><\\/script>)/i,
+            '$1<scr'+'ipt>window.__TOP_TAXI_DEMO_PATCH_LIFF__&&window.__TOP_TAXI_DEMO_PATCH_LIFF__();<'+'/scr'+'ipt>'
+          );
+        }
+        const remaining=forbidden.find(function(re){return re.test(html);});
+        if(remaining) throw new Error("DEMO nested source isolation failed: "+remaining);
+        return html;
+      }
+      function targetUrl(input){
+        try{return new URL(typeof input==="string"?input:(input&&input.url)||"",location.href);}
+        catch(_){return null;}
+      }
+      window.fetch=async function(input,init){
+        const response=await nativeFetch(input,init);
+        const url=targetUrl(input);
+        if(!url||url.origin!==location.origin||/\\/demo\\//i.test(url.pathname)||!/\\.html$/i.test(url.pathname)) return response;
+        const text=await response.clone().text();
+        const safe=sanitize(text);
+        const headers=new Headers(response.headers);
+        headers.delete("content-length");
+        headers.delete("content-encoding");
+        return new Response(safe,{status:response.status,statusText:response.statusText,headers:headers});
+      };
+      window.__TOP_TAXI_DEMO_SANITIZE_HTML__=sanitize;
+    })();</script>`;
+  }
+
   async function boot(){
     try {
       const sourceUrl = new URL(cfg.source, location.href);
@@ -41,16 +123,13 @@
         throw new Error("Production source 格式不正確");
       }
 
-      if (!/static\.line-scdn\.net\/liff/i.test(html)) {
-        throw new Error("Production source 缺少 LINE LIFF SDK");
+      const sourceHasLiffSdk = /static\.line-scdn\.net\/liff/i.test(html);
+      const trustedBootstrap = isTrustedHtmlBootstrap(html);
+      if (!sourceHasLiffSdk && !trustedBootstrap) {
+        throw new Error("Production source 缺少 LINE LIFF SDK，且不是可識別的同站 HTML Loader");
       }
 
-      html = html
-        .replace(/2011008197-[A-Za-z0-9]+/g, String(cfg.liffId))
-        .replace(/https:\/\/lakswitting\.app\.n8n\.cloud\/webhook\/[A-Za-z0-9-]+/gi, "https://demo.invalid/webhook")
-        .replace(/topTaxiAddresses/g, "topTaxiDemoAddresses")
-        .replace(/topTaxiCustomerPreferences/g, "topTaxiDemoCustomerPreferences")
-        .replace(/<title>([\s\S]*?)<\/title>/i, "<title>$1｜DEMO</title>");
+      html = transformHtml(html, { injectLiffPatch:false });
 
       if (String(cfg.type) === "fare") {
         html = html.replace(
@@ -58,11 +137,6 @@
           'showStatus("DEMO Google 初始化失敗：" + (error?.name ? error.name + "｜" : "") + (error?.message || String(error)), true);'
         );
 
-        /*
-          Demo Fare：Places ready 後先建立地址 UI；Routes 改背景載入。
-          避免 LINE WebView 裡 routes library 較慢時卡住上／下車欄位。
-          Production fare.html 完全不修改。
-        */
         const fareBeforeRoutesPatch = html;
         html = html.replace(
           /const\s*{\s*Route\s*}\s*=\s*await\s*google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/,
@@ -73,11 +147,6 @@
           throw new Error("Demo Fare 找不到 Routes 初始化區塊，已停止載入");
         }
 
-        /*
-          關鍵修正：不要在 fetch + document.write 還沒完成時搶跑 initGoogle。
-          先把正式頁原本的 window.load 啟動點改成 Demo marker，
-          等整份 mirror DOM parse 完、DOMContentLoaded 後，再由頁尾 bootstrap 啟動。
-        */
         const fareBeforeGoogleBootPatch = html;
         html = html.replace(
           /window\.addEventListener\(\s*["']load["']\s*,\s*initGoogle\s*\);/,
@@ -89,32 +158,33 @@
         }
       }
 
-      const remaining = forbiddenAfterTransform.find(re => re.test(html));
-      if (remaining) throw new Error("偵測到未隔離的正式環境識別，已阻止執行：" + remaining);
-      if (!html.includes(String(cfg.liffId))) throw new Error("Demo LIFF ID 未成功套用");
+      if (sourceHasLiffSdk && !html.includes(String(cfg.liffId))) {
+        throw new Error("Demo LIFF ID 未成功套用");
+      }
 
-      const runtimeUrl = new URL("./demo.js", location.href).href;
-      const cssUrl = new URL("./demo.css", location.href).href;
+      const runtimeUrl = new URL("./demo.js?v="+DEMO_BUILD, location.href).href;
+      const cssUrl = new URL("./demo.css?v="+DEMO_BUILD, location.href).href;
       const productionBase = new URL("../", location.href).href;
       const runtimeConfig = JSON.stringify({
         type:String(cfg.type),
         environment:"demo-line",
-        liffId:String(cfg.liffId)
+        liffId:String(cfg.liffId),
+        build:DEMO_BUILD
       }).replace(/</g, "\\u003c");
 
       const injection =
         '<base href="'+productionBase+'">' +
         '<link rel="stylesheet" href="'+cssUrl+'">' +
         '<script>window.TOP_TAXI_DEMO_RUNTIME_CONFIG='+runtimeConfig+';<\/script>' +
+        nestedFetchGuardScript() +
         '<script src="'+runtimeUrl+'"><\/script>';
 
       if (!/<head[\s>]/i.test(html)) throw new Error("Production source 缺少 head");
       html = html.replace(/<head([^>]*)>/i, "<head$1>" + injection);
 
-      html = html.replace(
-        /(<script\b[^>]*src=["']https:\/\/static\.line-scdn\.net\/liff\/[^"']+["'][^>]*><\/script>)/i,
-        '$1<script>window.__TOP_TAXI_DEMO_PATCH_LIFF__&&window.__TOP_TAXI_DEMO_PATCH_LIFF__();<\/script>'
-      );
+      if (sourceHasLiffSdk) {
+        html = transformHtml(html, { injectLiffPatch:true });
+      }
 
       if (String(cfg.type) === "fare") {
         if (!/<\/body>/i.test(html)) throw new Error("Demo Fare source 缺少 body 結尾");
