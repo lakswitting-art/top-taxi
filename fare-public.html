@@ -1,3786 +1,427 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
->
-
-<title>24H 車資試算</title>
-
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>調度車資試算</title>
 <style>
-
-:root {
-
-    --red: #ff1f2d;
-    --red-dark: #d40018;
-
-    --black: #08080a;
-    --black-2: #101014;
-
-    --white: #ffffff;
-
-    --gray-bg: #f2f3f5;
-    --gray-border: #e5e5e8;
-    --gray-text: #77777d;
-}
-
-
-/* =========================================
-   RESET
-========================================= */
-
-* {
-    box-sizing: border-box;
-}
-
-html {
-    background: var(--black);
-}
-
-body {
-
-    margin: 0;
-
-    min-height: 100vh;
-
-    font-family:
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        "Noto Sans TC",
-        "PingFang TC",
-        Arial,
-        sans-serif;
-
-    color: #222;
-
-    background:
-        radial-gradient(
-            circle at 50% 0%,
-            rgba(255,31,45,.22),
-            transparent 33%
-        ),
-        linear-gradient(
-            180deg,
-            #070709 0%,
-            #101014 40%,
-            #f2f3f5 40%,
-            #f2f3f5 100%
-        );
-
-}
-
-
-/* =========================================
-   HERO
-========================================= */
-
-.hero {
-
-    text-align: center;
-
-    padding:
-        max(16px, env(safe-area-inset-top))
-        18px
-        24px;
-
-    color: #fff;
-
-}
-
-
-/* =========================================
-   LOGO
-========================================= */
-
-.logo-wrap {
-
-    position: relative;
-
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    margin-bottom: 10px;
-
-    animation:
-        logoFloat 3.2s
-        ease-in-out infinite;
-
-}
-
-
-.logo-glow {
-
-    position: absolute;
-
-    width: 132px;
-    height: 132px;
-
-    border-radius: 50%;
-
-    background:
-        rgba(255,20,35,.16);
-
-    filter:
-        blur(24px);
-
-}
-
-
-.logo {
-
-    position: relative;
-
-    width: 120px;
-    height: 120px;
-
-    object-fit: cover;
-
-    border-radius: 24px;
-
-    border:
-        1px solid
-        rgba(255,255,255,.12);
-
-    background: #050506;
-
-    box-shadow:
-        0 0 0 1px
-        rgba(255,30,45,.35),
-
-        0 12px 35px
-        rgba(255,0,25,.22);
-
-}
-
-
-/* =========================================
-   BRAND
-========================================= */
-
-.brand {
-
-    margin: 0;
-
-    font-size: 28px;
-
-    line-height: 1.2;
-
-    font-weight: 900;
-
-    letter-spacing: .5px;
-
-}
-
-
-.brand-red {
-    color: var(--red);
-}
-
-
-.system-name {
-
-    margin-top: 4px;
-
-    color: #f3f3f4;
-
-    font-size: 15px;
-
-    font-weight: 700;
-
-    letter-spacing: 2px;
-
-}
-
-
-.hero-description {
-
-    margin-top: 9px;
-
-    color: #a8a8ae;
-
-    font-size: 12px;
-
-    line-height: 1.8;
-
-}
-
-
-/* =========================================
-   PAGE
-========================================= */
-
-.page {
-
-    width: 100%;
-
-    max-width: 560px;
-
-    margin: -6px auto 0;
-
-    padding:
-        0 14px
-        max(
-            34px,
-            env(safe-area-inset-bottom)
-        );
-
-}
-
-
-/* =========================================
-   CARD
-========================================= */
-
-.fare-card {
-
-    background:
-        rgba(255,255,255,.98);
-
-    border-radius: 22px;
-
-    padding:
-        22px 18px;
-
-    border:
-        1px solid
-        rgba(255,255,255,.7);
-
-    box-shadow:
-        0 18px 50px
-        rgba(0,0,0,.18);
-
-}
-
-
-/* =========================================
-   HEADER
-========================================= */
-
-.form-header {
-
-    display: flex;
-
-    justify-content:
-        space-between;
-
-    align-items: center;
-
-    margin-bottom: 20px;
-
-}
-
-
-.form-title {
-
-    color: #1d1d20;
-
-    font-size: 16px;
-
-    font-weight: 900;
-
-}
-
-
-.form-label-small {
-
-    color: #aaa;
-
-    font-size: 11px;
-
-    letter-spacing: 1px;
-
-}
-
-/* =========================================
-   SERVICE MODE
-========================================= */
-
-.service-switch {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 20px;
-    padding: 5px;
-    border: 1px solid #e8e8eb;
-    border-radius: 14px;
-    background: #f4f4f6;
-}
-
-.service-switch-btn {
-    min-height: 44px;
-    border: 0;
-    border-radius: 10px;
-    background: transparent;
-    color: #77777d;
-    font-size: 14px;
-    font-weight: 800;
-    cursor: pointer;
-    transition:
-        color .18s,
-        background .18s,
-        box-shadow .18s;
-}
-
-.service-switch-btn.active {
-    color: #fff;
-    background: linear-gradient(135deg, #ff3341, #e10019);
-    box-shadow: 0 7px 18px rgba(210, 0, 22, .2);
-}
-
-
-/* =========================================
-   FORM
-========================================= */
-
-.input-group {
-
-    margin-bottom: 16px;
-
-}
-
-
-label {
-
-    display: block;
-
-    margin-bottom: 8px;
-
-    color: #26262a;
-
-    font-size: 15px;
-
-    font-weight: 800;
-
-}
-
-
-.place-box {
-
-    width: 100%;
-
-}
-
-.address-autocomplete {
-    position: relative;
-    width: 100%;
-}
-
-.address-input {
-    width: 100%;
-    min-height: 50px;
-    padding: 0 44px 0 42px;
-    border: 1px solid var(--gray-border);
-    border-radius: 12px;
-    outline: none;
-    background: #fafafa;
-    color: #222222;
-    -webkit-text-fill-color: #222222;
-    caret-color: var(--red);
-    font-family: inherit;
-    font-size: 16px;
-    font-weight: 700;
-    appearance: none;
-    -webkit-appearance: none;
-}
-
-.address-input::placeholder {
-    color: #8d8d93;
-    -webkit-text-fill-color: #8d8d93;
-    font-weight: 500;
-    opacity: 1;
-}
-
-.address-input:focus {
-    border-color: var(--red);
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(255, 31, 45, .08);
-}
-
-.address-search-icon {
-    position: absolute;
-    top: 25px;
-    left: 15px;
-    z-index: 2;
-    transform: translateY(-50%);
-    color: #75757b;
-    font-size: 17px;
-    pointer-events: none;
-}
-
-.address-clear-btn {
-    position: absolute;
-    top: 25px;
-    right: 9px;
-    z-index: 2;
-    width: 32px;
-    height: 32px;
-    transform: translateY(-50%);
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: #85858b;
-    font-size: 19px;
-    cursor: pointer;
-}
-
-.address-suggestions {
-    position: absolute;
-    top: calc(100% + 7px);
-    left: 0;
-    right: 0;
-    z-index: 5000;
-    display: none;
-    max-height: min(330px, 46vh);
-    overflow-y: auto;
-    border: 1px solid #e1e1e4;
-    border-radius: 14px;
-    background: #ffffff;
-    box-shadow: 0 16px 38px rgba(0, 0, 0, .18);
-    -webkit-overflow-scrolling: touch;
-}
-
-.address-suggestions.show {
-    display: block;
-}
-
-.address-suggestion {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 32px minmax(0, 1fr);
-    gap: 10px;
-    padding: 12px 14px;
-    border: 0;
-    border-bottom: 1px solid #ededf0;
-    background: #ffffff;
-    color: #222222;
-    text-align: left;
-    cursor: pointer;
-}
-
-.address-suggestion:active {
-    background: #f5f5f7;
-}
-
-.address-suggestion-icon {
-    width: 32px;
-    height: 32px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: #f0f0f2;
-    font-size: 16px;
-}
-
-.address-suggestion-main {
-    display: block;
-    overflow: hidden;
-    font-size: 15px;
-    font-weight: 800;
-    line-height: 1.35;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.address-suggestion-secondary {
-    display: block;
-    margin-top: 3px;
-    overflow: hidden;
-    color: #77777d;
-    font-size: 12px;
-    font-weight: 500;
-    line-height: 1.35;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.address-google-attribution {
-    padding: 9px 14px;
-    color: #66666c;
-    font-size: 12px;
-    font-weight: 700;
-    text-align: right;
-}
-
-.address-no-results {
-    padding: 15px;
-    color: #77777d;
-    font-size: 13px;
-    text-align: center;
-}
-
-
-/* Google Places 元件 */
-
-gmp-place-autocomplete {
-
-    width: 100%;
-
-    min-height: 50px;
-
-    display: block;
-
-    border:
-        1px solid
-        var(--gray-border);
-
-    border-radius: 12px;
-
-    background: #fafafa;
-
-   
-
-    transition:
-        border .15s,
-        box-shadow .15s;
-
-    scroll-margin-top: 24px;
-
-}
-
-gmp-place-autocomplete::part(input) {
-    color: #222222 !important;
-    -webkit-text-fill-color: #222222 !important;
-    caret-color: #ff1f2d !important;
-    background: #ffffff !important;
-    font-size: 17px !important;
-    font-weight: 700 !important;
-    opacity: 1 !important;
-}
-
-gmp-place-autocomplete::part(input)::placeholder {
-    color: #8b8b91 !important;
-    -webkit-text-fill-color: #8b8b91 !important;
-    opacity: 1;
-}
-
-gmp-place-autocomplete:focus-within::part(input) {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    z-index: 2147483647 !important;
-
-    width: 100vw !important;
-    min-height: 62px !important;
-    margin: 0 !important;
-    padding:
-        12px
-        52px
-        12px
-        54px !important;
-
-    border: 0 !important;
-    border-bottom:
-        1px solid
-        #dddddf !important;
-    border-radius: 0 !important;
-
-    background: #ffffff !important;
-    box-shadow:
-        0 7px 22px
-        rgba(0, 0, 0, .14) !important;
-}
-gmp-place-autocomplete:focus-within {
-
-    border-color:
-        var(--red);
-
-    box-shadow:
-        0 0 0 3px
-        rgba(255,31,45,.08);
-
-}
-
-
-/* =========================================
-   ROUTE LINE
-========================================= */
-
-.route-visual {
-
-    width: 2px;
-
-    height: 14px;
-
-    margin:
-        -8px 0 -8px 18px;
-
-    background:
-        repeating-linear-gradient(
-            to bottom,
-            #ddd 0px,
-            #ddd 3px,
-            transparent 3px,
-            transparent 6px
-        );
-
-}
-
-
-/* =========================================
-   BUTTON
-========================================= */
-
-.submit-btn {
-
-    width: 100%;
-
-    min-height: 54px;
-
-    margin-top: 8px;
-
-    border: none;
-
-    border-radius: 15px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #ff3341,
-            #e10019
-        );
-
-    color: #fff;
-
-    font-size: 17px;
-
-    font-weight: 900;
-
-    letter-spacing: .3px;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 11px 27px
-        rgba(210,0,22,.24);
-
-}
-
-
-.submit-btn:disabled {
-
-    opacity: .6;
-
-    cursor: default;
-
-}
-
-
-/* =========================================
-   STATUS
-========================================= */
-
-.status {
-
-    display: none;
-
-    margin-top: 15px;
-
-    padding: 13px 14px;
-
-    border-radius: 12px;
-
-    background: #f7f7f8;
-
-    color: #666;
-
-    font-size: 12px;
-
-    line-height: 1.7;
-
-    text-align: center;
-
-}
-
-
-.status.show {
-    display: block;
-}
-
-
-.status.error {
-
-    color: #a31320;
-
-    background: #fff1f2;
-
-    border:
-        1px solid
-        #ffd3d7;
-
-}
-
-/* =========================================
-   MOBILE ADDRESS TYPING PREVIEW
-========================================= */
-
-.address-typing-preview {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 2147483647;
-
-    display: none;
-    align-items: center;
-    gap: 10px;
-
-    min-height: 58px;
-    padding:
-        10px
-        max(16px, env(safe-area-inset-right))
-        10px
-        max(16px, env(safe-area-inset-left));
-
-    border-bottom: 1px solid #e2e2e5;
-    background: rgba(255, 255, 255, .98);
-    box-shadow: 0 7px 22px rgba(0, 0, 0, .13);
-    pointer-events: none;
-}
-
-.address-typing-preview.show {
-    display: flex;
-}
-
-.address-typing-preview span {
-    flex-shrink: 0;
-    color: #8a8a90;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-.address-typing-preview strong {
-    min-width: 0;
-    overflow: hidden;
-    color: #151518;
-    font-size: 19px;
-    font-weight: 800;
-    line-height: 1.25;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-
-/* =========================================
-   RESULTS
-========================================= */
-
-.results {
-
-    display: none;
-
-    margin-top: 23px;
-
-    padding-top: 21px;
-
-    border-top:
-        1px solid #ededf0;
-
-}
-
-
-.results.show {
-    display: block;
-}
-
-
-.results-title {
-
-    margin-bottom: 14px;
-
-    color: #222;
-
-    font-size: 15px;
-
-    font-weight: 900;
-
-}
-
-
-.results-subtitle {
-
-    display: block;
-
-    margin-top: 4px;
-
-    color: #999;
-
-    font-size: 11px;
-
-    font-weight: 500;
-
-}
-
-
-/* =========================================
-   ROUTE OPTION
-========================================= */
-
-.route-option {
-
-    margin-bottom: 14px;
-
-    padding: 17px;
-
-    border:
-        1px solid #e5e5e8;
-
-    border-radius: 17px;
-
-    background: #fff;
-
-    box-shadow:
-        0 5px 18px
-        rgba(0,0,0,.045);
-
-}
-
-
-.route-option.fast {
-
-    border:
-        1px solid
-        rgba(255,31,45,.30);
-
-    background:
-        linear-gradient(
-            180deg,
-            #fff,
-            #fffafb
-        );
-
-}
-
-
-.route-top {
-
-    display: flex;
-
-    justify-content:
-        space-between;
-
-    align-items:
-        flex-start;
-
-    gap: 12px;
-
-}
-
-
-.route-name {
-
-    font-size: 16px;
-
-    font-weight: 900;
-
-    color: #1e1e22;
-
-}
-
-
-.route-tag {
-
-    display: inline-block;
-
-    padding:
-        4px 8px;
-
-    border-radius: 999px;
-
-    background:
-        #f1f1f3;
-
-    color:
-        #727277;
-
-    font-size: 10px;
-
-    font-weight: 800;
-
-}
-
-
-.fast .route-tag {
-
-    background:
-        #fff0f1;
-
-    color:
-        var(--red-dark);
-
-}
-
-
-.route-info {
-
-    display: flex;
-
-    gap: 13px;
-
-    margin-top: 12px;
-
-    color: #77777d;
-
-    font-size: 13px;
-
-    font-weight: 600;
-
-}
-
-
-.fare-price {
-
-    margin-top: 15px;
-
-    color: #161619;
-
-    font-size: 13px;
-
-    font-weight: 700;
-
-}
-
-
-.fare-price strong {
-
-    margin-left: 5px;
-
-    color: var(--red);
-
-    font-size: 29px;
-
-    font-weight: 900;
-
-}
-
-
-.save-time {
-
-    min-height: 18px;
-
-    margin-top: 4px;
-
-    color: #078142;
-
-    font-size: 11px;
-
-    font-weight: 700;
-
-}
-
-
-/* =========================================
-   SELECT BUTTON
-========================================= */
-
-.route-btn {
-
-    width: 100%;
-
-    min-height: 45px;
-
-    margin-top: 14px;
-
-    border:
-        1px solid #ddd;
-
-    border-radius: 12px;
-
-    background:
-        #f7f7f8;
-
-    color: #242428;
-
-    font-size: 14px;
-
-    font-weight: 900;
-
-    cursor: pointer;
-
-}
-
-
-.fast .route-btn {
-
-    border: none;
-
-    background: #111114;
-
-    color: #fff;
-
-}
-
-
-/* =========================================
-   NOTICE
-========================================= */
-
-.notice {
-
-    margin-top: 19px;
-
-    padding-top: 16px;
-
-    border-top:
-        1px solid #eee;
-
-    text-align: center;
-
-    color: #8e8e94;
-
-    font-size: 12px;
-
-    line-height: 1.8;
-
-}
-
-
-/* =========================================
-   FOOTER
-========================================= */
-
-.footer {
-
-    text-align: center;
-
-    margin-top: 19px;
-
-    color: #999;
-
-    font-size: 10px;
-
-    line-height: 1.7;
-
-}
-
-
-/* =========================================
-   ANIMATION
-========================================= */
-
-@keyframes logoFloat {
-
-    0%,100% {
-        transform:
-            translateY(0);
-    }
-
-    50% {
-        transform:
-            translateY(-3px);
-    }
-
-}
-
-
-/* =========================================
-   MOBILE
-========================================= */
-
-@media (max-width: 520px) {
-
-    .hero {
-
-        padding:
-            max(12px, env(safe-area-inset-top))
-            14px
-            18px;
-
-    }
-
-    .logo {
-
-        width: 100px;
-        height: 100px;
-
-        border-radius: 20px;
-
-    }
-
-    .logo-glow {
-
-        width: 112px;
-        height: 112px;
-
-    }
-
-    .brand {
-        font-size: 25px;
-    }
-
-    .fare-card {
-
-        padding:
-            19px 15px;
-
-        border-radius: 20px;
-
-    }
-
-}
-/* =========================================
-   TOP Taxi｜行程確認視窗
-========================================= */
-
-.confirm-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-
-    display: none;
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-}
-
-.confirm-modal.show {
-    display: flex;
-}
-
-
-/* 背景遮罩 */
-
-.confirm-overlay {
-    position: absolute;
-    inset: 0;
-
-    background: rgba(0, 0, 0, 0.58);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-}
-
-
-/* 確認卡片 */
-
-.confirm-card {
-    position: relative;
-    z-index: 1;
-
-    width: 100%;
-    max-width: 460px;
-
-    background: #ffffff;
-
-    border-radius: 24px;
-
-    padding: 18px 22px 22px;
-
-    box-shadow:
-        0 25px 60px rgba(0, 0, 0, 0.28);
-
-    animation: confirmPop .22s ease-out;
-}
-
-
-/* 上方小橫條 */
-
-.confirm-handle {
-    width: 42px;
-    height: 5px;
-
-    margin: 0 auto 20px;
-
-    border-radius: 99px;
-
-    background: #dddddd;
-}
-
-
-/* 標題 */
-
-.confirm-header {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-}
-
-.confirm-icon {
-    width: 120px;
-    height: 54px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    flex-shrink: 0;
-    background: transparent;
-    border-radius: 0;
-}
-
-.confirm-icon img {
-    width: 100%;
-    height: 100%;
-
-    display: block;
-    object-fit: contain;
-}
-
-.confirm-title {
-    font-size: 22px;
-    font-weight: 800;
-    line-height: 1.25;
-    color: #111111;
-}
-
-.confirm-subtitle {
-    margin-top: 4px;
-    font-size: 14px;
-    line-height: 1.4;
-    color: #999999;
-}
-
-
-/* 上下車地點 */
-
-.confirm-location {
-    padding: 18px;
-
-    background: #fafafa;
-
-    border: 1px solid #eeeeee;
-    border-radius: 16px;
-}
-
-.confirm-location-row {
-    display: grid;
-    grid-template-columns: 14px 1fr;
-    gap: 12px;
-
-    align-items: start;
-}
-
-.confirm-dot {
-    width: 10px;
-    height: 10px;
-
-    margin-top: 6px;
-
-    border-radius: 50%;
-}
-
-.pickup-dot {
-    background: #ff3045;
-}
-
-.dropoff-dot {
-    background: #111111;
-}
-
-.confirm-line {
-    width: 1px;
-    height: 22px;
-
-    margin: 4px 0 4px 4px;
-
-    background: #dddddd;
-}
-
-.confirm-label {
-    margin-bottom: 4px;
-
-    font-size: 12px;
-    font-weight: 600;
-
-    color: #999999;
-}
-
-.confirm-address {
-    font-size: 15px;
-    font-weight: 700;
-    line-height: 1.5;
-
-    color: #222222;
-
-    word-break: break-word;
-}
-
-
-/* 路線資料 */
-
-.confirm-route-box {
-    margin-top: 14px;
-    padding: 17px 18px;
-
-    background: #ffffff;
-
-    border: 1px solid #eeeeee;
-    border-radius: 16px;
-}
-
-.confirm-route-name {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    padding-bottom: 14px;
-
-    border-bottom: 1px solid #eeeeee;
-
-    font-size: 14px;
-
-    color: #777777;
-}
-
-.confirm-route-name strong {
-    color: #111111;
-
-    font-size: 15px;
-    font-weight: 800;
-}
-
-.confirm-stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-
-    padding-top: 14px;
-}
-
-.confirm-stats div {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.confirm-stats span {
-    font-size: 12px;
-
-    color: #999999;
-}
-
-.confirm-stats strong {
-    font-size: 16px;
-    font-weight: 800;
-
-    color: #222222;
-}
-
-
-/* 車資 */
-
-.confirm-price {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    margin-top: 14px;
-
-    padding: 18px;
-
-    border-radius: 16px;
-
-    background:
-        linear-gradient(
-            135deg,
-            #fff4f5,
-            #fffafa
-        );
-}
-
-.confirm-price span {
-    font-size: 14px;
-    font-weight: 700;
-
-    color: #555555;
-}
-
-.confirm-price strong {
-    font-size: 30px;
-    font-weight: 900;
-
-    color: #f20d27;
-}
-
-
-/* 確認按鈕 */
-
-.confirm-submit {
-    width: 100%;
-
-    margin-top: 18px;
-    padding: 16px;
-
-    border: 0;
-    border-radius: 14px;
-
-    background:
-        linear-gradient(
-            90deg,
-            #ff3045,
-            #f0001d
-        );
-
-    color: #ffffff;
-
-    font-size: 16px;
-    font-weight: 800;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 10px 24px rgba(242, 13, 39, 0.22);
-}
-
-.confirm-submit:active {
-    transform: scale(0.98);
-}
-
-
-/* 返回 */
-
-.confirm-cancel {
-    width: 100%;
-
-    margin-top: 8px;
-    padding: 12px;
-
-    border: 0;
-
-    background: transparent;
-
-    color: #888888;
-
-    font-size: 14px;
-    font-weight: 600;
-
-    cursor: pointer;
-}
-
-
-/* 出現動畫 */
-
-@keyframes confirmPop {
-
-    from {
-        opacity: 0;
-        transform: translateY(18px) scale(0.97);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-
-/* 手機版 */
-
-@media (max-width: 520px) {
-
-    .confirm-modal {
-        align-items: flex-end;
-
-        padding: 0;
-    }
-
-    .confirm-card {
-        max-width: none;
-
-        border-radius: 24px 24px 0 0;
-
-        padding:
-            14px
-            18px
-            calc(20px + env(safe-area-inset-bottom));
-    }
-
-    .confirm-price strong {
-        font-size: 28px;
-    }
-
-}
-
-/* =========================================
-   行程確認視窗｜參考圖正式版
-========================================= */
-
-.confirm-modal { padding: 24px; }
-
-.confirm-overlay {
-    background: rgba(5, 5, 7, .62);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
-
-.confirm-card {
-    width: min(100%, 460px);
-    max-height: calc(100dvh - 48px);
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding: 16px 24px 22px;
-    border: 1px solid rgba(255, 255, 255, .9);
-    border-radius: 28px;
-    background: rgba(255, 255, 255, .99);
-    box-shadow: 0 28px 80px rgba(0, 0, 0, .3);
-    scrollbar-width: none;
-}
-
-.confirm-card::-webkit-scrollbar { display: none; }
-
-.confirm-handle {
-    width: 46px;
-    height: 5px;
-    margin: 0 auto 24px;
-    background: #d9d9dc;
-}
-
-.confirm-header {
-    gap: 18px;
-    margin-bottom: 24px;
-    padding: 0 4px;
-}
-
-.confirm-icon {
-    width: 122px;
-    height: 50px;
-}
-
-.confirm-icon img {
-    object-fit: contain;
-    object-position: center;
-}
-
-.confirm-title {
-    font-size: 24px;
-    line-height: 1.18;
-    letter-spacing: -.4px;
-}
-
-.confirm-subtitle {
-    margin-top: 6px;
-    font-size: 15px;
-    color: #8f8f95;
-}
-
-.confirm-location {
-    padding: 20px 18px;
-    border: 1px solid #ececef;
-    border-radius: 20px;
-    background: #fff;
-    box-shadow: 0 8px 24px rgba(25, 25, 35, .07);
-}
-
-.confirm-location-row {
-    grid-template-columns: 34px minmax(0, 1fr);
-    gap: 10px;
-}
-
-.confirm-dot {
-    width: 32px;
-    height: 32px;
-    margin: 0;
-    display: grid;
-    place-items: center;
-    color: #fff;
-    font-size: 18px;
-    font-weight: 800;
-}
-
-.pickup-dot { background: #2eaf4a; }
-.pickup-dot::before { content: "↑"; }
-.dropoff-dot { background: #ff1f2d; }
-.dropoff-dot::before { content: "●"; font-size: 12px; }
-
-.confirm-line {
-    height: 34px;
-    margin: 4px 0 4px 15px;
-    border-left: 1px dashed #bdbdc3;
-    background: transparent;
-}
-
-.confirm-label {
-    margin-bottom: 4px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #85858b;
-}
-
-.confirm-address {
-    font-size: 17px;
-    line-height: 1.45;
-}
-
-.confirm-route-box {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 12px;
-    margin-top: 16px;
-    padding: 16px 18px;
-    border: 1px solid #ececef;
-    border-radius: 18px;
-    box-shadow: 0 7px 20px rgba(25, 25, 35, .06);
-}
-
-.confirm-route-icon {
-    width: 42px;
-    height: 42px;
-    display: grid;
-    place-items: center;
-    border-radius: 50%;
-    background: #eaf3ff;
-    font-size: 21px;
-}
-
-.confirm-route-name {
-    min-width: 0;
-    display: block;
-    padding: 0;
-    border: 0;
-}
-
-.confirm-route-name span { display: none; }
-.confirm-route-name strong { font-size: 16px; }
-
-.confirm-stats {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 0;
-}
-
-.confirm-stats div {
-    min-width: max-content;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 5px;
-}
-
-.confirm-stats span {
-    width: 20px;
-    overflow: hidden;
-    white-space: nowrap;
-    font-size: 15px;
-    color: #888990;
-}
-
-.confirm-stats strong {
-    font-size: 14px;
-    white-space: nowrap;
-}
-
-.confirm-price {
-    margin-top: 16px;
-    padding: 17px 18px;
-    border: 1px solid #f1f1f3;
-    border-radius: 18px;
-    background: #fff;
-    box-shadow: 0 7px 20px rgba(25, 25, 35, .06);
-}
-
-.confirm-price span {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    font-size: 16px;
-    color: #26262a;
-}
-
-.confirm-price span::after {
-    content: attr(data-note);
-    font-size: 12px;
-    font-weight: 500;
-    color: #8e8e94;
-}
-
-.confirm-price strong { font-size: 32px; }
-
-.confirm-submit {
-    margin-top: 18px;
-    padding: 17px;
-    border-radius: 15px;
-    font-size: 17px;
-    box-shadow: 0 12px 28px rgba(242, 13, 39, .24);
-}
-
-.confirm-cancel {
-    margin-top: 8px;
-    color: #ef2435;
-    font-size: 15px;
-}
-
-@media (max-width: 520px) {
-    .confirm-modal { padding: 0; }
-
-    .confirm-card {
-        width: 100%;
-        max-height: calc(100dvh - max(16px, env(safe-area-inset-top)));
-        padding: 14px 20px calc(18px + env(safe-area-inset-bottom));
-        border-radius: 28px 28px 0 0;
-    }
-
-    .confirm-handle { margin-bottom: 22px; }
-
-    .confirm-header {
-        gap: 14px;
-        margin-bottom: 20px;
-        padding: 0;
-    }
-
-    .confirm-icon {
-        width: 108px;
-        height: 46px;
-    }
-
-    .confirm-title { font-size: 21px; }
-    .confirm-subtitle { font-size: 13px; }
-
-    .confirm-location { padding: 18px 16px; }
-    .confirm-address { font-size: 15px; }
-
-    .confirm-route-box {
-        grid-template-columns: 38px auto minmax(0, 1fr);
-        gap: 8px;
-        padding: 14px;
-    }
-
-    .confirm-stats {
-        grid-column: auto;
-        justify-content: flex-end;
-        gap: 10px;
-        padding: 0;
-        border: 0;
-    }
-
-    .confirm-route-icon {
-        width: 38px;
-        height: 38px;
-        font-size: 19px;
-    }
-
-    .confirm-route-name strong { font-size: 14px; }
-    .confirm-stats strong { font-size: 13px; }
-    .confirm-price strong { font-size: 29px; }
-}
-/* =========================================
-   手動公里／時間試算
-========================================= */
-.manual-divider{display:flex;align-items:center;gap:12px;margin:28px 0 20px;color:#9a9aa0;font-size:12px;font-weight:700}
-.manual-divider::before,.manual-divider::after{content:"";flex:1;height:1px;background:var(--gray-border)}
-.manual-calculator{padding:20px;border:1px solid var(--gray-border);border-radius:18px;background:#fff;box-shadow:0 8px 24px rgba(0,0,0,.05)}
-.manual-title{font-size:18px;font-weight:900;color:#1c1c1f}
-.manual-subtitle{margin-top:5px;color:var(--gray-text);font-size:12px;line-height:1.6}
-.manual-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
-.manual-field label{display:block;margin-bottom:7px;color:#55555b;font-size:12px;font-weight:800}
-.manual-input-wrap{display:flex;align-items:center;gap:8px;padding:0 13px;border:1px solid var(--gray-border);border-radius:13px;background:#f8f8f9}
-.manual-input-wrap:focus-within{border-color:var(--red);box-shadow:0 0 0 3px rgba(255,31,45,.09)}
-.manual-input-wrap input{min-width:0;width:100%;height:48px;border:0;outline:0;background:transparent;color:#202024;font:inherit;font-size:16px;font-weight:800}
-.manual-input-wrap span{flex-shrink:0;color:#8b8b91;font-size:12px;font-weight:700}
-.manual-result{display:none;margin-top:16px;padding:17px;border-radius:15px;background:#fff1f2;text-align:center}
-.manual-result.show{display:block}
-.manual-result-label{color:#77777d;font-size:12px;font-weight:700}
-.manual-result strong{display:block;margin-top:3px;color:var(--red-dark);font-size:34px;font-weight:900}
-.manual-result-note{margin-top:5px;color:#8a666a;font-size:11px}
-@media(max-width:390px){.manual-calculator{padding:17px}.manual-inputs{grid-template-columns:1fr}}
+:root{
+  --red:#ff1f2d;
+  --red-dark:#d40018;
+  --ink:#19191d;
+  --muted:#7d7d84;
+  --line:#e5e5e9;
+  --bg:#f2f3f5;
+  --card:#fff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg)}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC",Arial,sans-serif;
+  color:var(--ink);
+}
+button,input{font:inherit}
+.page{width:min(100%,620px);margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 14px max(36px,env(safe-area-inset-bottom))}
+.card{background:var(--card);border:1px solid rgba(0,0,0,.04);border-radius:24px;padding:22px 18px;box-shadow:0 16px 46px rgba(20,20,28,.09)}
+.header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:17px}
+.title-wrap{min-width:0}
+.title{display:flex;align-items:center;gap:10px;margin:0;font-size:20px;font-weight:950;letter-spacing:.1px}
+.title::before{content:"";width:4px;height:24px;border-radius:999px;background:var(--red)}
+.subtitle{margin-top:6px;color:#95959b;font-size:12px;font-weight:650;line-height:1.5}
+.reset-btn{flex:0 0 auto;border:0;background:transparent;color:#898990;padding:8px 0;font-size:12px;font-weight:800;cursor:pointer}
+.service-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:0 0 20px;padding:5px;border:1px solid #e3e3e7;border-radius:17px;background:linear-gradient(180deg,#fbfbfc,#f1f1f4);box-shadow:0 6px 16px rgba(20,20,24,.06)}
+.service-btn{min-height:48px;border:1px solid transparent;border-radius:13px;background:transparent;color:#55555d;font-weight:900;cursor:pointer}
+.service-btn.active{border-color:rgba(181,0,21,.15);background:linear-gradient(180deg,#ff263a,#e5001c);color:#fff;box-shadow:0 7px 16px rgba(218,0,27,.22)}
+.field-group{margin-bottom:15px}
+.label-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+label{font-size:15px;font-weight:900}
+.address-autocomplete{position:relative;width:100%}
+.address-input{width:100%;height:48px;padding:0 42px 0 41px;border:1px solid var(--line);border-radius:13px;outline:none;background:#fafafa;color:#222;font-size:16px;font-weight:700;-webkit-appearance:none;appearance:none}
+.address-input:focus{border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(255,31,45,.08)}
+.address-icon{position:absolute;left:15px;top:24px;transform:translateY(-50%);color:#77777d;font-size:16px;pointer-events:none}
+.address-clear{position:absolute;right:8px;top:24px;width:32px;height:32px;transform:translateY(-50%);border:0;border-radius:50%;background:transparent;color:#84848b;font-size:20px;cursor:pointer}
+.address-clear[hidden]{display:none}
+.suggestions{position:absolute;left:0;right:0;top:calc(100% + 7px);z-index:5000;display:none;max-height:min(310px,44vh);overflow-y:auto;border:1px solid #e1e1e4;border-radius:14px;background:#fff;box-shadow:0 16px 38px rgba(0,0,0,.18);overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.suggestions.show{display:block}
+.suggestion{width:100%;min-height:62px;display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px;align-items:center;padding:12px 14px;border:0;border-bottom:1px solid #ededf0;background:#fff;text-align:left;cursor:pointer}
+.suggestion:active{background:#f5f5f7}
+.suggestion-pin{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#f0f0f2}
+.suggestion-main,.suggestion-sub{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.suggestion-main{font-size:15px;font-weight:850;line-height:1.35}
+.suggestion-sub{margin-top:3px;color:#77777d;font-size:12px;line-height:1.35}
+.google-note{padding:8px 14px;color:#76767c;font-size:11px;font-weight:700;text-align:right}
+.waypoint-wrap{margin:-2px 0 12px}
+.waypoint-group{position:relative;margin:10px 0 14px;padding-left:18px}
+.waypoint-group::before{content:"";position:absolute;left:4px;top:-12px;bottom:-12px;border-left:2px dashed #ddd}
+.remove-stop{border:1px solid #e4e4e7;border-radius:9px;background:#fff;color:#7c7c82;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer}
+.add-stop{width:100%;min-height:43px;border:1px dashed #d5d5da;border-radius:12px;background:#fff;color:#515158;font-size:14px;font-weight:850;cursor:pointer}
+.add-stop:hover{border-color:#ff6672;color:var(--red);background:#fff8f9}
+.stop-note{margin-top:7px;color:#a0a0a5;font-size:11px;text-align:center}
+.location-btn{width:100%;min-height:35px;margin-top:6px;border:1px solid var(--line);border-radius:10px;background:#f7f7f9;color:#707077;font-size:12.5px;font-weight:850;cursor:pointer}
+.location-status{min-height:0;margin-top:5px;color:#7c8b80;font-size:11px}
+.route-divider{height:15px;margin:-7px 0 -7px 18px;border-left:2px dashed #ddd}
+.calc-btn{width:100%;min-height:54px;margin-top:7px;border:0;border-radius:15px;background:linear-gradient(135deg,#ff3341,#e10019);color:#fff;font-size:17px;font-weight:950;cursor:pointer;box-shadow:0 10px 25px rgba(210,0,22,.22)}
+.calc-btn:disabled{opacity:.58;cursor:wait}
+.status{display:none;margin-top:14px;padding:12px 14px;border-radius:12px;background:#f7f7f8;color:#666;font-size:12px;line-height:1.6;text-align:center}
+.status.show{display:block}.status.error{border:1px solid #ffd3d7;background:#fff1f2;color:#a31320}
+.results{display:none;margin-top:24px}.results.show{display:block}
+.results-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
+.results-title{font-size:17px;font-weight:950}.results-note{color:#98989e;font-size:11px;text-align:right}
+.route-card{margin-bottom:12px;padding:17px;border:1px solid #e4e4e8;border-radius:18px;background:#fff;box-shadow:0 5px 18px rgba(0,0,0,.04)}
+.route-card.fast{border-color:rgba(255,31,45,.25);background:linear-gradient(180deg,#fff,#fffafb)}
+.route-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.route-name{font-size:16px;font-weight:950}.tag{padding:4px 8px;border-radius:999px;background:#f1f1f3;color:#73737a;font-size:10px;font-weight:850}.fast .tag{background:#fff0f1;color:var(--red-dark)}
+.route-stats{display:flex;gap:14px;margin-top:11px;color:#76767d;font-size:13px;font-weight:700;flex-wrap:wrap}
+.fare-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:14px}.fare-label{color:#77777d;font-size:12px;font-weight:800}.fare{color:var(--red);font-size:30px;font-weight:950;line-height:1}
+.save-time{min-height:18px;margin-top:7px;color:#078142;font-size:11px;font-weight:750}
+.copy-box{margin-top:17px;padding:14px;border:1px solid #e8e8eb;border-radius:16px;background:#fafafa}
+.copy-preview{white-space:pre-line;color:#55555b;font-size:12.5px;font-weight:650;line-height:1.7}
+.copy-btn{width:100%;min-height:48px;margin-top:12px;border:0;border-radius:13px;background:#17171b;color:#fff;font-size:15px;font-weight:900;cursor:pointer}
+.copy-btn.copied{background:#138a42}
+.notice{margin-top:18px;padding-top:15px;border-top:1px solid #eee;color:#929298;font-size:11px;line-height:1.7;text-align:center}
+@media(max-width:420px){.page{padding-left:10px;padding-right:10px}.card{padding:20px 14px;border-radius:21px}.title{font-size:18px}.subtitle{font-size:11px}.route-stats{gap:9px}.fare{font-size:28px}}
 </style>
-
 </head>
-
-
 <body>
-
-
-<header class="hero">
-
-
-    <div class="system-name">
-        24H 車資試算
-    </div>
-
-
-    <div class="hero-description">
-
-        快速比較行車路線｜掌握預估距離・時間與車資
-
-    </div>
-
-
-</header>
-
-
-
 <main class="page">
-
-
-<div class="fare-card">
-
-
-    <div class="form-header">
-
-        <div id="serviceTitle" class="form-title">
-            💰 車資試算
-        </div>
-
-        <div id="serviceCode" class="form-label-small">
-            FARE ESTIMATOR
-        </div>
-
+  <section class="card">
+    <div class="header">
+      <div class="title-wrap">
+        <h1 class="title">調度車資試算</h1>
+        <div class="subtitle">輸入行程後，同時計算平面與快速路線</div>
+      </div>
+      <button id="resetBtn" class="reset-btn" type="button">清除行程</button>
     </div>
 
-    <div class="service-switch" role="group" aria-label="選擇服務類型">
-        <button
-            type="button"
-            class="service-switch-btn active"
-            data-service="taxi"
-            aria-pressed="true"
-            onclick="setServiceMode('taxi')"
-        >
-            🚕 一般搭車
-        </button>
-
-        <button
-            type="button"
-            class="service-switch-btn"
-            data-service="driver"
-            aria-pressed="false"
-            onclick="setServiceMode('driver')"
-        >
-            🚘 代駕服務
-        </button>
+    <div class="service-switch" role="group" aria-label="服務類型">
+      <button class="service-btn active" type="button" data-service="taxi">一般搭車</button>
+      <button class="service-btn" type="button" data-service="driver">代駕服務</button>
     </div>
 
-
-
-    <!-- 上車地點 -->
-
-    <div class="input-group">
-
-        <label>
-            📍 上車地點
-        </label>
-
-        <div
-            id="pickupBox"
-            class="place-box"
-        ></div>
-
+    <div class="field-group">
+      <div class="label-row"><label>上車地點</label></div>
+      <div id="pickupBox"></div>
+      <div id="locationStatus" class="location-status"></div>
+      <button id="locationBtn" class="location-btn" type="button">⌖ 使用目前位置</button>
     </div>
 
-
-
-    <div class="route-visual"></div>
-
-
-
-    <!-- 下車地點 -->
-
-    <div class="input-group">
-
-        <label>
-            🏁 下車地點
-        </label>
-
-        <div
-            id="dropoffBox"
-            class="place-box"
-        ></div>
-
+    <div id="waypointWrap" class="waypoint-wrap">
+      <div id="waypoint1Group" class="waypoint-group" hidden>
+        <div class="label-row"><label>停靠點 1</label><button class="remove-stop" type="button" data-remove-stop="0">移除</button></div>
+        <div id="waypoint1Box"></div>
+      </div>
+      <div id="waypoint2Group" class="waypoint-group" hidden>
+        <div class="label-row"><label>停靠點 2</label><button class="remove-stop" type="button" data-remove-stop="1">移除</button></div>
+        <div id="waypoint2Box"></div>
+      </div>
+      <button id="addStopBtn" class="add-stop" type="button">＋ 新增停靠點</button>
+      <div class="stop-note">最多 2 個停靠點，依輸入順序計算</div>
     </div>
 
-
-
-    <button
-        id="calculateBtn"
-        type="button"
-        class="submit-btn"
-        onclick="calculateRoutes()"
-    >
-
-        開始試算 →
-
-    </button>
-
-
-
-    <div
-        id="status"
-        class="status"
-    ></div>
-
-
-
-    <!-- RESULTS -->
-
-    <section
-        id="results"
-        class="results"
-    >
-
-
-        <div class="results-title">
-
-            🚕 路線試算結果
-
-            <span class="results-subtitle">
-
-                請選擇您偏好的行車方式
-
-            </span>
-
-        </div>
-
-
-
-        <!-- 平面道路 -->
-
-        <div class="route-option">
-
-            <div class="route-top">
-
-                <div class="route-name">
-                    🚕 平面道路
-                </div>
-
-                <span class="route-tag">
-                    避開高速
-                </span>
-
-            </div>
-
-
-            <div class="route-info">
-
-                <span id="normalDistance">
-                    📏 -- km
-                </span>
-
-                <span id="normalDuration">
-                    ⏱️ 約 -- 分鐘
-                </span>
-
-            </div>
-
-
-            <div class="fare-price">
-
-                預估車資
-
-                <strong id="normalFare">
-                    $---
-                </strong>
-
-            </div>
-
-
-            <button
-                type="button"
-                class="route-btn"
-                onclick="selectRoute('平面道路')"
-            >
-
-                選擇此路線
-
-            </button>
-
-        </div>
-
-
-
-        <!-- 快速路線 -->
-
-        <div class="route-option fast">
-
-            <div class="route-top">
-
-                <div class="route-name">
-                    🛣️ 快速路線
-                </div>
-
-                <span class="route-tag">
-                    推薦
-                </span>
-
-            </div>
-
-
-            <div class="route-info">
-
-                <span id="fastDistance">
-                    📏 -- km
-                </span>
-
-                <span id="fastDuration">
-                    ⏱️ 約 -- 分鐘
-                </span>
-
-            </div>
-
-
-            <div class="fare-price">
-
-                預估車資
-
-                <strong id="fastFare">
-                    $---
-                </strong>
-
-            </div>
-
-
-            <div
-                id="saveTime"
-                class="save-time"
-            ></div>
-
-
-            <button
-                type="button"
-                class="route-btn"
-                onclick="selectRoute('快速路線')"
-            >
-
-                選擇此路線
-
-            </button>
-
-        </div>
-
-
+    <div class="route-divider"></div>
+
+    <div class="field-group">
+      <div class="label-row"><label>下車地點</label></div>
+      <div id="dropoffBox"></div>
+    </div>
+
+    <button id="calcBtn" class="calc-btn" type="button">開始試算 →</button>
+    <div id="status" class="status"></div>
+
+    <section id="results" class="results">
+      <div class="results-head">
+        <div class="results-title">路線試算結果</div>
+        <div class="results-note">平面／快速一次比較</div>
+      </div>
+
+      <article class="route-card">
+        <div class="route-top"><div class="route-name">平面道路</div><span class="tag">避開高速／收費</span></div>
+        <div class="route-stats"><span id="surfaceDistance">-- km</span><span id="surfaceDuration">約 -- 分鐘</span></div>
+        <div class="fare-row"><span class="fare-label">預估車資</span><strong id="surfaceFare" class="fare">$---</strong></div>
+      </article>
+
+      <article class="route-card fast">
+        <div class="route-top"><div class="route-name">快速／高速路線</div><span class="tag">推薦</span></div>
+        <div class="route-stats"><span id="fastDistance">-- km</span><span id="fastDuration">約 -- 分鐘</span></div>
+        <div class="fare-row"><span class="fare-label">預估車資</span><strong id="fastFare" class="fare">$---</strong></div>
+        <div id="saveTime" class="save-time"></div>
+      </article>
+
+      <div class="copy-box">
+        <div id="copyPreview" class="copy-preview"></div>
+        <button id="copyBtn" class="copy-btn" type="button">複製平面＋快速給客人</button>
+      </div>
     </section>
 
-
-
-    <div class="notice">
-
-        ※ 車資為系統預估金額，
-        實際金額依實際行駛狀況為準。<br>
-
-        ※ 高速／快速道路不另外收取通行費用。<br>
-
-        ※ 行車路線可能依即時交通狀況調整。
-
-    </div>
-
-    <div class="manual-divider">或直接輸入行程資料</div>
-
-    <section class="manual-calculator" aria-labelledby="manualTitle">
-        <div id="manualTitle" class="manual-title">🧮 公里／時間快速試算</div>
-        <div class="manual-subtitle">已知道行駛距離與時間時，可直接計算預估費用</div>
-
-        <div class="manual-inputs">
-            <div class="manual-field">
-                <label for="manualDistance">行駛公里數</label>
-                <div class="manual-input-wrap">
-                    <input id="manualDistance" type="number" min="0" step="0.1" inputmode="decimal" placeholder="例如 12.5">
-                    <span>公里</span>
-                </div>
-            </div>
-
-            <div class="manual-field">
-                <label for="manualMinutes">行駛時間</label>
-                <div class="manual-input-wrap">
-                    <input id="manualMinutes" type="number" min="0" step="1" inputmode="numeric" placeholder="例如 25">
-                    <span>分鐘</span>
-                </div>
-            </div>
-        </div>
-
-        <button id="manualCalculateBtn" type="button" class="submit-btn" onclick="calculateManualFare()">
-            計算預估車資 →
-        </button>
-
-        <div id="manualResult" class="manual-result" aria-live="polite">
-            <div id="manualResultLabel" class="manual-result-label">一般搭車｜預估車資</div>
-            <strong id="manualFare">$---</strong>
-            <div class="manual-result-note">實際金額依實際行駛狀況為準</div>
-        </div>
-    </section>
-
-
-</div>
-
-
-
-<div class="footer">24H 車資試算服務</div>
-
-
+    <div class="notice">※ 系統預估僅供參考，實際費用依當日行程與路況為準。<br>※ 40 公里以上長途可再依實際方案確認優惠。</div>
+  </section>
 </main>
 
-<!-- =========================================
-     行程確認視窗
-========================================= -->
-
-<div id="confirmModal" class="confirm-modal">
-
-    <div class="confirm-overlay" onclick="closeConfirmModal()"></div>
-
-    <div class="confirm-card">
-
-        <div class="confirm-handle"></div>
-
-        <div class="confirm-header">
-            <div class="confirm-icon" aria-hidden="true">🚕</div>
-
-            <div>
-                <div class="confirm-title">
-                    確認您的行程
-                </div>
-
-                <div class="confirm-subtitle">
-                    請確認以下行程資訊
-                </div>
-            </div>
-        </div>
-
-
-        <div class="confirm-location">
-
-            <div class="confirm-location-row">
-                <div class="confirm-dot pickup-dot"></div>
-
-                <div>
-                    <div class="confirm-label">上車地點</div>
-                    <div id="confirmPickup" class="confirm-address">--</div>
-                </div>
-            </div>
-
-            <div class="confirm-line"></div>
-
-            <div class="confirm-location-row">
-                <div class="confirm-dot dropoff-dot"></div>
-
-                <div>
-                    <div class="confirm-label">下車地點</div>
-                    <div id="confirmDropoff" class="confirm-address">--</div>
-                </div>
-            </div>
-
-        </div>
-
-
-        <div class="confirm-route-box">
-
-            <div class="confirm-route-icon" aria-hidden="true">🚕</div>
-
-            <div class="confirm-route-name">
-                <span>🛣️ 路線</span>
-                <strong id="confirmRoute">--</strong>
-            </div>
-
-            <div class="confirm-stats">
-
-                <div>
-                    <span>📏 距離</span>
-                    <strong id="confirmDistance">-- km</strong>
-                </div>
-
-                <div>
-                    <span>⏱️ 時間</span>
-                    <strong id="confirmDuration">-- 分鐘</strong>
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <div class="confirm-price">
-
-            <span
-                id="confirmPriceLabel"
-                data-note="實際金額依實際行駛狀況為準"
-            >預估車資</span>
-
-            <strong id="confirmFare">
-                $---
-            </strong>
-
-        </div>
-
-
-        <button
-            type="button"
-            class="confirm-cancel"
-            onclick="closeConfirmModal()"
-        >
-            關閉
-        </button>
-
-    </div>
-
-</div>
-
-<div
-    id="addressTypingPreview"
-    class="address-typing-preview"
-    aria-live="polite"
->
-    <span id="addressTypingLabel">正在輸入</span>
-    <strong id="addressTypingText">請輸入地址</strong>
-</div>
-
 <script>
-
-
-/* =========================================
-   GOOGLE DATA
-========================================= */
-
-let pickupPlace = null;
-
-let dropoffPlace = null;
-
 let RouteClass = null;
+let PlaceClass = null;
+let serviceMode = 'taxi';
+let pickupPlace = null;
+let dropoffPlace = null;
+let pickupData = null;
+let dropoffData = null;
+const waypointPlaces = [null, null];
+const waypointData = [null, null];
+const waypointActive = [false, false];
+const controllers = { pickup:null, dropoff:null, stops:[null,null] };
+let latestResult = null;
 
-let serviceMode = "taxi";
+const $ = id => document.getElementById(id);
 
-/* =========================================
-   SERVICE MODE
-========================================= */
+function cleanText(value=''){
+  return String(value || '').trim().replace(/臺/g,'台').replace(/^\s*\d{3}(?:\d{2,3})?\s*/u,'').replace(/^台灣省?/u,'');
+}
+function placeName(place){
+  if(!place?.displayName) return '';
+  return typeof place.displayName === 'string' ? place.displayName : (place.displayName.toString?.() || '');
+}
+function toAddressData(place){
+  if(!place) return null;
+  const lat = place.location ? (typeof place.location.lat === 'function' ? place.location.lat() : place.location.lat) : null;
+  const lng = place.location ? (typeof place.location.lng === 'function' ? place.location.lng() : place.location.lng) : null;
+  return {
+    name: cleanText(placeName(place)),
+    address: cleanText(place.formattedAddress || ''),
+    placeId: place.id || '',
+    lat, lng
+  };
+}
+function displayAddress(data){
+  if(!data) return '';
+  const name = cleanText(data.name || '');
+  const address = cleanText(data.address || '');
+  if(name && address && !address.includes(name)) return `${name}｜${address}`;
+  return name || address;
+}
+function showStatus(message,error=false){
+  const el=$('status'); el.textContent=message; el.className='status show'+(error?' error':'');
+}
+function hideStatus(){ $('status').className='status'; }
+function hideResults(){ $('results').classList.remove('show'); latestResult=null; }
 
-function setServiceMode(mode) {
+function calculateFare(distanceKm, minutes){
+  const BASE_FARE=80, TIME_RATE=3, FIRST_KM_RATE=15, LONG_KM_RATE=25, LONG_DISTANCE_START=20;
+  const distanceFare = distanceKm <= LONG_DISTANCE_START
+    ? distanceKm * FIRST_KM_RATE
+    : LONG_DISTANCE_START * FIRST_KM_RATE + (distanceKm - LONG_DISTANCE_START) * LONG_KM_RATE;
+  return Math.floor((BASE_FARE + distanceFare + minutes * TIME_RATE) / 10) * 10;
+}
+function calculateDriverFare(distanceKm, minutes){
+  const BASE_FARE=60, TIME_RATE=3, FIRST_KM_RATE=15, LONG_KM_RATE=25, LONG_DISTANCE_START=20, DRIVER_SERVICE_FEE=320;
+  const distanceFare = distanceKm <= LONG_DISTANCE_START
+    ? distanceKm * FIRST_KM_RATE
+    : LONG_DISTANCE_START * FIRST_KM_RATE + (distanceKm - LONG_DISTANCE_START) * LONG_KM_RATE;
+  const tripFare = BASE_FARE + distanceFare + minutes * TIME_RATE;
+  return Math.floor(((tripFare * 2) + DRIVER_SERVICE_FEE) / 10) * 10;
+}
+function fareFor(distanceKm,minutes){ return serviceMode === 'driver' ? calculateDriverFare(distanceKm,minutes) : calculateFare(distanceKm,minutes); }
 
-    serviceMode =
-        mode === "driver"
-            ? "driver"
-            : "taxi";
+function setService(mode){
+  serviceMode = mode === 'driver' ? 'driver' : 'taxi';
+  document.querySelectorAll('.service-btn').forEach(btn=>{
+    const active = btn.dataset.service === serviceMode;
+    btn.classList.toggle('active',active);
+    btn.setAttribute('aria-pressed',String(active));
+  });
+  $('calcBtn').textContent = serviceMode === 'driver' ? '開始試算代駕費用 →' : '開始試算 →';
+  hideResults();
+}
 
-    document
-        .querySelectorAll(".service-switch-btn")
-        .forEach((button) => {
+document.querySelectorAll('.service-btn').forEach(btn=>btn.addEventListener('click',()=>setService(btn.dataset.service)));
 
-            const isActive =
-                button.dataset.service === serviceMode;
+function updateStops(){
+  for(let i=0;i<2;i++) $('waypoint'+(i+1)+'Group').hidden=!waypointActive[i];
+  $('addStopBtn').hidden=waypointActive.filter(Boolean).length>=2;
+}
+function addStop(){
+  const i=waypointActive.findIndex(v=>!v); if(i<0) return;
+  waypointActive[i]=true; updateStops(); hideResults(); setTimeout(()=>controllers.stops[i]?.focus(),50);
+}
+function clearStop(i){ waypointPlaces[i]=null; waypointData[i]=null; controllers.stops[i]?.setValue(''); }
+function removeStop(i){
+  if(i===0 && waypointActive[1]){
+    waypointPlaces[0]=waypointPlaces[1]; waypointData[0]=waypointData[1]; controllers.stops[0]?.setValue(controllers.stops[1]?.getValue()||'');
+    clearStop(1); waypointActive[0]=true; waypointActive[1]=false;
+  }else{ clearStop(i); waypointActive[i]=false; }
+  updateStops(); hideResults();
+}
+$('addStopBtn').addEventListener('click',addStop);
+document.querySelectorAll('[data-remove-stop]').forEach(btn=>btn.addEventListener('click',()=>removeStop(Number(btn.dataset.removeStop))));
 
-            button.classList.toggle(
-                "active",
-                isActive
-            );
+function activeWaypointPlaces(){ return waypointActive.map((v,i)=>v?waypointPlaces[i]:null).filter(Boolean); }
+function validateStops(){
+  for(let i=0;i<2;i++){
+    if(!waypointActive[i]) continue;
+    const typed=controllers.stops[i]?.getValue()||'';
+    if(typed && !waypointPlaces[i]){ showStatus(`停靠點 ${i+1} 請從 Google 地址建議中選擇。`,true); controllers.stops[i]?.focus(); return false; }
+  }
+  return true;
+}
 
-            button.setAttribute(
-                "aria-pressed",
-                String(isActive)
-            );
+function summarizeRoute(route,expectedLegs){
+  const legs=Array.isArray(route?.legs)?route.legs:[];
+  if(legs.length!==expectedLegs) throw new Error(`停靠點驗證失敗：預期 ${expectedLegs} 段，實際 ${legs.length} 段`);
+  const distanceMeters=legs.reduce((s,l)=>s+Number(l?.distanceMeters||0),0);
+  const durationMillis=legs.reduce((s,l)=>s+Number(l?.durationMillis||0),0);
+  if(!(distanceMeters>0) || !(durationMillis>0)) throw new Error('Google 路線資料不完整');
+  return {distanceKm:distanceMeters/1000,minutes:Math.ceil(durationMillis/60000)};
+}
+
+function buildCopyText(){
+  if(!latestResult) return '';
+  const service = serviceMode === 'driver' ? '代駕費用試算' : '車資試算';
+  const s=latestResult.surface, f=latestResult.fast;
+  const lines=[
+    `${service}結果`,
+    '',
+    `平面｜${s.distanceKm.toFixed(1)} km｜約 ${s.minutes} 分｜約 $${s.fare}`,
+    `快速｜${f.distanceKm.toFixed(1)} km｜約 ${f.minutes} 分｜約 $${f.fare}`
+  ];
+  if(serviceMode==='driver') lines.push('', '※ 以上代駕費用已含代駕服務費。');
+  if(Math.max(s.distanceKm,f.distanceKm)>40) lines.push('', '※ 40 公里以上長途另有優惠，可再確認實際方案。');
+  lines.push('', '※ 以上為系統預估，實際費用依當日行程與路況為準。');
+  return lines.join('\n');
+}
+function updateCopyPreview(){ $('copyPreview').textContent=buildCopyText(); }
+async function copyResults(){
+  const text=buildCopyText(); if(!text) return;
+  try{
+    if(navigator.clipboard?.writeText) await navigator.clipboard.writeText(text);
+    else{
+      const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    const btn=$('copyBtn'); btn.textContent='已複製 ✓'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='複製平面＋快速給客人';btn.classList.remove('copied');},1600);
+  }catch(err){ showStatus('複製失敗，請手動選取下方文字。',true); }
+}
+$('copyBtn').addEventListener('click',copyResults);
+
+async function calculateRoutes(){
+  if(!pickupPlace || !dropoffPlace){ showStatus('請從 Google 地址建議中選擇上車與下車地點。',true); return; }
+  if(!validateStops()) return;
+  if(!RouteClass){ showStatus('Google 路線服務尚未載入完成，請稍候再試。',true); return; }
+  const btn=$('calcBtn'); btn.disabled=true; btn.textContent='正在計算路線...'; showStatus('正在取得平面與快速路線...',false);
+  try{
+    const intermediates=activeWaypointPlaces().map(place=>({location:place}));
+    const expectedLegs=intermediates.length+1;
+    const departureTime=new Date(Date.now()+2*60*1000);
+    const common={origin:pickupPlace,destination:dropoffPlace,travelMode:'DRIVING',intermediates,optimizeWaypointOrder:false,routingPreference:'TRAFFIC_AWARE_OPTIMAL',departureTime,fields:['legs']};
+    const [fastResponse,surfaceResponse]=await Promise.all([
+      RouteClass.computeRoutes({...common,routeModifiers:{avoidHighways:false,avoidTolls:false,avoidFerries:true}}),
+      RouteClass.computeRoutes({...common,routeModifiers:{avoidHighways:true,avoidTolls:true,avoidFerries:true}})
+    ]);
+    const fastRoute=fastResponse.routes?.[0], surfaceRoute=surfaceResponse.routes?.[0];
+    if(!fastRoute || !surfaceRoute) throw new Error('找不到可用路線');
+    const fast=summarizeRoute(fastRoute,expectedLegs), surface=summarizeRoute(surfaceRoute,expectedLegs);
+    fast.fare=fareFor(fast.distanceKm,fast.minutes); surface.fare=fareFor(surface.distanceKm,surface.minutes);
+    latestResult={fast,surface};
+    $('surfaceDistance').textContent=`${surface.distanceKm.toFixed(1)} km`;
+    $('surfaceDuration').textContent=`約 ${surface.minutes} 分鐘`;
+    $('surfaceFare').textContent=`$${surface.fare}`;
+    $('fastDistance').textContent=`${fast.distanceKm.toFixed(1)} km`;
+    $('fastDuration').textContent=`約 ${fast.minutes} 分鐘`;
+    $('fastFare').textContent=`$${fast.fare}`;
+    const delta=surface.minutes-fast.minutes;
+    $('saveTime').textContent = delta>0 ? `快速路線約可節省 ${delta} 分鐘` : delta<0 ? `目前交通平面道路約快 ${Math.abs(delta)} 分鐘` : '目前兩條路線時間相近';
+    updateCopyPreview(); hideStatus(); $('results').classList.add('show');
+    setTimeout(()=>$('results').scrollIntoView({behavior:'smooth',block:'start'}),80);
+  }catch(err){ console.error(err); showStatus(`路線計算失敗：${err?.message||'請重新選擇地址後再試。'}`,true); }
+  finally{ btn.disabled=false; btn.textContent=serviceMode==='driver'?'開始試算代駕費用 →':'開始試算 →'; }
+}
+$('calcBtn').addEventListener('click',calculateRoutes);
+
+function resetTrip(){
+  pickupPlace=dropoffPlace=null; pickupData=dropoffData=null;
+  controllers.pickup?.setValue(''); controllers.dropoff?.setValue('');
+  for(let i=0;i<2;i++){clearStop(i);waypointActive[i]=false;}
+  updateStops(); hideResults(); hideStatus(); $('locationStatus').textContent=''; setService('taxi'); controllers.pickup?.focus();
+}
+$('resetBtn').addEventListener('click',resetTrip);
+
+async function useCurrentLocation(){
+  if(!navigator.geolocation){ $('locationStatus').textContent='此裝置無法取得目前位置'; return; }
+  const btn=$('locationBtn'); btn.disabled=true; btn.textContent='定位中…'; $('locationStatus').textContent='';
+  try{
+    const pos=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:10000,maximumAge:60000}));
+    const {Geocoder}=await google.maps.importLibrary('geocoding');
+    const response=await new Geocoder().geocode({location:{lat:pos.coords.latitude,lng:pos.coords.longitude}});
+    const first=(response.results||[]).find(r=>r.place_id && Array.isArray(r.types) && (r.types.includes('street_address')||r.types.includes('premise'))) || response.results?.find(r=>r.place_id);
+    if(!first?.place_id) throw new Error('無法取得目前地址');
+    const place=new PlaceClass({id:first.place_id});
+    await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});
+    pickupPlace=place; pickupData=toAddressData(place); controllers.pickup?.setValue(displayAddress(pickupData)); hideResults(); $('locationStatus').textContent='已帶入目前位置';
+  }catch(err){ console.warn(err); $('locationStatus').textContent='未取得定位，請手動輸入上車地點'; }
+  finally{btn.disabled=false;btn.textContent='⌖ 使用目前位置';}
+}
+$('locationBtn').addEventListener('click',useCurrentLocation);
+
+async function initGoogle(){
+  try{
+    const {AutocompleteSuggestion,AutocompleteSessionToken,Place}=await google.maps.importLibrary('places');
+    const {Route}=await google.maps.importLibrary('routes');
+    PlaceClass=Place; RouteClass=Route;
+    let searchCenter={lat:24.1477,lng:120.6736};
+    if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=>{searchCenter={lat:p.coords.latitude,lng:p.coords.longitude};},()=>{}, {timeout:4000,maximumAge:300000});
+
+    function createAutocomplete({containerId,placeholder,onReset,onSelect}){
+      const container=$(containerId), wrap=document.createElement('div'); wrap.className='address-autocomplete';
+      const input=document.createElement('input'); input.type='search'; input.className='address-input'; input.placeholder=placeholder; input.autocomplete='off';
+      const icon=document.createElement('span'); icon.className='address-icon'; icon.textContent='⌕';
+      const clear=document.createElement('button'); clear.type='button'; clear.className='address-clear'; clear.textContent='×'; clear.hidden=true;
+      const panel=document.createElement('div'); panel.className='suggestions';
+      wrap.append(input,icon,clear,panel); container.appendChild(wrap);
+      let timer=null, requestNo=0, token=new AutocompleteSessionToken();
+      const hide=()=>panel.classList.remove('show');
+      const textOf=x=>x?.text || x?.toString?.() || '';
+      async function choose(prediction){
+        input.disabled=true;
+        try{
+          const place=prediction.toPlace();
+          await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});
+          const data=toAddressData(place); input.value=displayAddress(data)||textOf(prediction.text); clear.hidden=!input.value.trim(); token=new AutocompleteSessionToken(); hide(); onSelect(place,data);
+        }catch(err){console.error(err);showStatus('地址資料讀取失敗，請重新選擇。',true);}finally{input.disabled=false;}
+      }
+      function render(suggestions){
+        panel.innerHTML=''; const preds=(suggestions||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);
+        if(!preds.length){const no=document.createElement('div');no.className='google-note';no.textContent='找不到符合的地點';panel.appendChild(no);}
+        preds.forEach(pred=>{
+          const b=document.createElement('button');b.type='button';b.className='suggestion';
+          const pin=document.createElement('span');pin.className='suggestion-pin';pin.textContent='📍';
+          const tw=document.createElement('span'), main=document.createElement('span'), sub=document.createElement('span'); main.className='suggestion-main';sub.className='suggestion-sub';main.textContent=textOf(pred.mainText)||textOf(pred.text);sub.textContent=textOf(pred.secondaryText);tw.append(main,sub);b.append(pin,tw);
+          b.addEventListener('click',e=>{e.preventDefault();choose(pred);}); panel.appendChild(b);
         });
-
-    const isDriver =
-        serviceMode === "driver";
-
-    document.getElementById("serviceTitle").textContent =
-        isDriver
-            ? "🚘 代駕試算"
-            : "💰 車資試算";
-
-    document.getElementById("serviceCode").textContent =
-        isDriver
-            ? "DESIGNATED DRIVER"
-            : "FARE ESTIMATOR";
-
-    document.getElementById("calculateBtn").textContent =
-        isDriver
-            ? "開始試算代駕費用 →"
-            : "開始試算 →";
-
-    document
-        .getElementById("results")
-        .classList
-        .remove("show");
-
-    hideStatus();
-
-    const manualResult = document.getElementById("manualResult");
-    if (manualResult && manualResult.classList.contains("show")) {
-        calculateManualFare();
+        const note=document.createElement('div');note.className='google-note';note.textContent='Google Maps';panel.appendChild(note);panel.classList.add('show');
+      }
+      async function request(){
+        const q=input.value.trim(); if(q.length<2){hide();return;} const current=++requestNo;
+        try{
+          const res=await AutocompleteSuggestion.fetchAutocompleteSuggestions({input:q,includedRegionCodes:['tw'],language:'zh-TW',region:'TW',locationBias:{center:searchCenter,radius:50000},origin:searchCenter,sessionToken:token});
+          if(current===requestNo) render(res.suggestions||[]);
+        }catch(err){console.error('autocomplete',err);}
+      }
+      input.addEventListener('input',()=>{clear.hidden=!input.value.trim();onReset();hideResults();clearTimeout(timer);timer=setTimeout(request,220);});
+      input.addEventListener('focus',()=>{if(input.value.trim().length>=2)request();});
+      clear.addEventListener('click',()=>{input.value='';clear.hidden=true;onReset();hideResults();hide();input.focus();});
+      document.addEventListener('pointerdown',e=>{if(!wrap.contains(e.target))hide();});
+      return {input,getValue:()=>input.value.trim(),setValue:v=>{input.value=v||'';clear.hidden=!input.value.trim();},focus:()=>input.focus(),hideSuggestions:hide};
     }
+
+    controllers.pickup=createAutocomplete({containerId:'pickupBox',placeholder:'請輸入上車地址或地標',onReset:()=>{pickupPlace=null;pickupData=null;$('locationStatus').textContent='';},onSelect:(p,d)=>{pickupPlace=p;pickupData=d;hideResults();}});
+    controllers.stops[0]=createAutocomplete({containerId:'waypoint1Box',placeholder:'請輸入停靠點 1',onReset:()=>{waypointPlaces[0]=null;waypointData[0]=null;},onSelect:(p,d)=>{waypointPlaces[0]=p;waypointData[0]=d;hideResults();}});
+    controllers.stops[1]=createAutocomplete({containerId:'waypoint2Box',placeholder:'請輸入停靠點 2',onReset:()=>{waypointPlaces[1]=null;waypointData[1]=null;},onSelect:(p,d)=>{waypointPlaces[1]=p;waypointData[1]=d;hideResults();}});
+    controllers.dropoff=createAutocomplete({containerId:'dropoffBox',placeholder:'請輸入下車地址或地標',onReset:()=>{dropoffPlace=null;dropoffData=null;},onSelect:(p,d)=>{dropoffPlace=p;dropoffData=d;hideResults();}});
+    updateStops();
+  }catch(err){console.error(err);showStatus('Google 地址／路線載入失敗，請重新整理頁面。',true);}
 }
-
-
-
-/* =========================================
-   INITIALIZE GOOGLE
-========================================= */
-
-async function initGoogle() {
-
-    try {
-
-        const {
-            AutocompleteSuggestion,
-            AutocompleteSessionToken
-        } =
-        await google.maps.importLibrary(
-            "places"
-        );
-
-        const {
-            Route
-        } =
-        await google.maps.importLibrary(
-            "routes"
-        );
-
-
-        RouteClass = Route;
-
-        let searchCenter = {
-            lat: 24.1477,
-            lng: 120.6736
-        };
-
-        if (
-            "geolocation"
-            in navigator
-        ) {
-
-            navigator
-                .geolocation
-                .getCurrentPosition(
-
-                    (position) => {
-
-                        searchCenter = {
-                            lat:
-                                position
-                                    .coords
-                                    .latitude,
-
-                            lng:
-                                position
-                                    .coords
-                                    .longitude
-                        };
-                    },
-
-                    () => {
-
-                        console.info(
-                            "未取得目前位置，地址建議維持台中地區排序。"
-                        );
-                    },
-
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 6000,
-                        maximumAge: 300000
-                    }
-                );
-        }
-
-        const createAddressAutocomplete = ({
-            containerId,
-            placeholder,
-            ariaLabel,
-            onReset,
-            onSelect
-        }) => {
-
-            const container =
-                document.getElementById(
-                    containerId
-                );
-
-            const wrapper =
-                document.createElement(
-                    "div"
-                );
-
-            wrapper.className =
-                "address-autocomplete";
-
-            const input =
-                document.createElement(
-                    "input"
-                );
-
-            input.type = "search";
-            input.className =
-                "address-input";
-            input.placeholder =
-                placeholder;
-            input.setAttribute(
-                "aria-label",
-                ariaLabel
-            );
-            input.setAttribute(
-                "autocomplete",
-                "off"
-            );
-            input.setAttribute(
-                "enterkeyhint",
-                "search"
-            );
-
-            const searchIcon =
-                document.createElement(
-                    "span"
-                );
-
-            searchIcon.className =
-                "address-search-icon";
-            searchIcon.textContent =
-                "⌕";
-            searchIcon.setAttribute(
-                "aria-hidden",
-                "true"
-            );
-
-            const clearButton =
-                document.createElement(
-                    "button"
-                );
-
-            clearButton.type =
-                "button";
-            clearButton.className =
-                "address-clear-btn";
-            clearButton.textContent =
-                "×";
-            clearButton.setAttribute(
-                "aria-label",
-                "清除地址"
-            );
-
-            const suggestionsBox =
-                document.createElement(
-                    "div"
-                );
-
-            suggestionsBox.className =
-                "address-suggestions";
-
-            wrapper.append(
-                input,
-                searchIcon,
-                clearButton,
-                suggestionsBox
-            );
-
-            container.appendChild(
-                wrapper
-            );
-
-            let debounceTimer = null;
-            let requestNumber = 0;
-            let sessionToken =
-                new AutocompleteSessionToken();
-
-            const hideSuggestions = () => {
-
-                suggestionsBox.classList.remove(
-                    "show"
-                );
-            };
-
-            const getText = (
-                textObject
-            ) => {
-
-                if (!textObject) {
-                    return "";
-                }
-
-                return (
-                    textObject.text
-                    ||
-                    textObject.toString?.()
-                    ||
-                    ""
-                );
-            };
-
-            const choosePrediction =
-                async (
-                    prediction
-                ) => {
-
-                    input.disabled = true;
-
-                    try {
-
-                        const place =
-                            prediction.toPlace();
-
-                        await place.fetchFields({
-                            fields: [
-                                "id",
-                                "displayName",
-                                "formattedAddress",
-                                "location"
-                            ]
-                        });
-
-                        input.value =
-                            getText(
-                                prediction.text
-                            )
-                            ||
-                            place.formattedAddress
-                            ||
-                            place.displayName
-                            ||
-                            "";
-
-                        sessionToken =
-                            new AutocompleteSessionToken();
-
-                        hideSuggestions();
-                        onSelect(place);
-
-                    } catch (error) {
-
-                        console.error(
-                            "地址資料讀取失敗：",
-                            error
-                        );
-
-                        showStatus(
-                            "地址資料讀取失敗，請重新選擇。",
-                            true
-                        );
-
-                    } finally {
-
-                        input.disabled = false;
-                    }
-                };
-
-            const renderSuggestions = (
-                suggestions
-            ) => {
-
-                suggestionsBox.innerHTML =
-                    "";
-
-                const predictions =
-                    suggestions
-                        .map(
-                            (suggestion) =>
-                                suggestion
-                                    .placePrediction
-                        )
-                        .filter(Boolean)
-                        .slice(0, 6);
-
-                if (!predictions.length) {
-
-                    const noResults =
-                        document.createElement(
-                            "div"
-                        );
-
-                    noResults.className =
-                        "address-no-results";
-                    noResults.textContent =
-                        "找不到符合的地點，請輸入更完整的名稱或地址";
-
-                    suggestionsBox.appendChild(
-                        noResults
-                    );
-
-                } else {
-
-                    predictions.forEach(
-                        (prediction) => {
-
-                            const button =
-                                document.createElement(
-                                    "button"
-                                );
-
-                            button.type =
-                                "button";
-                            button.className =
-                                "address-suggestion";
-
-                            const icon =
-                                document.createElement(
-                                    "span"
-                                );
-
-                            icon.className =
-                                "address-suggestion-icon";
-                            icon.textContent =
-                                "📍";
-
-                            const textWrap =
-                                document.createElement(
-                                    "span"
-                                );
-
-                            const main =
-                                document.createElement(
-                                    "span"
-                                );
-
-                            main.className =
-                                "address-suggestion-main";
-                            main.textContent =
-                                getText(
-                                    prediction.mainText
-                                )
-                                ||
-                                getText(
-                                    prediction.text
-                                );
-
-                            const secondary =
-                                document.createElement(
-                                    "span"
-                                );
-
-                            secondary.className =
-                                "address-suggestion-secondary";
-                            secondary.textContent =
-                                getText(
-                                    prediction.secondaryText
-                                );
-
-                            textWrap.append(
-                                main,
-                                secondary
-                            );
-
-                            button.append(
-                                icon,
-                                textWrap
-                            );
-
-                            button.addEventListener(
-                                "pointerdown",
-                                (event) => {
-
-                                    event.preventDefault();
-                                    choosePrediction(
-                                        prediction
-                                    );
-                                }
-                            );
-
-                            suggestionsBox.appendChild(
-                                button
-                            );
-                        }
-                    );
-                }
-
-                const attribution =
-                    document.createElement(
-                        "div"
-                    );
-
-                attribution.className =
-                    "address-google-attribution";
-                attribution.textContent =
-                    "Google Maps";
-
-                suggestionsBox.appendChild(
-                    attribution
-                );
-
-                suggestionsBox.classList.add(
-                    "show"
-                );
-            };
-
-            const requestSuggestions =
-                async () => {
-
-                    const query =
-                        input.value.trim();
-
-                    if (query.length < 2) {
-                        hideSuggestions();
-                        return;
-                    }
-
-                    const currentRequest =
-                        ++requestNumber;
-
-                    try {
-
-                        const response =
-                            await AutocompleteSuggestion
-                                .fetchAutocompleteSuggestions({
-                                    input: query,
-                                    includedRegionCodes: ["tw"],
-                                    language: "zh-TW",
-                                    region: "TW",
-                                    locationBias: {
-                                        center:
-                                            searchCenter,
-                                        radius:
-                                            50000
-                                    },
-                                    origin:
-                                        searchCenter,
-                                    sessionToken
-                                });
-
-                        if (
-                            currentRequest
-                            !== requestNumber
-                        ) {
-                            return;
-                        }
-
-                        renderSuggestions(
-                            response.suggestions
-                            || []
-                        );
-
-                    } catch (error) {
-
-                        console.error(
-                            "地址建議載入失敗：",
-                            error
-                        );
-                    }
-                };
-
-            input.addEventListener(
-                "input",
-                () => {
-
-                    onReset();
-                    hideResults();
-
-                    clearTimeout(
-                        debounceTimer
-                    );
-
-                    debounceTimer =
-                        setTimeout(
-                            requestSuggestions,
-                            220
-                        );
-                }
-            );
-
-            input.addEventListener(
-                "keydown",
-                (event) => {
-
-                    if (
-                        event.key
-                        === "Escape"
-                    ) {
-                        hideSuggestions();
-                    }
-                }
-            );
-
-            input.addEventListener(
-                "focus",
-                () => {
-
-                    if (
-                        input.value
-                            .trim()
-                            .length
-                        >= 2
-                    ) {
-                        requestSuggestions();
-                    }
-                }
-            );
-
-            clearButton.addEventListener(
-                "click",
-                () => {
-
-                    input.value = "";
-                    onReset();
-                    hideResults();
-                    hideSuggestions();
-                    input.focus();
-                }
-            );
-
-            document.addEventListener(
-                "pointerdown",
-                (event) => {
-
-                    if (
-                        !wrapper.contains(
-                            event.target
-                        )
-                    ) {
-                        hideSuggestions();
-                    }
-                }
-            );
-        };
-
-        createAddressAutocomplete({
-            containerId: "pickupBox",
-            placeholder:
-                "請輸入上車地址或地標",
-            ariaLabel:
-                "上車地點",
-            onReset: () => {
-                pickupPlace = null;
-            },
-            onSelect: (place) => {
-                pickupPlace = place;
-                hideResults();
-            }
-        });
-
-        createAddressAutocomplete({
-            containerId: "dropoffBox",
-            placeholder:
-                "請輸入目的地地址或地標",
-            ariaLabel:
-                "下車地點",
-            onReset: () => {
-                dropoffPlace = null;
-            },
-            onSelect: (place) => {
-                dropoffPlace = place;
-                hideResults();
-            }
-        });
-
-
-    }
-
-    catch (error) {
-
-
-        console.error(
-            error
-        );
-
-
-        showStatus(
-            "Google 地址搜尋載入失敗，請確認 API Key 與 API 設定。",
-            true
-        );
-
-
-    }
-
-}
-
-
-/* =========================================
-   TOP TAXI 車資計算
-========================================= */
-
-function calculateFare(distanceKm, minutes) {
-
-    const BASE_FARE = 80;          // 基本費
-    const TIME_RATE = 3;           // 每分鐘 3 元
-    const FIRST_KM_RATE = 15;      // 前 20 公里，每公里 15 元
-    const LONG_KM_RATE = 25;       // 超過 20 公里的部分，每公里 25 元
-    const LONG_DISTANCE_START = 20;
-
-    let distanceFare = 0;
-
-    // 計算里程費
-    if (distanceKm <= LONG_DISTANCE_START) {
-
-        distanceFare =
-            distanceKm * FIRST_KM_RATE;
-
-    } else {
-
-        distanceFare =
-            (LONG_DISTANCE_START * FIRST_KM_RATE)
-            +
-            ((distanceKm - LONG_DISTANCE_START) * LONG_KM_RATE);
-
-    }
-
-    // 計算時間費
-    const timeFare =
-        minutes * TIME_RATE;
-
-    // 總車資
-    const totalFare =
-        BASE_FARE +
-        distanceFare +
-        timeFare;
-
-    // 個位數無條件捨去
-    const finalFare =
-        Math.floor(totalFare / 10) * 10;
-
-    return finalFare;
-}
-
-
-/* =========================================
-   TOP TAXI 代駕計費
-========================================= */
-
-function calculateDriverFare(distanceKm, minutes) {
-
-    const BASE_FARE = 60;
-    const TIME_RATE = 3;
-    const FIRST_KM_RATE = 15;
-    const LONG_KM_RATE = 25;
-    const LONG_DISTANCE_START = 20;
-    const DRIVER_SERVICE_FEE = 320;
-
-    let distanceFare = 0;
-
-    if (distanceKm <= LONG_DISTANCE_START) {
-
-        distanceFare =
-            distanceKm * FIRST_KM_RATE;
-
-    } else {
-
-        distanceFare =
-            (LONG_DISTANCE_START * FIRST_KM_RATE)
-            +
-            ((distanceKm - LONG_DISTANCE_START) * LONG_KM_RATE);
-    }
-
-    const timeFare =
-        minutes * TIME_RATE;
-
-    const tripFare =
-        BASE_FARE +
-        distanceFare +
-        timeFare;
-
-    const totalFare =
-        (tripFare * 2)
-        +
-        DRIVER_SERVICE_FEE;
-
-    return Math.floor(totalFare / 10) * 10;
-}
-
-/* =========================================
-   手動公里／時間試算
-========================================= */
-
-function calculateManualFare() {
-    const distanceInput = document.getElementById("manualDistance");
-    const minutesInput = document.getElementById("manualMinutes");
-    const resultBox = document.getElementById("manualResult");
-    const resultLabel = document.getElementById("manualResultLabel");
-    const fareOutput = document.getElementById("manualFare");
-
-    const distanceKm = Number(distanceInput.value);
-    const minutes = Number(minutesInput.value);
-
-    if (
-        distanceInput.value.trim() === "" ||
-        minutesInput.value.trim() === "" ||
-        !Number.isFinite(distanceKm) ||
-        !Number.isFinite(minutes) ||
-        distanceKm < 0 ||
-        minutes < 0
-    ) {
-        alert("請輸入正確的公里數與分鐘數。");
-        return;
-    }
-
-    const isDriver = serviceMode === "driver";
-    const fare = isDriver
-        ? calculateDriverFare(distanceKm, minutes)
-        : calculateFare(distanceKm, minutes);
-
-    resultLabel.textContent = isDriver
-        ? "代駕服務｜預估費用"
-        : "一般搭車｜預估車資";
-
-    fareOutput.textContent = "$" + fare.toLocaleString("zh-TW");
-    resultBox.classList.add("show");
-}
-
-/* =========================================
-   CALCULATE ROUTES
-========================================= */
-
-async function calculateRoutes() {
-
-
-    if (
-        !pickupPlace ||
-        !dropoffPlace
-    ) {
-
-
-        showStatus(
-            "請從 Google 地址建議中選擇上車地點與下車地點。",
-            true
-        );
-
-
-        return;
-
-    }
-
-
-
-    if (!RouteClass) {
-
-
-        showStatus(
-            "Google 路線服務尚未載入完成，請稍候再試。",
-            true
-        );
-
-
-        return;
-
-    }
-
-
-
-    const button =
-        document.getElementById(
-            "calculateBtn"
-        );
-
-
-    button.disabled = true;
-
-    button.textContent =
-        "正在計算路線...";
-
-
-    showStatus(
-        "正在取得 Google 即時路線與預估時間...",
-        false
-    );
-
-
-    try {
-
-
-        /* =====================================
-           快速路線
-           允許高速公路
-        ====================================== */
-
-        const fastRequest = {
-
-            origin:
-                pickupPlace,
-
-            destination:
-                dropoffPlace,
-
-            travelMode:
-                "DRIVING",
-
-            routingPreference:
-                "TRAFFIC_AWARE",
-
-            routeModifiers: {
-
-                avoidHighways:
-                    false,
-
-                avoidTolls:
-                    false,
-
-                avoidFerries:
-                    true
-
-            },
-
-            fields: [
-
-                "distanceMeters",
-                "durationMillis"
-
-            ]
-
-        };
-
-
-        /* =====================================
-           平面道路
-           避開高速公路
-        ====================================== */
-
-        const normalRequest = {
-
-            origin:
-                pickupPlace,
-
-            destination:
-                dropoffPlace,
-
-            travelMode:
-                "DRIVING",
-
-            routingPreference:
-                "TRAFFIC_AWARE",
-
-            routeModifiers: {
-
-                avoidHighways:
-                    true,
-
-                avoidTolls:
-                    false,
-
-                avoidFerries:
-                    true
-
-            },
-
-            fields: [
-
-                "distanceMeters",
-                "durationMillis"
-
-            ]
-
-        };
-
-
-
-        /* =====================================
-           同時計算兩條
-        ====================================== */
-
-        const [
-            fastResponse,
-            normalResponse
-        ] =
-        await Promise.all([
-
-            RouteClass.computeRoutes(
-                fastRequest
-            ),
-
-            RouteClass.computeRoutes(
-                normalRequest
-            )
-
-        ]);
-
-
-
-        const fastRoute =
-            fastResponse
-            .routes?.[0];
-
-
-        const normalRoute =
-            normalResponse
-            .routes?.[0];
-
-
-
-        if (
-            !fastRoute ||
-            !normalRoute
-        ) {
-
-
-            throw new Error(
-                "找不到可用路線"
-            );
-
-        }
-
-
-
-        /* =====================================
-           FORMAT DATA
-        ====================================== */
-
-        const fastDistance =
-            fastRoute.distanceMeters /
-            1000;
-
-
-        const normalDistance =
-            normalRoute.distanceMeters /
-            1000;
-
-
-        const fastMinutes =
-            Math.ceil(
-                fastRoute.durationMillis /
-                60000
-            );
-
-
-        const normalMinutes =
-            Math.ceil(
-                normalRoute.durationMillis /
-                60000
-            );
-
-
-
-        /* =====================================
-           DISPLAY
-        ====================================== */
-
-        document
-            .getElementById(
-                "fastDistance"
-            )
-            .textContent =
-            "📏 " +
-            fastDistance.toFixed(1) +
-            " km";
-
-
-        document
-            .getElementById(
-                "fastDuration"
-            )
-            .textContent =
-            "⏱️ 約 " +
-            fastMinutes +
-            " 分鐘";
-
-
-
-        document
-            .getElementById(
-                "normalDistance"
-            )
-            .textContent =
-            "📏 " +
-            normalDistance.toFixed(1) +
-            " km";
-
-
-        document
-            .getElementById(
-                "normalDuration"
-            )
-            .textContent =
-            "⏱️ 約 " +
-            normalMinutes +
-            " 分鐘";
-
-
-
-        /* =====================================
-           SAVE TIME
-        ====================================== */
-
-        const save =
-            normalMinutes -
-            fastMinutes;
-
-
-        const saveTime =
-            document.getElementById(
-                "saveTime"
-            );
-
-
-        if (save > 0) {
-
-
-            saveTime.textContent =
-                "快速路線約可節省 " +
-                save +
-                " 分鐘";
-
-
-        }
-
-        else {
-
-
-            saveTime.textContent =
-                "目前交通狀況下兩條路線時間相近";
-
-
-        }
-
-
-
-        /* =====================================
-           FARE
-           下一步會換成正式公式
-        ====================================== */
-
-/* =====================================
-   TOP TAXI 車資
-===================================== */
-
-const fareCalculator =
-    serviceMode === "driver"
-        ? calculateDriverFare
-        : calculateFare;
-
-const normalFare =
-    fareCalculator(
-        normalDistance,
-        normalMinutes
-    );
-
-const fastFare =
-    fareCalculator(
-        fastDistance,
-        fastMinutes
-    );
-
-
-document
-    .getElementById(
-        "normalFare"
-    )
-    .textContent =
-    "$" + normalFare;
-
-
-document
-    .getElementById(
-        "fastFare"
-    )
-    .textContent =
-    "$" + fastFare;
-
-
-
-        hideStatus();
-
-
-        document
-            .getElementById(
-                "results"
-            )
-            .classList
-            .add(
-                "show"
-            );
-
-
-        setTimeout(() => {
-
-
-            document
-                .getElementById(
-                    "results"
-                )
-                .scrollIntoView({
-
-                    behavior:
-                        "smooth",
-
-                    block:
-                        "start"
-
-                });
-
-
-        },100);
-
-
-    }
-
-    catch (error) {
-
-
-        console.error(
-            error
-        );
-
-
-        showStatus(
-
-            "路線計算失敗。請確認 Maps JavaScript API、Places API（新版）與 Routes API 都已啟用。",
-
-            true
-
-        );
-
-
-    }
-
-    finally {
-
-
-        button.disabled =
-            false;
-
-
-        button.textContent =
-            "開始試算 →";
-
-
-    }
-
-}
-
-
-
-/* =========================================
-   SELECT ROUTE
-========================================= */
-
-function selectRoute(routeName) {
-
-    let distance = "";
-    let duration = "";
-    let fare = "";
-
-    if (routeName === "平面道路") {
-
-        distance = document
-            .getElementById("normalDistance")
-            .textContent
-            .replace("📏 ", "");
-
-        duration = document
-            .getElementById("normalDuration")
-            .textContent
-            .replace("⏱️ 約 ", "");
-
-        fare = document
-            .getElementById("normalFare")
-            .textContent;
-
-    } else {
-
-        distance = document
-            .getElementById("fastDistance")
-            .textContent
-            .replace("📏 ", "");
-
-        duration = document
-            .getElementById("fastDuration")
-            .textContent
-            .replace("⏱️ 約 ", "");
-
-        fare = document
-            .getElementById("fastFare")
-            .textContent;
-    }
-
-
-    document.getElementById("confirmPickup").textContent =
-        pickupPlace?.formattedAddress ||
-        pickupPlace?.displayName ||
-        "--";
-
-    document.getElementById("confirmDropoff").textContent =
-        dropoffPlace?.formattedAddress ||
-        dropoffPlace?.displayName ||
-        "--";
-
-    const serviceName =
-        serviceMode === "driver"
-            ? "代駕服務"
-            : "一般搭車";
-
-    document.getElementById("confirmRoute").textContent =
-        serviceName + "｜" + routeName;
-
-    document.getElementById("confirmDistance").textContent =
-        distance;
-
-    document.getElementById("confirmDuration").textContent =
-        duration;
-
-    document.getElementById("confirmFare").textContent =
-        fare;
-
-    document
-        .getElementById("confirmPriceLabel")
-        .dataset
-        .note =
-        serviceMode === "driver"
-            ? "含代駕服務費"
-            : "實際金額依實際行駛狀況為準";
-
-
-    document
-        .getElementById("confirmModal")
-        .classList.add("show");
-
-    document.body.style.overflow = "hidden";
-}
-
-
-/* 關閉行程確認視窗 */
-
-function closeConfirmModal() {
-
-    document
-        .getElementById("confirmModal")
-        .classList.remove("show");
-
-    document.body.style.overflow = "";
-}
-
-
-/* =========================================
-   STATUS
-========================================= */
-
-function showStatus(
-    message,
-    error
-) {
-
-
-    const status =
-        document.getElementById(
-            "status"
-        );
-
-
-    status.textContent =
-        message;
-
-
-    status.className =
-        error
-        ?
-        "status show error"
-        :
-        "status show";
-
-
-}
-
-
-
-function hideStatus() {
-
-
-    document
-        .getElementById(
-            "status"
-        )
-        .className =
-        "status";
-
-
-}
-
-
-
-function hideResults() {
-
-
-    document
-        .getElementById(
-            "results"
-        )
-        .classList
-        .remove(
-            "show"
-        );
-
-
-}
-
-
-
-/* =========================================
-   START
-========================================= */
-
-window.addEventListener(
-    "load",
-    initGoogle
-);
-
-
+window.addEventListener('load',initGoogle);
 </script>
-
-
-
-<!-- =========================================
-     GOOGLE MAPS API LOADER
-
-     ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-
-     ↓↓↓ 只有這裡需要你自己修改 ↓↓↓
-
-     key: "你的API金鑰"
-
-     把「你的API金鑰」換成 Google 給你的 Key
-
-     ★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★★
-========================================= -->
-
 
 <script>
-
-(g => {
-
-    var h,
-        a,
-        k,
-        p = "The Google Maps JavaScript API",
-        c = "google",
-        l = "importLibrary",
-        q = "__ib__",
-        m = document,
-        b = window;
-
-    b =
-        b[c] ||
-        (b[c] = {});
-
-    var d =
-        b.maps ||
-        (b.maps = {});
-
-    var r =
-        new Set;
-
-    var e =
-        new URLSearchParams;
-
-    var u =
-        () =>
-        h ||
-        (
-            h =
-            new Promise(
-                async (
-                    f,
-                    n
-                ) => {
-
-                    await (
-                        a =
-                        m.createElement(
-                            "script"
-                        )
-                    );
-
-                    e.set(
-                        "libraries",
-                        [...r] + ""
-                    );
-
-                    for (
-                        k in g
-                    )
-
-                    e.set(
-
-                        k.replace(
-                            /[A-Z]/g,
-                            t =>
-                            "_" +
-                            t[0]
-                            .toLowerCase()
-                        ),
-
-                        g[k]
-
-                    );
-
-
-                    e.set(
-                        "callback",
-                        c +
-                        ".maps." +
-                        q
-                    );
-
-
-                    a.src =
-                        `https://maps.${c}apis.com/maps/api/js?`
-                        +
-                        e;
-
-
-                    d[q] =
-                        f;
-
-
-                    a.onerror =
-                        () =>
-                        h =
-                        n(
-                            Error(
-                                p +
-                                " could not load."
-                            )
-                        );
-
-
-                    a.nonce =
-                        m
-                        .querySelector(
-                            "script[nonce]"
-                        )
-                        ?.nonce
-                        ||
-                        "";
-
-
-                    m.head.append(
-                        a
-                    );
-
-                }
-            )
-
-        );
-
-
-    d[l]
-    ?
-
-    console.warn(
-        p +
-        " only loads once. Ignoring:",
-        g
-    )
-
-    :
-
-    d[l] =
-        (
-            f,
-            ...n
-        ) =>
-
-        r.add(f) &&
-        u()
-        .then(
-            () =>
-            d[l](
-                f,
-                ...n
-            )
-        );
-
-
-})({
-
-    /* =========================================
-       ★ 在下面貼上你的 API KEY
-    ========================================= */
-
-    key:
-        "AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw",
-
-
-    v:
-        "weekly",
-
-
-    language:
-        "zh-TW",
-
-
-    region:
-        "TW"
-
-});
-
+(g=>{var h,a,k,p='The Google Maps JavaScript API',c='google',l='importLibrary',q='__ib__',m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await(a=m.createElement('script'));e.set('libraries',[...r]+'');for(k in g)e.set(k.replace(/[A-Z]/g,t=>'_'+t[0].toLowerCase()),g[k]);e.set('callback',c+'.maps.'+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+' could not load.'));a.nonce=m.querySelector('script[nonce]')?.nonce||'';m.head.append(a)}));d[l]?console.warn(p+' only loads once. Ignoring:',g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({key:'AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw',v:'weekly',language:'zh-TW',region:'TW'});
 </script>
-
-
 </body>
-
 </html>
