@@ -1,315 +1,77 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>調度車資試算</title>
 <style>
-:root{--red:#ff1f2d;--red-dark:#d40018;--ink:#19191d;--muted:#7d7d84;--line:#e5e5e9;--bg:#f2f3f5;--card:#fff}
-*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg)}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC","PingFang TC",Arial,sans-serif;color:var(--ink)}
-button,input{font:inherit}.page{width:min(100%,620px);margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 14px max(36px,env(safe-area-inset-bottom))}
-.card{background:var(--card);border:1px solid rgba(0,0,0,.04);border-radius:24px;padding:22px 18px;box-shadow:0 16px 46px rgba(20,20,28,.09)}
-.header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:17px}.title-wrap{min-width:0}
-.title{display:flex;align-items:center;gap:10px;margin:0;font-size:20px;font-weight:950;letter-spacing:.1px}.title::before{content:"";width:4px;height:24px;border-radius:999px;background:var(--red)}
-.subtitle{margin-top:6px;color:#95959b;font-size:12px;font-weight:650;line-height:1.5}.reset-btn{flex:0 0 auto;border:0;background:transparent;color:#898990;padding:8px 0;font-size:12px;font-weight:800;cursor:pointer}
-.service-switch{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:0 0 20px;padding:5px;border:1px solid #e3e3e7;border-radius:17px;background:linear-gradient(180deg,#fbfbfc,#f1f1f4);box-shadow:0 6px 16px rgba(20,20,24,.06)}
-.service-btn{min-height:48px;border:1px solid transparent;border-radius:13px;background:transparent;color:#55555d;font-weight:900;cursor:pointer}
-.service-btn.active{border-color:rgba(181,0,21,.15);background:linear-gradient(180deg,#ff263a,#e5001c);color:#fff;box-shadow:0 7px 16px rgba(218,0,27,.22)}
-.field-group{margin-bottom:15px}.label-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}label{font-size:15px;font-weight:900}
-.paste-btn{flex:0 0 auto;min-height:30px;padding:0 10px;border:1px solid #dedee3;border-radius:9px;background:#fff;color:#65656c;font-size:12px;font-weight:850;cursor:pointer}
-.paste-btn:active{transform:scale(.98)}.paste-btn:disabled{opacity:.55;cursor:wait}
-.label-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
-.address-autocomplete{position:relative;width:100%}.address-input{width:100%;height:48px;padding:0 42px 0 41px;border:1px solid var(--line);border-radius:13px;outline:none;background:#fafafa;color:#222;font-size:16px;font-weight:700;-webkit-appearance:none;appearance:none}
-.address-input:focus{border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(255,31,45,.08)}.address-icon{position:absolute;left:15px;top:24px;transform:translateY(-50%);color:#77777d;font-size:16px;pointer-events:none}
-.address-clear{position:absolute;right:8px;top:24px;width:32px;height:32px;transform:translateY(-50%);border:0;border-radius:50%;background:transparent;color:#84848b;font-size:20px;cursor:pointer}.address-clear[hidden]{display:none}
-.suggestions{position:absolute;left:0;right:0;top:calc(100% + 7px);z-index:5000;display:none;max-height:min(310px,44vh);overflow-y:auto;border:1px solid #e1e1e4;border-radius:14px;background:#fff;box-shadow:0 16px 38px rgba(0,0,0,.18);overscroll-behavior:contain;-webkit-overflow-scrolling:touch}.suggestions.show{display:block}
-.suggestion{width:100%;min-height:62px;display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px;align-items:center;padding:12px 14px;border:0;border-bottom:1px solid #ededf0;background:#fff;text-align:left;cursor:pointer}.suggestion:active{background:#f5f5f7}
-.suggestion-pin{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;background:#f0f0f2}.suggestion-main,.suggestion-sub{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.suggestion-main{font-size:15px;font-weight:850;line-height:1.35}.suggestion-sub{margin-top:3px;color:#77777d;font-size:12px;line-height:1.35}.google-note{padding:8px 14px;color:#76767c;font-size:11px;font-weight:700;text-align:right}
-.waypoint-wrap{margin:-2px 0 12px}.waypoint-group{position:relative;margin:10px 0 14px;padding-left:18px}.waypoint-group::before{content:"";position:absolute;left:4px;top:-12px;bottom:-12px;border-left:2px dashed #ddd}
-.remove-stop{border:1px solid #e4e4e7;border-radius:9px;background:#fff;color:#7c7c82;padding:6px 10px;font-size:12px;font-weight:800;cursor:pointer}.add-stop{width:100%;min-height:43px;border:1px dashed #d5d5da;border-radius:12px;background:#fff;color:#515158;font-size:14px;font-weight:850;cursor:pointer}.add-stop:hover{border-color:#ff6672;color:var(--red);background:#fff8f9}.stop-note{margin-top:7px;color:#a0a0a5;font-size:11px;text-align:center}
-.location-btn{width:100%;min-height:35px;margin-top:6px;border:1px solid var(--line);border-radius:10px;background:#f7f7f9;color:#707077;font-size:12.5px;font-weight:850;cursor:pointer}.location-status{min-height:0;margin-top:5px;color:#477c58;font-size:11px}.location-status.error{color:#b02b36}
-.route-divider{height:15px;margin:-7px 0 -7px 18px;border-left:2px dashed #ddd}.calc-btn{width:100%;min-height:54px;margin-top:7px;border:0;border-radius:15px;background:linear-gradient(135deg,#ff3341,#e10019);color:#fff;font-size:17px;font-weight:950;cursor:pointer;box-shadow:0 10px 25px rgba(210,0,22,.22)}.calc-btn:disabled{opacity:.58;cursor:wait}
-.status{display:none;margin-top:14px;padding:12px 14px;border-radius:12px;background:#f7f7f8;color:#666;font-size:12px;line-height:1.6;text-align:center}.status.show{display:block}.status.error{border:1px solid #ffd3d7;background:#fff1f2;color:#a31320}
-.results{display:none;margin-top:24px}.results.show{display:block}.results-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}.results-title{font-size:17px;font-weight:950}.results-note{color:#98989e;font-size:11px;text-align:right}
-.route-card{margin-bottom:12px;padding:17px;border:1px solid #e4e4e8;border-radius:18px;background:#fff;box-shadow:0 5px 18px rgba(0,0,0,.04)}.route-card.fast{border-color:rgba(255,31,45,.25);background:linear-gradient(180deg,#fff,#fffafb)}
-.route-top{display:flex;align-items:center;justify-content:space-between;gap:10px}.route-name{font-size:16px;font-weight:950}.tag{padding:4px 8px;border-radius:999px;background:#f1f1f3;color:#73737a;font-size:10px;font-weight:850}.fast .tag{background:#fff0f1;color:var(--red-dark)}
-.route-stats{display:flex;gap:14px;margin-top:11px;color:#76767d;font-size:13px;font-weight:700;flex-wrap:wrap}.fare-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-top:14px}.fare-label{color:#77777d;font-size:12px;font-weight:800}.fare{color:var(--red);font-size:30px;font-weight:950;line-height:1}.save-time{min-height:18px;margin-top:7px;color:#078142;font-size:11px;font-weight:750}
-.copy-box{margin-top:17px;padding:14px;border:1px solid #e8e8eb;border-radius:16px;background:#fafafa}.copy-preview{white-space:pre-line;color:#55555b;font-size:12.5px;font-weight:650;line-height:1.7}.copy-btn{width:100%;min-height:48px;margin-top:12px;border:0;border-radius:13px;background:#17171b;color:#fff;font-size:15px;font-weight:900;cursor:pointer}.copy-btn.copied{background:#138a42}
-.notice{margin-top:18px;padding-top:15px;border-top:1px solid #eee;color:#929298;font-size:11px;line-height:1.7;text-align:center}
-@media(max-width:420px){.page{padding-left:10px;padding-right:10px}.card{padding:20px 14px;border-radius:21px}.title{font-size:18px}.subtitle{font-size:11px}.route-stats{gap:9px}.fare{font-size:28px}.paste-btn{padding:0 9px;font-size:11.5px}}
+:root{--red:#ff1f2d;--ink:#1b1b1f;--muted:#808087;--line:#e4e4e8;--bg:#f2f3f5}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg)}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",Arial,sans-serif;color:var(--ink)}button,input{font:inherit}
+.page{width:min(100%,620px);margin:auto;padding:max(14px,env(safe-area-inset-top)) 12px max(32px,env(safe-area-inset-bottom))}.card{background:#fff;border-radius:22px;padding:20px 16px;box-shadow:0 16px 44px rgba(20,20,28,.09)}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px}.title{margin:0;display:flex;align-items:center;gap:9px;font-size:19px;font-weight:950}.title:before{content:"";width:4px;height:23px;border-radius:99px;background:var(--red)}.sub{margin-top:5px;color:#95959b;font-size:11.5px;font-weight:650}.reset{border:0;background:transparent;color:#8c8c93;font-size:12px;font-weight:800;cursor:pointer}
+.mode{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:17px 0;padding:5px;border:1px solid var(--line);border-radius:16px;background:#f4f4f6}.mode button{min-height:47px;border:0;border-radius:12px;background:transparent;color:#5e5e65;font-weight:900;cursor:pointer}.mode button.on{background:linear-gradient(180deg,#ff2d40,#e5001c);color:#fff;box-shadow:0 7px 16px rgba(218,0,27,.2)}
+.group{margin:0 0 15px}.labelrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.labelrow label{font-size:15px;font-weight:900}.actions{display:flex;gap:6px}.paste,.remove{min-height:30px;padding:0 10px;border:1px solid #dedee3;border-radius:9px;background:#fff;color:#66666d;font-size:12px;font-weight:850;cursor:pointer}.paste:disabled{opacity:.55}.remove{color:#888}
+.addr{position:relative}.addr input{width:100%;height:48px;padding:0 42px 0 40px;border:1px solid var(--line);border-radius:13px;outline:none;background:#fafafa;color:#222;font-size:16px;font-weight:700}.addr input:focus{border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(255,31,45,.08)}.icon{position:absolute;left:14px;top:24px;transform:translateY(-50%);color:#777}.clear{position:absolute;right:7px;top:24px;transform:translateY(-50%);width:32px;height:32px;border:0;background:transparent;color:#85858b;font-size:20px;cursor:pointer}.clear[hidden]{display:none}
+.suggest{display:none;position:absolute;left:0;right:0;top:55px;z-index:5000;max-height:min(310px,44vh);overflow:auto;border:1px solid #e1e1e4;border-radius:14px;background:#fff;box-shadow:0 16px 38px rgba(0,0,0,.18)}.suggest.show{display:block}.suggest button{width:100%;min-height:61px;display:grid;grid-template-columns:30px minmax(0,1fr);gap:9px;align-items:center;padding:11px 13px;border:0;border-bottom:1px solid #eee;background:#fff;text-align:left;cursor:pointer}.pin{width:30px;height:30px;display:grid;place-items:center;border-radius:50%;background:#f1f1f3}.main,.secondary{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.main{font-size:14.5px;font-weight:850}.secondary{margin-top:3px;color:#7b7b82;font-size:11.5px}.google{padding:8px 12px;color:#777;font-size:10.5px;text-align:right}
+.location{width:100%;min-height:35px;margin-top:6px;border:1px solid var(--line);border-radius:10px;background:#f7f7f9;color:#707077;font-size:12.5px;font-weight:850;cursor:pointer}.locstatus{margin-top:5px;color:#4b875e;font-size:11px}.locstatus.error{color:#b02b36}
+.stops{margin:-2px 0 12px}.stop{position:relative;margin:10px 0 14px;padding-left:17px}.stop:before{content:"";position:absolute;left:4px;top:-12px;bottom:-12px;border-left:2px dashed #ddd}.addstop{width:100%;min-height:43px;border:1px dashed #d5d5da;border-radius:12px;background:#fff;color:#555;font-size:14px;font-weight:850;cursor:pointer}.note{margin-top:7px;color:#9b9ba1;font-size:11px;text-align:center}.divider{height:15px;margin:-7px 0 -7px 18px;border-left:2px dashed #ddd}
+.calc{width:100%;min-height:53px;margin-top:6px;border:0;border-radius:14px;background:linear-gradient(135deg,#ff3341,#e10019);color:#fff;font-size:16px;font-weight:950;box-shadow:0 10px 24px rgba(210,0,22,.2);cursor:pointer}.calc:disabled{opacity:.6}.status{display:none;margin-top:13px;padding:12px;border-radius:11px;background:#f7f7f8;color:#666;font-size:12px;text-align:center}.status.show{display:block}.status.error{background:#fff1f2;color:#a31320;border:1px solid #ffd3d7}
+.results{display:none;margin-top:22px}.results.show{display:block}.rhead{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-bottom:11px}.rtitle{font-size:17px;font-weight:950}.rnote{color:#999;font-size:11px}.route{margin-bottom:11px;padding:16px;border:1px solid #e5e5e8;border-radius:17px;background:#fff}.route.fast{border-color:rgba(255,31,45,.25);background:#fffafb}.rtop{display:flex;justify-content:space-between;gap:8px}.rname{font-size:15.5px;font-weight:950}.tag{padding:4px 8px;border-radius:99px;background:#f1f1f3;color:#777;font-size:10px;font-weight:800}.fast .tag{background:#fff0f1;color:#d40018}.stats{display:flex;gap:13px;flex-wrap:wrap;margin-top:10px;color:#777;font-size:12.5px;font-weight:700}.fareline{display:flex;justify-content:space-between;align-items:flex-end;margin-top:13px}.farelabel{color:#777;font-size:12px;font-weight:800}.fare{color:var(--red);font-size:29px;font-weight:950}.save{min-height:17px;margin-top:6px;color:#078142;font-size:11px;font-weight:750}
+.copybox{margin-top:15px;padding:13px;border:1px solid #e8e8eb;border-radius:15px;background:#fafafa}.preview{white-space:pre-line;color:#55555b;font-size:12.5px;line-height:1.7}.copy{width:100%;min-height:47px;margin-top:11px;border:0;border-radius:12px;background:#17171b;color:#fff;font-size:14.5px;font-weight:900;cursor:pointer}.copy.ok{background:#138a42}.foot{margin-top:17px;padding-top:14px;border-top:1px solid #eee;color:#929298;font-size:11px;line-height:1.7;text-align:center}
+@media(max-width:420px){.card{padding:18px 13px}.page{padding-left:9px;padding-right:9px}.paste,.remove{padding:0 8px;font-size:11.5px}.fare{font-size:27px}}
 </style>
 </head>
 <body>
-<main class="page">
-<section class="card">
-  <div class="header">
-    <div class="title-wrap"><h1 class="title">調度車資試算</h1><div class="subtitle">輸入行程後，同時計算平面與快速路線</div></div>
-    <button id="resetBtn" class="reset-btn" type="button">清除行程</button>
-  </div>
-
-  <div class="service-switch" role="group" aria-label="服務類型">
-    <button class="service-btn active" type="button" data-service="taxi">一般搭車</button>
-    <button class="service-btn" type="button" data-service="driver">代駕服務</button>
-  </div>
-
-  <div class="field-group">
-    <div class="label-row"><label>上車地點</label><button id="pastePickupBtn" class="paste-btn" type="button">貼上地址</button></div>
-    <div id="pickupBox"></div>
-    <div id="locationStatus" class="location-status"></div>
-    <button id="locationBtn" class="location-btn" type="button">⌖ 使用目前位置</button>
-  </div>
-
-  <div id="waypointWrap" class="waypoint-wrap">
-    <div id="waypoint1Group" class="waypoint-group" hidden><div class="label-row"><label>停靠點 1</label><div class="label-actions"><button id="pasteWaypoint1Btn" class="paste-btn" type="button">貼上地址</button><button class="remove-stop" type="button" data-remove-stop="0">移除</button></div></div><div id="waypoint1Box"></div></div>
-    <div id="waypoint2Group" class="waypoint-group" hidden><div class="label-row"><label>停靠點 2</label><div class="label-actions"><button id="pasteWaypoint2Btn" class="paste-btn" type="button">貼上地址</button><button class="remove-stop" type="button" data-remove-stop="1">移除</button></div></div><div id="waypoint2Box"></div></div>
-    <button id="addStopBtn" class="add-stop" type="button">＋ 新增停靠點</button>
-    <div class="stop-note">最多 2 個停靠點，依輸入順序計算</div>
-  </div>
-
-  <div class="route-divider"></div>
-
-  <div class="field-group"><div class="label-row"><label>下車地點</label><button id="pasteDropoffBtn" class="paste-btn" type="button">貼上地址</button></div><div id="dropoffBox"></div></div>
-
-  <button id="calcBtn" class="calc-btn" type="button">開始試算 →</button>
-  <div id="status" class="status"></div>
-
-  <section id="results" class="results">
-    <div class="results-head"><div class="results-title">路線試算結果</div><div class="results-note">平面／快速一次比較</div></div>
-    <article class="route-card">
-      <div class="route-top"><div class="route-name">平面道路</div><span class="tag">避開高速／收費</span></div>
-      <div class="route-stats"><span id="surfaceDistance">-- km</span><span id="surfaceDuration">約 -- 分鐘</span></div>
-      <div class="fare-row"><span class="fare-label">預估車資</span><strong id="surfaceFare" class="fare">$---</strong></div>
-    </article>
-    <article class="route-card fast">
-      <div class="route-top"><div class="route-name">快速／高速路線</div><span class="tag">推薦</span></div>
-      <div class="route-stats"><span id="fastDistance">-- km</span><span id="fastDuration">約 -- 分鐘</span></div>
-      <div class="fare-row"><span class="fare-label">預估車資</span><strong id="fastFare" class="fare">$---</strong></div>
-      <div id="saveTime" class="save-time"></div>
-    </article>
-    <div class="copy-box"><div id="copyPreview" class="copy-preview"></div><button id="copyBtn" class="copy-btn" type="button">複製平面＋快速給客人</button></div>
-  </section>
-
-  <div class="notice">※ 系統預估僅供參考，實際費用依當日行程與路況為準。<br>※ 40 公里以上長途可再依實際方案確認優惠。</div>
-</section>
-</main>
-
+<main class="page"><section class="card">
+<div class="head"><div><h1 class="title">調度車資試算</h1><div class="sub">地址確認後自動計算平面與快速路線</div></div><button id="reset" class="reset">清除行程</button></div>
+<div class="mode"><button class="on" data-mode="taxi">一般搭車</button><button data-mode="driver">代駕服務</button></div>
+<div class="group"><div class="labelrow"><label>上車地點</label><button id="pastePickup" class="paste">貼上地址</button></div><div id="pickup"></div><div id="locstatus" class="locstatus"></div><button id="locbtn" class="location">⌖ 使用目前位置</button></div>
+<div class="stops"><div id="stop1g" class="stop" hidden><div class="labelrow"><label>停靠點 1</label><div class="actions"><button id="pasteStop1" class="paste">貼上地址</button><button class="remove" data-rm="0">移除</button></div></div><div id="stop1"></div></div><div id="stop2g" class="stop" hidden><div class="labelrow"><label>停靠點 2</label><div class="actions"><button id="pasteStop2" class="paste">貼上地址</button><button class="remove" data-rm="1">移除</button></div></div><div id="stop2"></div></div><button id="addstop" class="addstop">＋ 新增停靠點</button><div class="note">最多 2 個停靠點，依輸入順序計算</div></div>
+<div class="divider"></div>
+<div class="group"><div class="labelrow"><label>下車地點</label><button id="pasteDropoff" class="paste">貼上地址</button></div><div id="dropoff"></div></div>
+<button id="calc" class="calc">開始試算 →</button><div id="status" class="status"></div>
+<section id="results" class="results"><div class="rhead"><div class="rtitle">路線試算結果</div><div class="rnote">平面／快速一次比較</div></div>
+<article class="route"><div class="rtop"><div class="rname">平面道路</div><span class="tag">避開高速／收費</span></div><div class="stats"><span id="sd">-- km</span><span id="st">約 -- 分鐘</span></div><div class="fareline"><span class="farelabel">預估車資</span><strong id="sf" class="fare">$---</strong></div></article>
+<article class="route fast"><div class="rtop"><div class="rname">快速／高速路線</div><span class="tag">推薦</span></div><div class="stats"><span id="fd">-- km</span><span id="ft">約 -- 分鐘</span></div><div class="fareline"><span class="farelabel">預估車資</span><strong id="ff" class="fare">$---</strong></div><div id="save" class="save"></div></article>
+<div class="copybox"><div id="preview" class="preview"></div><button id="copy" class="copy">複製平面＋快速給客人</button></div></section>
+<div class="foot">※ 系統預估僅供參考，實際費用依當日行程與路況為準。<br>※ 40 公里以上長途可再依實際方案確認優惠。</div>
+</section></main>
 <script>
-let RouteClass=null,PlaceClass=null,serviceMode='taxi',pickupPlace=null,dropoffPlace=null,pickupData=null,dropoffData=null,latestResult=null;
-const waypointPlaces=[null,null],waypointData=[null,null],waypointActive=[false,false],controllers={pickup:null,dropoff:null,stops:[null,null]};
-const $=id=>document.getElementById(id);
-
-function cleanText(value=''){return String(value||'').trim().replace(/臺/g,'台').replace(/^\s*\d{3}(?:\d{2,3})?\s*/u,'').replace(/^台灣省?/u,'')}
-function placeName(place){if(!place?.displayName)return'';return typeof place.displayName==='string'?place.displayName:(place.displayName.toString?.()||'')}
-function toAddressData(place){if(!place)return null;const lat=place.location?(typeof place.location.lat==='function'?place.location.lat():place.location.lat):null;const lng=place.location?(typeof place.location.lng==='function'?place.location.lng():place.location.lng):null;return{name:cleanText(placeName(place)),address:cleanText(place.formattedAddress||''),placeId:place.id||'',lat,lng}}
-function displayAddress(data){if(!data)return'';const name=cleanText(data.name||''),address=cleanText(data.address||'');if(name&&address&&!address.includes(name))return`${name}｜${address}`;return name||address}
-function showStatus(message,error=false){const el=$('status');el.textContent=message;el.className='status show'+(error?' error':'')}
-function hideStatus(){$('status').className='status'}
-function hideResults(){$('results').classList.remove('show');latestResult=null}
-function setLocationStatus(message='',error=false){const el=$('locationStatus');el.textContent=message;el.className='location-status'+(error?' error':'')}
-
-function calculateFare(distanceKm,minutes){const BASE_FARE=80,TIME_RATE=3,FIRST_KM_RATE=15,LONG_KM_RATE=25,LONG_DISTANCE_START=20;const distanceFare=distanceKm<=LONG_DISTANCE_START?distanceKm*FIRST_KM_RATE:LONG_DISTANCE_START*FIRST_KM_RATE+(distanceKm-LONG_DISTANCE_START)*LONG_KM_RATE;return Math.floor((BASE_FARE+distanceFare+minutes*TIME_RATE)/10)*10}
-function calculateDriverFare(distanceKm,minutes){const BASE_FARE=60,TIME_RATE=3,FIRST_KM_RATE=15,LONG_KM_RATE=25,LONG_DISTANCE_START=20,DRIVER_SERVICE_FEE=320;const distanceFare=distanceKm<=LONG_DISTANCE_START?distanceKm*FIRST_KM_RATE:LONG_DISTANCE_START*FIRST_KM_RATE+(distanceKm-LONG_DISTANCE_START)*LONG_KM_RATE;const tripFare=BASE_FARE+distanceFare+minutes*TIME_RATE;return Math.floor(((tripFare*2)+DRIVER_SERVICE_FEE)/10)*10}
-function fareFor(distanceKm,minutes){return serviceMode==='driver'?calculateDriverFare(distanceKm,minutes):calculateFare(distanceKm,minutes)}
-
-function setService(mode){serviceMode=mode==='driver'?'driver':'taxi';document.querySelectorAll('.service-btn').forEach(btn=>{const active=btn.dataset.service===serviceMode;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active))});$('calcBtn').textContent=serviceMode==='driver'?'開始試算代駕費用 →':'開始試算 →';hideResults()}
-document.querySelectorAll('.service-btn').forEach(btn=>btn.addEventListener('click',()=>setService(btn.dataset.service)));
-
-function updateStops(){for(let i=0;i<2;i++)$('waypoint'+(i+1)+'Group').hidden=!waypointActive[i];$('addStopBtn').hidden=waypointActive.filter(Boolean).length>=2}
-function addStop(){const i=waypointActive.findIndex(v=>!v);if(i<0)return;waypointActive[i]=true;updateStops();hideResults();setTimeout(()=>controllers.stops[i]?.focus(),50)}
-function clearStop(i){waypointPlaces[i]=null;waypointData[i]=null;controllers.stops[i]?.setValue('')}
-function removeStop(i){if(i===0&&waypointActive[1]){waypointPlaces[0]=waypointPlaces[1];waypointData[0]=waypointData[1];controllers.stops[0]?.setValue(controllers.stops[1]?.getValue()||'');clearStop(1);waypointActive[0]=true;waypointActive[1]=false}else{clearStop(i);waypointActive[i]=false}updateStops();hideResults()}
-$('addStopBtn').addEventListener('click',addStop);document.querySelectorAll('[data-remove-stop]').forEach(btn=>btn.addEventListener('click',()=>removeStop(Number(btn.dataset.removeStop))));
-function activeWaypointPlaces(){return waypointActive.map((v,i)=>v?waypointPlaces[i]:null).filter(Boolean)}
-function validateStops(){for(let i=0;i<2;i++){if(!waypointActive[i])continue;const typed=controllers.stops[i]?.getValue()||'';if(typed&&!waypointPlaces[i]){showStatus(`停靠點 ${i+1} 請從 Google 地址建議中選擇。`,true);controllers.stops[i]?.focus();return false}}return true}
-function summarizeRoute(route,expectedLegs){const legs=Array.isArray(route?.legs)?route.legs:[];if(legs.length!==expectedLegs)throw new Error(`停靠點驗證失敗：預期 ${expectedLegs} 段，實際 ${legs.length} 段`);const distanceMeters=legs.reduce((s,l)=>s+Number(l?.distanceMeters||0),0),durationMillis=legs.reduce((s,l)=>s+Number(l?.durationMillis||0),0);if(!(distanceMeters>0)||!(durationMillis>0))throw new Error('Google 路線資料不完整');return{distanceKm:distanceMeters/1000,minutes:Math.ceil(durationMillis/60000)}}
-
-function buildCopyText(){
-  if(!latestResult)return'';
-  const s=latestResult.surface,f=latestResult.fast,serviceTitle=serviceMode==='driver'?'代駕費用預估':'車資預估';
-  const same=s.minutes===f.minutes&&s.fare===f.fare&&Math.abs(s.distanceKm-f.distanceKm)<0.05;
-  const lines=[serviceTitle,''];
-  if(same){
-    lines.push('目前平面／快速路線相同',`${s.distanceKm.toFixed(1)} km｜約 ${s.minutes} 分｜$${s.fare}`);
-  }else{
-    lines.push(`平面道路｜${s.distanceKm.toFixed(1)} km｜約 ${s.minutes} 分｜$${s.fare}`,`快速路線｜${f.distanceKm.toFixed(1)} km｜約 ${f.minutes} 分｜$${f.fare}`);
-  }
-  if(serviceMode==='driver')lines.push('','※ 以上代駕費用已含代駕服務費。');
-  if(Math.max(s.distanceKm,f.distanceKm)>40)lines.push('','※ 40 公里以上長途另有優惠，可再確認實際方案。');
-  lines.push('','※ 以上為系統預估，實際費用依當日行程與路況為準。');
-  return lines.join('\n');
-}
-function updateCopyPreview(){$('copyPreview').textContent=buildCopyText()}
-async function copyResults(){const text=buildCopyText();if(!text)return;try{if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(text);else{const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}const btn=$('copyBtn');btn.textContent='已複製 ✓';btn.classList.add('copied');setTimeout(()=>{btn.textContent='複製平面＋快速給客人';btn.classList.remove('copied')},1600)}catch(err){showStatus('複製失敗，請手動選取下方文字。',true)}}
-$('copyBtn').addEventListener('click',copyResults);
-
-async function calculateRoutes(){
-  if(!pickupPlace||!dropoffPlace){showStatus('請從 Google 地址建議中選擇上車與下車地點。',true);return}
-  if(!validateStops())return;if(!RouteClass){showStatus('Google 路線服務尚未載入完成，請稍候再試。',true);return}
-  const btn=$('calcBtn');btn.disabled=true;btn.textContent='正在計算路線...';showStatus('正在取得平面與快速路線...',false);
-  try{
-    const intermediates=activeWaypointPlaces().map(place=>({location:place})),expectedLegs=intermediates.length+1,departureTime=new Date(Date.now()+2*60*1000);
-    const common={origin:pickupPlace,destination:dropoffPlace,travelMode:'DRIVING',intermediates,optimizeWaypointOrder:false,routingPreference:'TRAFFIC_AWARE_OPTIMAL',departureTime,fields:['legs']};
-    const [fastResponse,surfaceResponse]=await Promise.all([
-      RouteClass.computeRoutes({...common,routeModifiers:{avoidHighways:false,avoidTolls:false,avoidFerries:true}}),
-      RouteClass.computeRoutes({...common,routeModifiers:{avoidHighways:true,avoidTolls:true,avoidFerries:true}})
-    ]);
-    const fastRoute=fastResponse.routes?.[0],surfaceRoute=surfaceResponse.routes?.[0];if(!fastRoute||!surfaceRoute)throw new Error('找不到可用路線');
-    const fast=summarizeRoute(fastRoute,expectedLegs),surface=summarizeRoute(surfaceRoute,expectedLegs);fast.fare=fareFor(fast.distanceKm,fast.minutes);surface.fare=fareFor(surface.distanceKm,surface.minutes);latestResult={fast,surface};
-    $('surfaceDistance').textContent=`${surface.distanceKm.toFixed(1)} km`;$('surfaceDuration').textContent=`約 ${surface.minutes} 分鐘`;$('surfaceFare').textContent=`$${surface.fare}`;
-    $('fastDistance').textContent=`${fast.distanceKm.toFixed(1)} km`;$('fastDuration').textContent=`約 ${fast.minutes} 分鐘`;$('fastFare').textContent=`$${fast.fare}`;
-    const delta=surface.minutes-fast.minutes;$('saveTime').textContent=delta>0?`快速路線約可節省 ${delta} 分鐘`:delta<0?`目前交通平面道路約快 ${Math.abs(delta)} 分鐘`:'目前兩條路線時間相近';
-    updateCopyPreview();hideStatus();$('results').classList.add('show');setTimeout(()=>$('results').scrollIntoView({behavior:'smooth',block:'start'}),80);
-  }catch(err){console.error(err);showStatus(`路線計算失敗：${err?.message||'請重新選擇地址後再試。'}`,true)}
-  finally{btn.disabled=false;btn.textContent=serviceMode==='driver'?'開始試算代駕費用 →':'開始試算 →'}
-}
-$('calcBtn').addEventListener('click',calculateRoutes);
-
-function resetTrip(){pickupPlace=dropoffPlace=null;pickupData=dropoffData=null;controllers.pickup?.setValue('');controllers.dropoff?.setValue('');for(let i=0;i<2;i++){clearStop(i);waypointActive[i]=false}updateStops();hideResults();hideStatus();setLocationStatus('');setService('taxi');controllers.pickup?.focus()}
-$('resetBtn').addEventListener('click',resetTrip);
-
-async function useCurrentLocation(){
-  if(!navigator.geolocation){setLocationStatus('此裝置無法取得目前位置',true);return}
-  const btn=$('locationBtn');btn.disabled=true;btn.textContent='定位中…';setLocationStatus('');
-  try{
-    const pos=await new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,{enableHighAccuracy:true,timeout:10000,maximumAge:60000}));
-    const {Geocoder}=await google.maps.importLibrary('geocoding'),response=await new Geocoder().geocode({location:{lat:pos.coords.latitude,lng:pos.coords.longitude}});
-    const first=(response.results||[]).find(r=>r.place_id&&Array.isArray(r.types)&&(r.types.includes('street_address')||r.types.includes('premise')))||response.results?.find(r=>r.place_id);
-    if(!first?.place_id)throw new Error('無法取得目前地址');
-    const place=new PlaceClass({id:first.place_id});await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});
-    pickupPlace=place;pickupData=toAddressData(place);controllers.pickup?.setValue(displayAddress(pickupData));hideResults();setLocationStatus('已帶入目前位置');
-  }catch(err){console.warn(err);setLocationStatus('未取得定位，請手動輸入上車地點',true)}
-  finally{btn.disabled=false;btn.textContent='⌖ 使用目前位置'}
-}
-$('locationBtn').addEventListener('click',useCurrentLocation);
-
-async function readClipboardAddress(promptLabel){
-  let text='';
-  if(window.isSecureContext&&navigator.clipboard?.readText){
-    try{text=await navigator.clipboard.readText()}catch(clipboardError){console.warn('clipboard read blocked',clipboardError)}
-  }
-  if(!text)text=window.prompt(`請貼上客人的${promptLabel}：`,'')||'';
-  return String(text||'').trim();
-}
-
-async function pasteAddressIntoField({buttonId,controller,label,usePickupStatus=false}){
-  const btn=$(buttonId);
-  if(!btn)return;
-  if(!controller?.resolveText){
-    const message='Google 地址系統尚未載入完成，請稍候再試。';
-    if(usePickupStatus)setLocationStatus(message,true);else showStatus(message,true);
-    return;
-  }
-
-  btn.disabled=true;btn.textContent='讀取中…';
-  if(usePickupStatus)setLocationStatus('');else hideStatus();
-
-  try{
-    const text=await readClipboardAddress(`${label}地址`);
-    if(!text){
-      const message='剪貼簿沒有可用地址。';
-      if(usePickupStatus)setLocationStatus(message,true);else showStatus(message,true);
-      return;
-    }
-
-    controller.setValue(text);
-    hideResults();
-
-    btn.textContent='Google 判斷中…';
-    const ok=await controller.resolveText(text,{autoFirst:true});
-
-    if(ok){
-      btn.textContent='已帶入 ✓';
-      if(usePickupStatus)setLocationStatus(`Google 已自動帶入${label}`);else hideStatus();
-      await new Promise(resolve=>setTimeout(resolve,700));
-    }else{
-      const message=`Google 找不到明確的${label}，已保留貼上的地址，請從建議中選擇。`;
-      if(usePickupStatus)setLocationStatus(message,true);else showStatus(message,true);
-      controller.focus();
-    }
-  }catch(err){
-    console.error(err);
-    const message='貼上地址失敗，請手動輸入。';
-    if(usePickupStatus)setLocationStatus(message,true);else showStatus(message,true);
-  }finally{
-    btn.disabled=false;btn.textContent='貼上地址';
-  }
-}
-
-$('pastePickupBtn').addEventListener('click',()=>pasteAddressIntoField({buttonId:'pastePickupBtn',controller:controllers.pickup,label:'上車地點',usePickupStatus:true}));
-$('pasteWaypoint1Btn').addEventListener('click',()=>pasteAddressIntoField({buttonId:'pasteWaypoint1Btn',controller:controllers.stops[0],label:'停靠點 1'}));
-$('pasteWaypoint2Btn').addEventListener('click',()=>pasteAddressIntoField({buttonId:'pasteWaypoint2Btn',controller:controllers.stops[1],label:'停靠點 2'}));
-$('pasteDropoffBtn').addEventListener('click',()=>pasteAddressIntoField({buttonId:'pasteDropoffBtn',controller:controllers.dropoff,label:'下車地點'}));
-
-async function initGoogle(){
-  try{
-    const {AutocompleteSuggestion,AutocompleteSessionToken,Place}=await google.maps.importLibrary('places'),{Route}=await google.maps.importLibrary('routes');PlaceClass=Place;RouteClass=Route;
-    let searchCenter={lat:24.1477,lng:120.6736};
-    if(navigator.geolocation)navigator.geolocation.getCurrentPosition(p=>{searchCenter={lat:p.coords.latitude,lng:p.coords.longitude}},()=>{},{timeout:4000,maximumAge:300000});
-
-    function createAutocomplete({containerId,placeholder,onReset,onSelect}){
-      const container=$(containerId),wrap=document.createElement('div');wrap.className='address-autocomplete';
-      const input=document.createElement('input');input.type='search';input.className='address-input';input.placeholder=placeholder;input.autocomplete='off';
-      const icon=document.createElement('span');icon.className='address-icon';icon.textContent='⌕';
-      const clear=document.createElement('button');clear.type='button';clear.className='address-clear';clear.textContent='×';clear.hidden=true;
-      const panel=document.createElement('div');panel.className='suggestions';wrap.append(input,icon,clear,panel);container.appendChild(wrap);
-      let timer=null,requestNo=0,token=new AutocompleteSessionToken();
-      const hide=()=>panel.classList.remove('show'),textOf=x=>x?.text||x?.toString?.()||'';
-
-      async function choose(prediction){
-        input.disabled=true;
-        try{
-          const place=prediction.toPlace();await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});
-          const data=toAddressData(place);input.value=displayAddress(data)||textOf(prediction.text);clear.hidden=!input.value.trim();token=new AutocompleteSessionToken();hide();onSelect(place,data);return true;
-        }catch(err){console.error(err);showStatus('地址資料讀取失敗，請重新選擇。',true);return false}
-        finally{input.disabled=false}
-      }
-      function render(suggestions){
-        panel.innerHTML='';const preds=(suggestions||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);
-        if(!preds.length){const no=document.createElement('div');no.className='google-note';no.textContent='找不到符合的地點';panel.appendChild(no)}
-        preds.forEach(pred=>{const b=document.createElement('button');b.type='button';b.className='suggestion';const pin=document.createElement('span');pin.className='suggestion-pin';pin.textContent='📍';const tw=document.createElement('span'),main=document.createElement('span'),sub=document.createElement('span');main.className='suggestion-main';sub.className='suggestion-sub';main.textContent=textOf(pred.mainText)||textOf(pred.text);sub.textContent=textOf(pred.secondaryText);tw.append(main,sub);b.append(pin,tw);b.addEventListener('click',e=>{e.preventDefault();choose(pred)});panel.appendChild(b)});
-        const note=document.createElement('div');note.className='google-note';note.textContent='Google Maps';panel.appendChild(note);panel.classList.add('show');return preds;
-      }
-      async function fetchPredictions(q){
-        const current=++requestNo,res=await AutocompleteSuggestion.fetchAutocompleteSuggestions({input:q,includedRegionCodes:['tw'],language:'zh-TW',region:'TW',locationBias:{center:searchCenter,radius:50000},origin:searchCenter,sessionToken:token});
-        if(current!==requestNo)return[];return(res.suggestions||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);
-      }
-      async function request(){
-        const q=input.value.trim();if(q.length<2){hide();return}
-        try{
-          const preds=await fetchPredictions(q);
-          render(preds.map(placePrediction=>({placePrediction})));
-        }catch(err){console.error('autocomplete',err)}
-      }
-      async function resolveText(value,{autoFirst=false}={}){
-        const q=String(value||'').trim();if(q.length<2)return false;
-        input.value=q;clear.hidden=false;onReset();hideResults();hide();
-        try{
-          const preds=await fetchPredictions(q);
-          if(!preds.length){render([]);return false}
-          if(autoFirst)return await choose(preds[0]);
-          render(preds.map(placePrediction=>({placePrediction})));return false;
-        }catch(err){console.error('resolve address',err);return false}
-      }
-      input.addEventListener('input',()=>{clear.hidden=!input.value.trim();onReset();hideResults();clearTimeout(timer);timer=setTimeout(request,220)});
-      input.addEventListener('focus',()=>{if(input.value.trim().length>=2)request()});
-      clear.addEventListener('click',()=>{input.value='';clear.hidden=true;onReset();hideResults();hide();input.focus()});
-      document.addEventListener('pointerdown',e=>{if(!wrap.contains(e.target))hide()});
-      return{input,getValue:()=>input.value.trim(),setValue:v=>{input.value=v||'';clear.hidden=!input.value.trim()},focus:()=>input.focus(),hideSuggestions:hide,resolveText};
-    }
-
-    controllers.pickup=createAutocomplete({containerId:'pickupBox',placeholder:'請輸入上車地址或地標',onReset:()=>{pickupPlace=null;pickupData=null;setLocationStatus('')},onSelect:(p,d)=>{pickupPlace=p;pickupData=d;hideResults()}});
-    controllers.stops[0]=createAutocomplete({containerId:'waypoint1Box',placeholder:'請輸入停靠點 1',onReset:()=>{waypointPlaces[0]=null;waypointData[0]=null},onSelect:(p,d)=>{waypointPlaces[0]=p;waypointData[0]=d;hideResults()}});
-    controllers.stops[1]=createAutocomplete({containerId:'waypoint2Box',placeholder:'請輸入停靠點 2',onReset:()=>{waypointPlaces[1]=null;waypointData[1]=null},onSelect:(p,d)=>{waypointPlaces[1]=p;waypointData[1]=d;hideResults()}});
-    controllers.dropoff=createAutocomplete({containerId:'dropoffBox',placeholder:'請輸入下車地址或地標',onReset:()=>{dropoffPlace=null;dropoffData=null},onSelect:(p,d)=>{dropoffPlace=p;dropoffData=d;hideResults()}});
-    updateStops();
-  }catch(err){console.error(err);showStatus('Google 地址／路線載入失敗，請重新整理頁面。',true)}
-}
-window.addEventListener('load',initGoogle);
+const $=id=>document.getElementById(id);let RouteClass=null,PlaceClass=null,mode='taxi',pickup=null,dropoff=null;const stops=[null,null],active=[false,false],ctl={pickup:null,dropoff:null,stops:[null,null]};let latest=null,busy=false;
+function clean(v=''){return String(v||'').trim().replace(/臺/g,'台').replace(/^\s*\d{3}(?:\d{2,3})?\s*/u,'').replace(/^台灣省?/u,'')}
+function pname(p){return typeof p?.displayName==='string'?p.displayName:(p?.displayName?.toString?.()||'')}
+function pdata(p){if(!p)return null;return{name:clean(pname(p)),address:clean(p.formattedAddress||'')}}
+function display(d){if(!d)return'';return d.name&&d.address&&!d.address.includes(d.name)?`${d.name}｜${d.address}`:(d.name||d.address)}
+function show(msg,err=false){$('status').textContent=msg;$('status').className='status show'+(err?' error':'')}function hideStatus(){$('status').className='status'}function hideResults(){$('results').classList.remove('show');latest=null}
+function fare(d,m){const base=mode==='driver'?60:80,df=d<=20?d*15:300+(d-20)*25,trip=base+df+m*3;return Math.floor((mode==='driver'?trip*2+320:trip)/10)*10}
+function setMode(v){mode=v==='driver'?'driver':'taxi';document.querySelectorAll('[data-mode]').forEach(b=>b.classList.toggle('on',b.dataset.mode===mode));$('calc').textContent=mode==='driver'?'開始試算代駕費用 →':'開始試算 →';hideResults();autoCalc()}
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));
+function updateStops(){for(let i=0;i<2;i++)$('stop'+(i+1)+'g').hidden=!active[i];$('addstop').hidden=active.filter(Boolean).length>=2}
+$('addstop').onclick=()=>{const i=active.findIndex(x=>!x);if(i<0)return;active[i]=true;updateStops();hideResults();setTimeout(()=>ctl.stops[i]?.focus(),40)};
+function clearStop(i){stops[i]=null;ctl.stops[i]?.setValue('')}
+document.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{const i=+b.dataset.rm;if(i===0&&active[1]){stops[0]=stops[1];ctl.stops[0]?.setValue(ctl.stops[1]?.value()||'');clearStop(1);active[0]=true;active[1]=false}else{clearStop(i);active[i]=false}updateStops();hideResults();autoCalc()});
+function readyStops(){return active.every((a,i)=>!a||!!stops[i])}function waypoints(){return active.map((a,i)=>a?stops[i]:null).filter(Boolean)}
+function summary(route,n){const legs=Array.isArray(route?.legs)?route.legs:[];if(legs.length!==n)throw Error(`停靠點驗證失敗：預期 ${n} 段，實際 ${legs.length} 段`);const dm=legs.reduce((s,l)=>s+Number(l?.distanceMeters||0),0),ms=legs.reduce((s,l)=>s+Number(l?.durationMillis||0),0);if(!(dm>0&&ms>0))throw Error('Google 路線資料不完整');return{distanceKm:dm/1000,minutes:Math.ceil(ms/60000)}}
+function copyText(){if(!latest)return'';const s=latest.surface,f=latest.fast,same=s.minutes===f.minutes&&s.fare===f.fare&&Math.abs(s.distanceKm-f.distanceKm)<.05,lines=[mode==='driver'?'代駕費用預估':'車資預估',''];if(same)lines.push('目前平面／快速路線相同',`${s.distanceKm.toFixed(1)} km｜約 ${s.minutes} 分｜$${s.fare}`);else lines.push(`平面道路｜${s.distanceKm.toFixed(1)} km｜約 ${s.minutes} 分｜$${s.fare}`,`快速路線｜${f.distanceKm.toFixed(1)} km｜約 ${f.minutes} 分｜$${f.fare}`);if(mode==='driver')lines.push('','※ 以上代駕費用已含代駕服務費。');if(Math.max(s.distanceKm,f.distanceKm)>40)lines.push('','※ 40 公里以上長途另有優惠，可再確認實際方案。');lines.push('','※ 以上為系統預估，實際費用依當日行程與路況為準。');return lines.join('\n')}
+$('copy').onclick=async()=>{const t=copyText();if(!t)return;try{await navigator.clipboard.writeText(t);$('copy').textContent='已複製 ✓';$('copy').classList.add('ok');setTimeout(()=>{$('copy').textContent='複製平面＋快速給客人';$('copy').classList.remove('ok')},1400)}catch{show('複製失敗，請手動選取文字。',true)}};
+function autoCalc(){if(!pickup||!dropoff||!RouteClass||!readyStops()||busy)return;setTimeout(()=>{if(pickup&&dropoff&&RouteClass&&readyStops()&&!busy)calculate()},0)}
+async function calculate(){if(busy)return;if(!pickup||!dropoff){show('請先確認上車與下車地點。',true);return}if(!readyStops()){show('請先確認所有停靠點。',true);return}if(!RouteClass){show('Google 路線服務尚未載入完成。',true);return}busy=true;const b=$('calc');b.disabled=true;b.textContent='正在計算路線...';show('正在取得平面與快速路線...');try{const inter=waypoints().map(location=>({location})),n=inter.length+1,departureTime=new Date(Date.now()+120000),common={origin:pickup,destination:dropoff,travelMode:'DRIVING',intermediates:inter,optimizeWaypointOrder:false,routingPreference:'TRAFFIC_AWARE_OPTIMAL',departureTime,fields:['legs']};const [fr,sr]=await Promise.all([RouteClass.computeRoutes({...common,routeModifiers:{avoidHighways:false,avoidTolls:false,avoidFerries:true}}),RouteClass.computeRoutes({...common,routeModifiers:{avoidHighways:true,avoidTolls:true,avoidFerries:true}})]);const f=summary(fr.routes?.[0],n),s=summary(sr.routes?.[0],n);f.fare=fare(f.distanceKm,f.minutes);s.fare=fare(s.distanceKm,s.minutes);latest={fast:f,surface:s};$('fd').textContent=`${f.distanceKm.toFixed(1)} km`;$('ft').textContent=`約 ${f.minutes} 分鐘`;$('ff').textContent=`$${f.fare}`;$('sd').textContent=`${s.distanceKm.toFixed(1)} km`;$('st').textContent=`約 ${s.minutes} 分鐘`;$('sf').textContent=`$${s.fare}`;const d=s.minutes-f.minutes;$('save').textContent=d>0?`快速路線約可節省 ${d} 分鐘`:d<0?`目前交通平面道路約快 ${Math.abs(d)} 分鐘`:'目前兩條路線時間相近';$('preview').textContent=copyText();hideStatus();$('results').classList.add('show');setTimeout(()=>$('results').scrollIntoView({behavior:'smooth',block:'start'}),70)}catch(e){console.error(e);show(`路線計算失敗：${e?.message||'請重新選擇地址。'}`,true)}finally{busy=false;b.disabled=false;b.textContent=mode==='driver'?'開始試算代駕費用 →':'開始試算 →'}}$('calc').onclick=calculate;
+function locStatus(t='',err=false){$('locstatus').textContent=t;$('locstatus').className='locstatus'+(err?' error':'')}
+$('reset').onclick=()=>{pickup=dropoff=null;ctl.pickup?.setValue('');ctl.dropoff?.setValue('');for(let i=0;i<2;i++){clearStop(i);active[i]=false}updateStops();hideResults();hideStatus();locStatus();setMode('taxi');ctl.pickup?.focus()};
+$('locbtn').onclick=async()=>{if(!navigator.geolocation){locStatus('此裝置無法取得目前位置',true);return}const b=$('locbtn');b.disabled=true;b.textContent='定位中…';try{const p=await new Promise((r,j)=>navigator.geolocation.getCurrentPosition(r,j,{enableHighAccuracy:true,timeout:10000,maximumAge:60000})),{Geocoder}=await google.maps.importLibrary('geocoding'),res=await new Geocoder().geocode({location:{lat:p.coords.latitude,lng:p.coords.longitude}}),first=(res.results||[]).find(x=>x.place_id&&Array.isArray(x.types)&&(x.types.includes('street_address')||x.types.includes('premise')))||res.results?.find(x=>x.place_id);if(!first?.place_id)throw Error();const pl=new PlaceClass({id:first.place_id});await pl.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});pickup=pl;ctl.pickup?.setValue(display(pdata(pl)));hideResults();locStatus('已帶入目前位置');autoCalc()}catch{locStatus('未取得定位，請手動輸入上車地點',true)}finally{b.disabled=false;b.textContent='⌖ 使用目前位置'}};
+async function clipboard(label){let t='';if(window.isSecureContext&&navigator.clipboard?.readText){try{t=await navigator.clipboard.readText()}catch{}}if(!t)t=prompt(`請貼上客人的${label}：`,'')||'';return t.trim()}
+async function paste(btnId,c,label){const b=$(btnId);if(!c?.resolve){show('Google 地址系統尚未載入完成。',true);return}b.disabled=true;b.textContent='讀取中…';try{const t=await clipboard(label);if(!t)return; c.setValue(t);hideResults();b.textContent='Google 判斷中…';const ok=await c.resolve(t,true);if(!ok){c.setValue(t);c.focus();show(`Google 找不到明確的${label}，已保留貼上的文字，請從建議中選擇。`,true)}else hideStatus()}finally{b.disabled=false;b.textContent='貼上地址'}}
+$('pastePickup').onclick=()=>paste('pastePickup',ctl.pickup,'上車地址');$('pasteStop1').onclick=()=>paste('pasteStop1',ctl.stops[0],'停靠點 1');$('pasteStop2').onclick=()=>paste('pasteStop2',ctl.stops[1],'停靠點 2');$('pasteDropoff').onclick=()=>paste('pasteDropoff',ctl.dropoff,'下車地址');
+async function init(){try{const {AutocompleteSuggestion,AutocompleteSessionToken,Place}=await google.maps.importLibrary('places'),{Route}=await google.maps.importLibrary('routes');PlaceClass=Place;RouteClass=Route;let center={lat:24.1477,lng:120.6736};navigator.geolocation?.getCurrentPosition(p=>center={lat:p.coords.latitude,lng:p.coords.longitude},()=>{},{timeout:4000,maximumAge:300000});
+function make(containerId,placeholder,onReset,onSelect){const box=$(containerId),w=document.createElement('div');w.className='addr';const i=document.createElement('input');i.type='search';i.placeholder=placeholder;i.autocomplete='off';const ic=document.createElement('span');ic.className='icon';ic.textContent='⌕';const cl=document.createElement('button');cl.type='button';cl.className='clear';cl.textContent='×';cl.hidden=true;const panel=document.createElement('div');panel.className='suggest';w.append(i,ic,cl,panel);box.appendChild(w);let timer=null,seq=0,token=new AutocompleteSessionToken();const hide=()=>panel.classList.remove('show'),txt=x=>x?.text||x?.toString?.()||'';
+async function preds(q){const n=++seq,r=await AutocompleteSuggestion.fetchAutocompleteSuggestions({input:q,includedRegionCodes:['tw'],language:'zh-TW',region:'TW',locationBias:{center,radius:50000},origin:center,sessionToken:token});return n===seq?(r.suggestions||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6):[]}
+async function choose(p){i.disabled=true;try{const pl=p.toPlace();await pl.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});i.value=display(pdata(pl))||txt(p.text);cl.hidden=false;token=new AutocompleteSessionToken();hide();onSelect(pl);return true}catch(e){console.error(e);show('地址資料讀取失敗，請重新選擇。',true);return false}finally{i.disabled=false}}
+function render(ps){panel.innerHTML='';if(!ps.length){const n=document.createElement('div');n.className='google';n.textContent='找不到符合的地點';panel.appendChild(n)}ps.forEach(p=>{const b=document.createElement('button');b.type='button';const pin=document.createElement('span');pin.className='pin';pin.textContent='📍';const wrap=document.createElement('span'),m=document.createElement('span'),s=document.createElement('span');m.className='main';s.className='secondary';m.textContent=txt(p.mainText)||txt(p.text);s.textContent=txt(p.secondaryText);wrap.append(m,s);b.append(pin,wrap);b.onclick=e=>{e.preventDefault();choose(p)};panel.appendChild(b)});const g=document.createElement('div');g.className='google';g.textContent='Google Maps';panel.appendChild(g);panel.classList.add('show')}
+async function request(){const q=i.value.trim();if(q.length<2){hide();return}try{render(await preds(q))}catch(e){console.error(e)}}async function resolve(v,first=false){const q=String(v||'').trim();if(q.length<2)return false;i.value=q;cl.hidden=false;onReset();hideResults();hide();try{const ps=await preds(q);if(!ps.length){render([]);return false}if(first)return await choose(ps[0]);render(ps);return false}catch(e){console.error(e);return false}}
+i.oninput=()=>{cl.hidden=!i.value.trim();onReset();hideResults();clearTimeout(timer);timer=setTimeout(request,220)};i.onfocus=()=>{if(i.value.trim().length>=2)request()};i.onpaste=async e=>{const t=String(e.clipboardData?.getData('text')||'').trim();if(!t)return;e.preventDefault();clearTimeout(timer);i.value=t;cl.hidden=false;onReset();hideResults();hide();const ok=await resolve(t,true);if(!ok){i.value=t;cl.hidden=false;try{render(await preds(t))}catch{}}};cl.onclick=()=>{i.value='';cl.hidden=true;onReset();hideResults();hide();i.focus()};document.addEventListener('pointerdown',e=>{if(!w.contains(e.target))hide()});return{setValue:v=>{i.value=v||'';cl.hidden=!i.value.trim()},value:()=>i.value.trim(),focus:()=>i.focus(),resolve}}
+ctl.pickup=make('pickup','請輸入上車地址或地標',()=>{pickup=null;locStatus()},p=>{pickup=p;hideResults();autoCalc()});ctl.stops[0]=make('stop1','請輸入停靠點 1',()=>stops[0]=null,p=>{stops[0]=p;hideResults();autoCalc()});ctl.stops[1]=make('stop2','請輸入停靠點 2',()=>stops[1]=null,p=>{stops[1]=p;hideResults();autoCalc()});ctl.dropoff=make('dropoff','請輸入下車地址或地標',()=>dropoff=null,p=>{dropoff=p;hideResults();autoCalc()});updateStops()}catch(e){console.error(e);show('Google 地址／路線載入失敗，請重新整理頁面。',true)}}window.addEventListener('load',init);
 </script>
-
 <script>
 (g=>{var h,a,k,p='The Google Maps JavaScript API',c='google',l='importLibrary',q='__ib__',m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await(a=m.createElement('script'));e.set('libraries',[...r]+'');for(k in g)e.set(k.replace(/[A-Z]/g,t=>'_'+t[0].toLowerCase()),g[k]);e.set('callback',c+'.maps.'+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+' could not load.'));a.nonce=m.querySelector('script[nonce]')?.nonce||'';m.head.append(a)}));d[l]?console.warn(p+' only loads once. Ignoring:',g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})({key:'AIzaSyD4WKScLGW9_zpDkqJvdDV-07cKERZrhKw',v:'weekly',language:'zh-TW',region:'TW'});
 </script>
-</body>
-</html>
+</body></html>
