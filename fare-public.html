@@ -19,6 +19,7 @@ button,input{font:inherit}.page{width:min(100%,620px);margin:0 auto;padding:max(
 .field-group{margin-bottom:15px}.label-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}label{font-size:15px;font-weight:900}
 .paste-btn{flex:0 0 auto;min-height:30px;padding:0 10px;border:1px solid #dedee3;border-radius:9px;background:#fff;color:#65656c;font-size:12px;font-weight:850;cursor:pointer}
 .paste-btn:active{transform:scale(.98)}.paste-btn:disabled{opacity:.55;cursor:wait}
+.label-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
 .address-autocomplete{position:relative;width:100%}.address-input{width:100%;height:48px;padding:0 42px 0 41px;border:1px solid var(--line);border-radius:13px;outline:none;background:#fafafa;color:#222;font-size:16px;font-weight:700;-webkit-appearance:none;appearance:none}
 .address-input:focus{border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(255,31,45,.08)}.address-icon{position:absolute;left:15px;top:24px;transform:translateY(-50%);color:#77777d;font-size:16px;pointer-events:none}
 .address-clear{position:absolute;right:8px;top:24px;width:32px;height:32px;transform:translateY(-50%);border:0;border-radius:50%;background:transparent;color:#84848b;font-size:20px;cursor:pointer}.address-clear[hidden]{display:none}
@@ -60,15 +61,15 @@ button,input{font:inherit}.page{width:min(100%,620px);margin:0 auto;padding:max(
   </div>
 
   <div id="waypointWrap" class="waypoint-wrap">
-    <div id="waypoint1Group" class="waypoint-group" hidden><div class="label-row"><label>停靠點 1</label><button class="remove-stop" type="button" data-remove-stop="0">移除</button></div><div id="waypoint1Box"></div></div>
-    <div id="waypoint2Group" class="waypoint-group" hidden><div class="label-row"><label>停靠點 2</label><button class="remove-stop" type="button" data-remove-stop="1">移除</button></div><div id="waypoint2Box"></div></div>
+    <div id="waypoint1Group" class="waypoint-group" hidden><div class="label-row"><label>停靠點 1</label><div class="label-actions"><button id="pasteWaypoint1Btn" class="paste-btn" type="button">貼上地址</button><button class="remove-stop" type="button" data-remove-stop="0">移除</button></div></div><div id="waypoint1Box"></div></div>
+    <div id="waypoint2Group" class="waypoint-group" hidden><div class="label-row"><label>停靠點 2</label><div class="label-actions"><button id="pasteWaypoint2Btn" class="paste-btn" type="button">貼上地址</button><button class="remove-stop" type="button" data-remove-stop="1">移除</button></div></div><div id="waypoint2Box"></div></div>
     <button id="addStopBtn" class="add-stop" type="button">＋ 新增停靠點</button>
     <div class="stop-note">最多 2 個停靠點，依輸入順序計算</div>
   </div>
 
   <div class="route-divider"></div>
 
-  <div class="field-group"><div class="label-row"><label>下車地點</label></div><div id="dropoffBox"></div></div>
+  <div class="field-group"><div class="label-row"><label>下車地點</label><button id="pasteDropoffBtn" class="paste-btn" type="button">貼上地址</button></div><div id="dropoffBox"></div></div>
 
   <button id="calcBtn" class="calc-btn" type="button">開始試算 →</button>
   <div id="status" class="status"></div>
@@ -182,26 +183,63 @@ async function useCurrentLocation(){
 }
 $('locationBtn').addEventListener('click',useCurrentLocation);
 
-async function pastePickupAddress(){
-  const btn=$('pastePickupBtn');
-  if(!controllers.pickup?.resolveText){setLocationStatus('Google 地址系統尚未載入完成，請稍候再試。',true);return}
-  btn.disabled=true;btn.textContent='讀取中…';setLocationStatus('');
-  try{
-    let text='';
-    if(window.isSecureContext&&navigator.clipboard?.readText){
-      try{text=await navigator.clipboard.readText()}catch(clipboardError){console.warn('clipboard read blocked',clipboardError)}
-    }
-    if(!text){text=window.prompt('請貼上客人的上車地址：','')||''}
-    text=String(text||'').trim();
-    if(!text){setLocationStatus('剪貼簿沒有可用地址。',true);return}
-    btn.textContent='Google 判斷中…';
-    const ok=await controllers.pickup.resolveText(text,{autoFirst:true});
-    if(ok)setLocationStatus('Google 已自動帶入上車地點');
-    else{setLocationStatus('Google 找不到明確地點，請從建議中選擇。',true);controllers.pickup.focus()}
-  }catch(err){console.error(err);setLocationStatus('貼上地址失敗，請手動輸入。',true)}
-  finally{btn.disabled=false;btn.textContent='貼上地址'}
+async function readClipboardAddress(promptLabel){
+  let text='';
+  if(window.isSecureContext&&navigator.clipboard?.readText){
+    try{text=await navigator.clipboard.readText()}catch(clipboardError){console.warn('clipboard read blocked',clipboardError)}
+  }
+  if(!text)text=window.prompt(`請貼上客人的${promptLabel}：`,'')||'';
+  return String(text||'').trim();
 }
-$('pastePickupBtn').addEventListener('click',pastePickupAddress);
+
+async function pasteAddressIntoField({buttonId,controller,label,usePickupStatus=false}){
+  const btn=$(buttonId);
+  if(!btn)return;
+  if(!controller?.resolveText){
+    const message='Google 地址系統尚未載入完成，請稍候再試。';
+    if(usePickupStatus)setLocationStatus(message,true);else showStatus(message,true);
+    return;
+  }
+
+  btn.disabled=true;btn.textContent='讀取中…';
+  if(usePickupStatus)setLocationStatus('');else hideStatus();
+
+  try{
+    const text=await readClipboardAddress(`${label}地址`);
+    if(!text){
+      const message='剪貼簿沒有可用地址。';
+      if(usePickupStatus)setLocationStatus(message,true);else showStatus(message,true);
+      return;
+    }
+
+    controller.setValue(text);
+    hideResults();
+
+    btn.textContent='Google 判斷中…';
+    const ok=await controller.resolveText(text,{autoFirst:true});
+
+    if(ok){
+      btn.textContent='已帶入 ✓';
+      if(usePickupStatus)setLocationStatus(`Google 已自動帶入${label}`);else hideStatus();
+      await new Promise(resolve=>setTimeout(resolve,700));
+    }else{
+      const message=`Google 找不到明確的${label}，已保留貼上的地址，請從建議中選擇。`;
+      if(usePickupStatus)setLocationStatus(message,true);else showStatus(message,true);
+      controller.focus();
+    }
+  }catch(err){
+    console.error(err);
+    const message='貼上地址失敗，請手動輸入。';
+    if(usePickupStatus)setLocationStatus(message,true);else showStatus(message,true);
+  }finally{
+    btn.disabled=false;btn.textContent='貼上地址';
+  }
+}
+
+$('pastePickupBtn').addEventListener('click',()=>pasteAddressIntoField({buttonId:'pastePickupBtn',controller:controllers.pickup,label:'上車地點',usePickupStatus:true}));
+$('pasteWaypoint1Btn').addEventListener('click',()=>pasteAddressIntoField({buttonId:'pasteWaypoint1Btn',controller:controllers.stops[0],label:'停靠點 1'}));
+$('pasteWaypoint2Btn').addEventListener('click',()=>pasteAddressIntoField({buttonId:'pasteWaypoint2Btn',controller:controllers.stops[1],label:'停靠點 2'}));
+$('pasteDropoffBtn').addEventListener('click',()=>pasteAddressIntoField({buttonId:'pasteDropoffBtn',controller:controllers.dropoff,label:'下車地點'}));
 
 async function initGoogle(){
   try{
@@ -238,7 +276,10 @@ async function initGoogle(){
       }
       async function request(){
         const q=input.value.trim();if(q.length<2){hide();return}
-        try{const preds=await fetchPredictions(q);render(preds.map(placePrediction=>({placePrediction})))}catch(err){console.error('autocomplete',err)}
+        try{
+          const preds=await fetchPredictions(q);
+          render(preds.map(placePrediction=>({placePrediction})));
+        }catch(err){console.error('autocomplete',err)}
       }
       async function resolveText(value,{autoFirst=false}={}){
         const q=String(value||'').trim();if(q.length<2)return false;
