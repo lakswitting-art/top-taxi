@@ -2,6 +2,14 @@
 (function(){
   'use strict';
 
+  const hideLegacyFooter = () => {
+    try{
+      document.querySelectorAll('.footer').forEach(el=>el.style.setProperty('display','none','important'));
+    }catch(e){}
+  };
+  hideLegacyFooter();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hideLegacyFooter,{once:true});
+
   const clean = (lines) => {
     const out=[];
     for(const raw of lines||[]){
