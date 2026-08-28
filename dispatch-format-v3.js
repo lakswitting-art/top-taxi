@@ -10,6 +10,57 @@
   hideLegacyFooter();
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',hideLegacyFooter,{once:true});
 
+  const setupUnifiedBottomNotice = () => {
+    try{
+      const status=document.getElementById('pageStatus');
+      if(!status || status.dataset.topTaxiNoticeBound==='1') return;
+      status.dataset.topTaxiNoticeBound='1';
+
+      let notice=document.getElementById('topTaxiFinalNotice');
+      if(!notice){
+        notice=document.createElement('div');
+        notice.id='topTaxiFinalNotice';
+        notice.setAttribute('aria-live','polite');
+        notice.style.marginTop='18px';
+        notice.style.paddingTop='16px';
+        notice.style.borderTop='1px solid #eee';
+        notice.style.textAlign='center';
+        notice.style.color='#8e8e94';
+        notice.style.fontSize='12px';
+        notice.style.fontWeight='400';
+        notice.style.lineHeight='1.8';
+        status.insertAdjacentElement('afterend',notice);
+      }
+
+      const sync=()=>{
+        const text=String(status.textContent||'').trim();
+        const isErrand=text==='送出後由客服確認並安排跑腿服務';
+        const isDriver=text==='送出後由客服確認並安排代駕';
+        const isRide=text==='送出後由客服確認並安排車輛';
+
+        if(isErrand){
+          notice.innerHTML='※ 送出後跑腿需求會直接傳送至 TOP Taxi 客服。<br>※ 客服確認後將安排跑腿服務。<br>※ 跑腿是否成立，仍以客服最終確認為準。';
+        }else if(isDriver){
+          notice.innerHTML='※ 送出後代駕需求會直接傳送至 TOP Taxi 客服。<br>※ 客服確認後將安排代駕服務。<br>※ 代駕是否成立，仍以客服最終確認為準。';
+        }else if(isRide){
+          notice.innerHTML='※ 送出後叫車需求會直接傳送至 TOP Taxi 客服。<br>※ 客服確認後將安排車輛。<br>※ 叫車是否成立，仍以客服最終確認為準。';
+        }else{
+          notice.hidden=true;
+          status.style.removeProperty('display');
+          return;
+        }
+
+        notice.hidden=false;
+        status.style.setProperty('display','none','important');
+      };
+
+      sync();
+      new MutationObserver(sync).observe(status,{childList:true,characterData:true,subtree:true});
+    }catch(e){}
+  };
+  setupUnifiedBottomNotice();
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',setupUnifiedBottomNotice,{once:true});
+
   const clean = (lines) => {
     const out=[];
     for(const raw of lines||[]){
