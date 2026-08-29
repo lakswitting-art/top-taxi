@@ -77,24 +77,44 @@
 }
 </style>`;
 
-    const bottomNoticeStyle=`<style id="topTaxiRideBottomNoticeAlign20260829">
+    const bottomLayoutStyle=`<style id="topTaxiRideBottomLayout20260829">
+#openConfirm{
+  margin-top:24px !important;
+}
 #topTaxiFinalNotice{
-  margin-top:-22px !important;
+  margin-top:18px !important;
   padding-top:16px !important;
-  border-top:1px solid #e1e1e4 !important;
+  border-top:1px solid #eee !important;
+  text-align:center !important;
+  color:#8e8e94 !important;
+  font-size:12px !important;
+  font-weight:400 !important;
+  line-height:1.8 !important;
+}
+#pageStatus:not([style*="display: none"]){
+  margin-top:14px;
 }
 </style>`;
 
     const oldButton='<button id="clearRideTrip" class="trip-reset-btn pickup-reset-btn" type="button">清除本次行程</button>';
     const newButton='<button id="clearRideTrip" class="trip-reset-btn pickup-reset-btn" type="button"><svg class="pickup-reset-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4.8c0-.45.35-.8.8-.8h4.4c.45 0 .8.35.8.8V7"/><path d="M6.5 8l.85 11.2c.04.46.4.8.86.8h7.58c.46 0 .82-.34.86-.8L17.5 8"/><path d="M10 10.5v6.5M14 10.5v6.5"/></svg><span>清除本次行程</span></button>';
 
+    const oldBottom=`      <div id="paymentDefaultToast" class="payment-default-toast" aria-live="polite"></div>
+    </section>
+    <button id="openConfirm" class="primary" type="button">確認叫車 →</button><div id="pageStatus" class="status" style="text-align:center">送出後由客服確認並安排車輛</div>`;
+    const newBottom=`      <div id="paymentDefaultToast" class="payment-default-toast" aria-live="polite"></div>
+      <button id="openConfirm" class="primary" type="button">確認叫車 →</button>
+      <div id="pageStatus" class="status" style="text-align:center">送出後由客服確認並安排車輛</div>
+    </section>`;
+
     if(!html.includes(oldStyle))throw new Error('Ride reset style anchor not found');
     if(!html.includes(oldButton))throw new Error('Ride reset button anchor not found');
+    if(!html.includes(oldBottom))throw new Error('Ride bottom layout anchor not found');
 
-    html=html.replace(oldStyle,newStyle).replace(oldButton,newButton);
+    html=html.replace(oldStyle,newStyle).replace(oldButton,newButton).replace(oldBottom,newBottom);
     html=html.replace('<p class="sub">選擇地址後，系統會依 Google 即時路線重新預估車資</p>','');
     html=html.replace('#rideTitle{\n  display:flex;\n  align-items:center;\n  gap:10px;\n}', '#rideTitle{\n  display:flex;\n  align-items:center;\n  gap:10px;\n  color:#17171b !important;\n  font-size:18px !important;\n  font-weight:950 !important;\n  letter-spacing:.1px;\n}');
-    html=html.replace('</head>',bottomNoticeStyle+'</head>');
+    html=html.replace('</head>',bottomLayoutStyle+'</head>');
     html=html.replace('</body>','<script src="./dispatch-format-v3.js?v=20260819-001"><\/script></body>');
     document.open();
     document.write(html);
