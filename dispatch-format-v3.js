@@ -1,4 +1,4 @@
-/* TOP Taxi Dispatch Message Formatter V3 | 2026-08-19 */
+/* TOP Taxi Dispatch Message Formatter V3 | 2026-08-30 */
 (function(){
   'use strict';
 
@@ -73,6 +73,68 @@
     return out;
   };
 
+  /*
+   * Google 商家有時會把 SEO 關鍵字全部塞進 displayName，例如：
+   * 上利國際車業-大里汽車買賣｜高價估車｜優質汽車｜認證車商｜...｜大里區中投西路三段937號
+   * 派車單只保留「主要店名｜真正地址」。原始 Google place/address 不在這裡改動，
+   * 所以導航、路線與車資計算完全不受影響。
+   */
+  const looksLikeDispatchStreetAddress = (value) => {
+    const s=String(value||'').replace(/\s+/g,'').trim();
+    if(!s) return false;
+    return /(?:縣|市|區|鄉|鎮|村|里).*(?:大道|路|街|巷|弄|段)/u.test(s) ||
+      /(?:大道|路|街|巷|弄|段).*\d+(?:之\d+)?號?/u.test(s) ||
+      /\d+(?:之\d+)?號/u.test(s);
+  };
+
+  const compactDispatchPlaceLabel = (value,lineLength=0) => {
+    let s=String(value||'').replace(/\s+/g,' ').trim();
+    if(!s) return '';
+
+    // 只有在整行本來就明顯過長，而且「-」後方是常見商家 SEO 描述時才縮掉；
+    // 避免誤傷 7-ELEVEN、品牌分店名等正常名稱。
+    if(lineLength>=28){
+      const m=s.match(/^(.{2,24}?)[\-－–—](.+)$/u);
+      if(m){
+        const tail=String(m[2]||'').trim();
+        if(/(?:買賣|高價估車|估車|收購|認證|優質|中古車|二手車|推薦|專營|專業服務|汽車買賣)/u.test(tail)){
+          s=String(m[1]||'').trim();
+        }
+      }
+    }
+    return s;
+  };
+
+  const compactDispatchAddressLine = (raw) => {
+    const line=String(raw??'');
+    const trimmed=line.trim();
+    if(!trimmed || !trimmed.includes('｜')) return line;
+
+    const parts=trimmed.split('｜').map(v=>String(v||'').trim()).filter(Boolean);
+    if(parts.length<3) return line;
+
+    let addressIndex=-1;
+    for(let i=parts.length-1;i>=1;i--){
+      if(looksLikeDispatchStreetAddress(parts[i])){
+        addressIndex=i;
+        break;
+      }
+    }
+    if(addressIndex<1) return line;
+
+    // 地址列的第一段是 Google place name；中間多半是商家自己塞的 SEO 關鍵字。
+    // 保留第一段 + 最後找到的正式地址即可。
+    const place=compactDispatchPlaceLabel(parts[0],trimmed.length);
+    const address=parts[addressIndex];
+    if(!place || !address) return line;
+
+    const leading=line.match(/^\s*/)?.[0]||'';
+    return `${leading}${place}｜${address}`;
+  };
+
+  const compactDispatchOutput = (lines) => clean((lines||[]).map(compactDispatchAddressLine));
+  window.topTaxiCompactDispatchAddressLineV1=compactDispatchAddressLine;
+
   const splitBlocks = (text) => {
     if(typeof window.topTaxiSplitAddressBlocksV2==='function'){
       return window.topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
@@ -138,7 +200,7 @@
     out.push('','💬 禁菸、寵物、輪椅、收據等需求，請直接於 LINE 聊天室告知客服。','', '━━━━━━━━━━','',`⚡️ 即時｜${service}`);
     const blocks=(split.blocks||[]).filter(b=>!String(b?.[0]||'').includes('未提供'));
     pushBlockList(out,blocks);
-    return clean(out).join('\n');
+    return compactDispatchOutput(out).join('\n');
   };
 
   window.topTaxiFormatRideMessageV2 = function(text){
@@ -171,7 +233,7 @@
     if(luggage && !/無行李/.test(luggage)) out.push('',`🧳 行李件數｜${luggage}`);
     if(memo && memo!=='無') out.push('',`💡 特殊需求｜${memo}`);
     if(payment && /後結/.test(payment)) out.push('',`💳 付款方式｜${payment}`);
-    return clean(out).join('\n');
+    return compactDispatchOutput(out).join('\n');
   };
 
   window.topTaxiFormatBookingMessageV2 = function(ctx){
@@ -207,7 +269,7 @@
     });
     if(ctx.memo && ctx.memo!=='無') out.push('',`💡 特殊需求｜${ctx.memo}`);
     if(ctx.payment && /後結/.test(String(ctx.payment))) out.push('',`💳 付款方式｜${ctx.payment}`);
-    return clean(out).join('\n');
+    return compactDispatchOutput(out).join('\n');
   };
 
   window.topTaxiFormatErrandMessageV2 = function(text){
@@ -311,6 +373,6 @@
       misc.push(t);
     }
     misc.forEach(line=>{ if(line) out.push('',line); });
-    return clean(out).join('\n');
+    return compactDispatchOutput(out).join('\n');
   };
 })();
