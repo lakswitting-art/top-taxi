@@ -15,7 +15,7 @@
   <div class="loading">TOP Taxi 載入中…</div>
   <script>
   (async function(){
-    const response=await fetch('./ride-ui-v2-base.html?v=20260830-1920',{cache:'no-store'});
+    const response=await fetch('./ride-ui-v2-base.html?v=20260830-2022',{cache:'no-store'});
     if(!response.ok)throw new Error('Ride UI base load failed: '+response.status);
     let html=await response.text();
 
@@ -116,7 +116,7 @@
     html=html.replace('<p class="sub">選擇地址後，系統會依 Google 即時路線重新預估車資</p>','');
     html=html.replace('#rideTitle{\n  display:flex;\n  align-items:center;\n  gap:10px;\n}', '#rideTitle{\n  display:flex;\n  align-items:center;\n  gap:10px;\n  color:#17171b !important;\n  font-size:18px !important;\n  font-weight:950 !important;\n  letter-spacing:.1px;\n}');
     html=html.replace('</head>',bottomLayoutStyle+'</head>');
-    html=html.replace('</body>','<script src="./dispatch-format-v3.js?v=20260830-1920"><\/script><script>(function(){const base=window.topTaxiFormatRideMessageV2;if(typeof base!=="function")return;const isAddr=s=>/(?:縣|市|區|鄉|鎮).*(?:路|街|段|巷|弄).*\\d|(?:路|街|段|巷|弄).*\\d+.*號|\\d+.*號/u.test(String(s||""));const compactLine=line=>{const raw=String(line||"");if(!/[｜|]/.test(raw))return raw;const p=raw.split(/[｜|]/).map(x=>x.trim()).filter(Boolean);if(p.length<2)return raw;let ai=-1;for(let i=p.length-1;i>=1;i--){if(isAddr(p[i])){ai=i;break;}}if(ai<1)return raw;let name=p[0];const m=name.match(/^(.{2,24}?)[\\-－–—](.+)$/u);if(m&&/(?:買賣|估車|收購|認證|優質|中古車|二手車|推薦|專營|汽車)/u.test(m[2]))name=m[1].trim();return name+"｜"+p[ai];};window.topTaxiFormatRideMessageV2=function(text){return String(base(text)||"").split("\\n").map(compactLine).join("\\n");};})();<\/script><script src="./dispatch-address-city-district-v1.js?v=20260830-1920"><\/script></body>');
+    html=html.replace('</body>','<script src="./dispatch-format-v3.js?v=20260830-2022"><\/script><script>(function(){const base=window.topTaxiFormatRideMessageV2;if(typeof base!=="function")return;const isAddr=s=>/(?:縣|市|區|鄉|鎮).*(?:路|街|段|巷|弄).*\\d|(?:路|街|段|巷|弄).*\\d+.*號|\\d+.*號/u.test(String(s||""));const compactLine=line=>{const raw=String(line||"");if(!/[｜|]/.test(raw))return raw;const p=raw.split(/[｜|]/).map(x=>x.trim()).filter(Boolean);if(p.length<2)return raw;let ai=-1;for(let i=p.length-1;i>=1;i--){if(isAddr(p[i])){ai=i;break;}}if(ai<1)return raw;let name=p[0];const m=name.match(/^(.{2,24}?)[\\-－–—](.+)$/u);if(m&&/(?:買賣|估車|收購|認證|優質|中古車|二手車|推薦|專營|汽車)/u.test(m[2]))name=m[1].trim();return name+"｜"+p[ai];};window.topTaxiFormatRideMessageV2=function(text){return String(base(text)||"").split("\\n").map(compactLine).join("\\n");};})();<\/script><script src="./dispatch-address-city-district-v1.js?v=20260830-2022"><\/script></body>');
     document.open();
     document.write(html);
     document.close();
