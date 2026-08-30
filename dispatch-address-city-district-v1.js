@@ -1,11 +1,12 @@
 /* TOP Taxi unified dispatch address block formatter | 2026-08-30
  * Final display rule:
  *   Header: city/county only, e.g. 📍 上車｜台中市
- *   Detail: district/township + street address only, e.g. 大里區中投西路三段937號
+ *   Detail: keep a useful POI/store name + district/township + street address,
+ *           e.g. 上利國際車業｜大里區中投西路三段937號
  *
- * Google place/displayName is intentionally removed from the LINE dispatch copy so
- * dispatchers can copy a clean address directly. The original structured place data
- * remains untouched for navigation, route calculation and Order Data.
+ * Long Google SEO display names are compacted, but meaningful store/building/POI names
+ * are retained. The original structured place data remains untouched for navigation,
+ * route calculation and Order Data.
  *
  * Applies to pickup, waypoints, dropoff and errand address blocks.
  */
@@ -30,11 +31,36 @@
     return s.replace(/^[-－—\s]+/u,'').trim();
   }
   function isHead(value){return /^(📍|🟡|🏁)\s/u.test(String(value||'').trim())&&/[｜|]/.test(String(value||''));}
+  function looksLikeAddress(value){
+    const s=tw(value).replace(/\s+/g,'');
+    if(!s)return false;
+    return /(?:縣|市|區|鄉|鎮).*(?:大道|路|街|段|巷|弄).*\d/u.test(s)||
+      /(?:大道|路|街|段|巷|弄).*\d+(?:之\d+)?號?/u.test(s)||
+      /\d+(?:之\d+)?號/u.test(s);
+  }
+  function compactPlace(value,lineLength=0){
+    let s=tw(value).replace(/\s+/g,' ');
+    if(!s||looksLikeAddress(s))return '';
+
+    // Google 商家名稱有時會把 SEO 關鍵字全部塞在「-」後面。
+    // 只在明顯過長且尾段屬商家 SEO 文案時縮成主要店名，避免誤傷正常分店名。
+    if(lineLength>=28){
+      const m=s.match(/^(.{2,24}?)[\-－–—](.+)$/u);
+      if(m){
+        const tail=String(m[2]||'').trim();
+        if(/(?:買賣|高價估車|估車|收購|認證|優質|中古車|二手車|推薦|專營|專業服務|汽車買賣)/u.test(tail)){
+          s=String(m[1]||'').trim();
+        }
+      }
+    }
+    return s;
+  }
 
   function normalize(text){
     const lines=String(text||'').split('\n');
     for(let i=0;i<lines.length;i++){
       if(!isHead(lines[i]))continue;
+
       const rawHead=String(lines[i]||'');
       const head=rawHead.trim();
       const sep=head.search(/[｜|]/);
@@ -47,21 +73,35 @@
         const t=String(lines[j]||'').trim();
         if(!t)continue;
         if(isHead(t))break;
-        if(/[｜|]/.test(t)){detailIndex=j;break;}
+        detailIndex=j;
+        break;
       }
       if(detailIndex<0)continue;
 
       const rawDetail=String(lines[detailIndex]||'');
-      const parts=rawDetail.trim().split(/[｜|]/).map(x=>x.trim()).filter(Boolean);
-      if(parts.length<2)continue;
+      const trimmedDetail=rawDetail.trim();
+      const parts=trimmedDetail.split(/[｜|]/).map(x=>x.trim()).filter(Boolean);
+      if(!parts.length)continue;
 
-      // The first segment is Google place/displayName. It is deliberately omitted.
-      // Use the last address-like payload after any SEO/name segments.
-      let address=parts[parts.length-1];
+      let addressIndex=-1;
+      for(let p=parts.length-1;p>=0;p--){
+        if(looksLikeAddress(parts[p])){addressIndex=p;break;}
+      }
+      if(addressIndex<0)addressIndex=parts.length-1;
+
+      let address=parts[addressIndex];
       const city=cityOf(headArea)||cityOf(address)||cityOf(rawDetail);
-      const district=districtOf(headArea)||districtOf(address)||districtOf(rawDetail);
+      const district=districtOf(address)||districtOf(rawDetail)||districtOf(headArea);
       address=stripCity(address);
       if(district&&!address.startsWith(district))address=district+address;
+
+      let place='';
+      if(parts.length>=2&&addressIndex!==0){
+        place=compactPlace(parts[0],trimmedDetail.length);
+        const placeKey=tw(place).replace(/\s+/g,'');
+        const addressKey=tw(address).replace(/\s+/g,'');
+        if(!placeKey||placeKey===addressKey||addressKey.includes(placeKey)&&looksLikeAddress(placeKey))place='';
+      }
 
       if(city){
         const lead=(rawHead.match(/^\s*/)||[''])[0];
@@ -69,7 +109,7 @@
       }
 
       const detailLead=(rawDetail.match(/^\s*/)||[''])[0];
-      lines[detailIndex]=detailLead+address;
+      lines[detailIndex]=detailLead+(place&&address?place+'｜'+address:(address||place||trimmedDetail));
     }
     return lines.join('\n');
   }
