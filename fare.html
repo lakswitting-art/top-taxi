@@ -4,13 +4,12 @@
 <body>
 <script>
 (async()=>{
-  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-1920',{cache:'no-store'});
+  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-1925',{cache:'no-store'});
   if(!r.ok) throw new Error('fare base load failed: '+r.status);
   let s=await r.text();
 
-  // 地址搜尋（Places）一定要先能使用，不能被 Routes 載入狀態拖垮。
-  // 原本 initGoogle() 會 await routes；Routes 只要失敗，整個地址欄位就不建立。
-  // 改成背景預載，失敗只記錄，不影響上／下車與停靠點搜尋。
+  // Places（地址搜尋）與 Routes（路線試算）完全拆開。
+  // Routes 就算暫時載入失敗，上／下車與停靠點地址欄位仍必須建立。
   s=s.replace(
     /const\s*\{\s*Route\s*\}\s*=\s*await\s+google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/,
     `google.maps.importLibrary("routes")
@@ -24,15 +23,28 @@
     throw new Error('fare routes preload patch anchor not found');
   }
 
-  // 使用者真正按「開始試算」時，如果 Routes 還沒完成預載，就現場再載一次。
-  // 這樣地址搜尋永遠不會因 Routes 問題一起掛掉。
-  const oldRouteGate=`    if (!RouteClass) {\n\n\n        showStatus(\n            "Google 路線服務尚未載入完成，請稍候再試。",\n            true\n        );\n\n\n        return;\n\n    }`;
-  const newRouteGate=`    if (!RouteClass) {\n        try {\n            const { Route } = await google.maps.importLibrary("routes");\n            RouteClass = Route;\n        } catch (routeError) {\n            console.error("FARE ROUTES LAZY LOAD ERROR:", routeError);\n            showStatus(\n                "Google 路線服務暫時無法載入，請稍後再試。",\n                true\n            );\n            return;\n        }\n    }`;
-  if(!s.includes(oldRouteGate)) throw new Error('fare route gate patch anchor not found');
-  s=s.replace(oldRouteGate,newRouteGate);
+  // 按「開始試算」時若 Routes 尚未完成背景載入，就現場重試一次。
+  const routeGatePattern=/if\s*\(\s*!RouteClass\s*\)\s*\{[\s\S]*?Google 路線服務尚未載入完成，請稍候再試。[\s\S]*?return;\s*\}/;
+  if(!routeGatePattern.test(s)) throw new Error('fare route gate patch anchor not found');
+  s=s.replace(
+    routeGatePattern,
+    `if (!RouteClass) {
+        try {
+            const { Route } = await google.maps.importLibrary("routes");
+            RouteClass = Route;
+        } catch (routeError) {
+            console.error("FARE ROUTES LAZY LOAD ERROR:", routeError);
+            showStatus(
+                "Google 路線服務暫時無法載入，請稍後再試。",
+                true
+            );
+            return;
+        }
+    }`
+  );
 
-  s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-1920');
-  s=s.replace('</body>','<script src="./dispatch-address-city-district-v1.js?v=20260830-1920"><\/script></body>');
+  s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-1925');
+  s=s.replace('</body>','<script src="./dispatch-address-city-district-v1.js?v=20260830-1925"><\/script></body>');
   document.open();document.write(s);document.close();
 })().catch(e=>{console.error(e);document.body.textContent='頁面載入失敗，請重新整理';});
 </script>
