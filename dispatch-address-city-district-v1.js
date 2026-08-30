@@ -1,7 +1,12 @@
 /* TOP Taxi unified dispatch address block formatter | 2026-08-30
- * Rule:
+ * Final display rule:
  *   Header: city/county only, e.g. 📍 上車｜台中市
- *   Detail: place + district/township + street address, e.g. 店名｜大里區中投西路三段937號
+ *   Detail: district/township + street address only, e.g. 大里區中投西路三段937號
+ *
+ * Google place/displayName is intentionally removed from the LINE dispatch copy so
+ * dispatchers can copy a clean address directly. The original structured place data
+ * remains untouched for navigation, route calculation and Order Data.
+ *
  * Applies to pickup, waypoints, dropoff and errand address blocks.
  */
 (function(){
@@ -49,10 +54,12 @@
       const rawDetail=String(lines[detailIndex]||'');
       const parts=rawDetail.trim().split(/[｜|]/).map(x=>x.trim()).filter(Boolean);
       if(parts.length<2)continue;
-      const place=parts[0];
-      let address=parts.slice(1).join('｜');
-      const city=cityOf(headArea)||cityOf(address);
-      const district=districtOf(headArea)||districtOf(address);
+
+      // The first segment is Google place/displayName. It is deliberately omitted.
+      // Use the last address-like payload after any SEO/name segments.
+      let address=parts[parts.length-1];
+      const city=cityOf(headArea)||cityOf(address)||cityOf(rawDetail);
+      const district=districtOf(headArea)||districtOf(address)||districtOf(rawDetail);
       address=stripCity(address);
       if(district&&!address.startsWith(district))address=district+address;
 
@@ -60,8 +67,9 @@
         const lead=(rawHead.match(/^\s*/)||[''])[0];
         lines[i]=lead+label+'｜'+city;
       }
+
       const detailLead=(rawDetail.match(/^\s*/)||[''])[0];
-      lines[detailIndex]=detailLead+place+'｜'+address;
+      lines[detailIndex]=detailLead+address;
     }
     return lines.join('\n');
   }
