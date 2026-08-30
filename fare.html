@@ -4,26 +4,19 @@
 <body>
 <script>
 (async()=>{
-  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-1925',{cache:'no-store'});
+  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2022',{cache:'no-store'});
   if(!r.ok) throw new Error('fare base load failed: '+r.status);
   let s=await r.text();
 
-  // Places（地址搜尋）與 Routes（路線試算）完全拆開。
-  // Routes 就算暫時載入失敗，上／下車與停靠點地址欄位仍必須建立。
-  s=s.replace(
-    /const\s*\{\s*Route\s*\}\s*=\s*await\s+google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/,
-    `google.maps.importLibrary("routes")
-            .then(({ Route }) => { RouteClass = Route; })
-            .catch((routeError) => {
-                RouteClass = null;
-                console.error("FARE ROUTES PRELOAD ERROR:", routeError);
-            });`
-  );
-  if(!s.includes('FARE ROUTES PRELOAD ERROR:')){
-    throw new Error('fare routes preload patch anchor not found');
-  }
+  // 地址搜尋（Places）必須先完整建立。
+  // 不在 initGoogle() 期間載入 Routes；避免 Routes 的任何同步／非同步錯誤
+  // 再次把上／下車與停靠點地址欄位一起拖垮。
+  const routeInitPattern=/const\s*\{\s*Route\s*\}\s*=\s*await\s+google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/;
+  if(!routeInitPattern.test(s)) throw new Error('fare routes init patch anchor not found');
+  s=s.replace(routeInitPattern,'RouteClass = null;');
 
-  // 按「開始試算」時若 Routes 尚未完成背景載入，就現場重試一次。
+  // 真正按「開始試算」時才載入 Routes。
+  // 首次載入稍慢一點沒關係，地址搜尋要像即時叫車一樣穩定可用。
   const routeGatePattern=/if\s*\(\s*!RouteClass\s*\)\s*\{[\s\S]*?Google 路線服務尚未載入完成，請稍候再試。[\s\S]*?return;\s*\}/;
   if(!routeGatePattern.test(s)) throw new Error('fare route gate patch anchor not found');
   s=s.replace(
@@ -43,8 +36,8 @@
     }`
   );
 
-  s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-1925');
-  s=s.replace('</body>','<script src="./dispatch-address-city-district-v1.js?v=20260830-1925"><\/script></body>');
+  s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-2022');
+  s=s.replace('</body>','<script src="./dispatch-address-city-district-v1.js?v=20260830-2022"><\/script></body>');
   document.open();document.write(s);document.close();
 })().catch(e=>{console.error(e);document.body.textContent='頁面載入失敗，請重新整理';});
 </script>
