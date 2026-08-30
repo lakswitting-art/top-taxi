@@ -4,10 +4,34 @@
 <body>
 <script>
 (async()=>{
-  const r=await fetch('./booking-ui-base-20260830.html?v=20260830-1436',{cache:'no-store'});
+  const r=await fetch('./booking-ui-base-20260830.html?v=20260830-1640',{cache:'no-store'});
   if(!r.ok) throw new Error('booking base load failed: '+r.status);
   let s=await r.text();
-  s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-1436');
+  s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-1640');
+
+  const bookingAddressGuard=`<script>(function(){
+    const base=window.topTaxiFormatBookingMessageV2;
+    if(typeof base!=="function")return;
+    const isAddr=s=>/(?:縣|市|區|鄉|鎮).*(?:路|街|段|巷|弄).*\\d|(?:路|街|段|巷|弄).*\\d+.*號|\\d+.*號/u.test(String(s||""));
+    const compactLine=line=>{
+      const raw=String(line||"");
+      if(!/[｜|]/.test(raw))return raw;
+      const p=raw.split(/[｜|]/).map(x=>x.trim()).filter(Boolean);
+      if(p.length<2)return raw;
+      let ai=-1;
+      for(let i=p.length-1;i>=1;i--){if(isAddr(p[i])){ai=i;break;}}
+      if(ai<1)return raw;
+      let name=p[0];
+      const m=name.match(/^(.{2,24}?)[\\-－–—](.+)$/u);
+      if(m&&/(?:買賣|估車|收購|認證|優質|中古車|二手車|推薦|專營|汽車)/u.test(m[2]))name=m[1].trim();
+      return name+"｜"+p[ai];
+    };
+    window.topTaxiFormatBookingMessageV2=function(ctx){
+      return String(base(ctx)||"").split("\\n").map(compactLine).join("\\n");
+    };
+  })();<\/script>`;
+
+  s=s.replace('</body>',bookingAddressGuard+'</body>');
   document.open();document.write(s);document.close();
 })().catch(e=>{console.error(e);document.body.textContent='頁面載入失敗，請重新整理';});
 </script>
