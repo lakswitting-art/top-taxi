@@ -1,14 +1,23 @@
 <!doctype html>
 <html lang="zh-TW">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><title>TOP Taxi｜24H 車資試算</title></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>TOP Taxi｜24H 車資試算</title>
+</head>
 <body>
 <script>
 (async()=>{
-  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2256',{cache:'no-store'});
+  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2302',{cache:'no-store'});
   if(!r.ok) throw new Error('fare base load failed: '+r.status);
   let s=await r.text();
 
-  // Routes 不在地址初始化時載入，避免拖垮 Places。
+  // Fare 的真正問題不是 API Key，而是舊 wrapper 用 async fetch + document.write
+  // 重建整份文件，LINE iOS WKWebView 對這種 script / load lifecycle 很不穩定。
+  // 改成先建立 DOM，再依原始順序重新執行 scripts，不再 document.open/write/close。
+
+  // 地址初始化時只載入 Places；Routes 延後到按「開始試算」才載入。
   const routeInitPattern=/const\s*\{\s*Route\s*\}\s*=\s*await\s+google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/;
   if(!routeInitPattern.test(s)) throw new Error('fare routes init patch anchor not found');
   s=s.replace(routeInitPattern,'RouteClass = null;');
@@ -26,32 +35,60 @@
         }
     }`);
 
-  // 動態頁不等舊 window.load；把 initGoogle 掛到 window，等新文件解析完後在新文件內啟動。
+  // 不再等待已經發生過的 window.load；等所有 base scripts 執行完後由 wrapper 明確啟動。
   const loadInitPattern=/window\.addEventListener\(\s*["']load["']\s*,\s*initGoogle\s*\);/;
   if(!loadInitPattern.test(s)) throw new Error('fare load init patch anchor not found');
   s=s.replace(loadInitPattern,'window.initGoogle = initGoogle;');
 
-  // 顯示真正的 Google 初始化錯誤，避免誤判 API Key。
-  s=s.replace(
-    '"Google 地址搜尋載入失敗，請確認 API Key 與 API 設定。",\n            true',
-    '"Google 地址搜尋載入失敗：" + String(error?.message || error),\n            true'
-  );
+  const parsed=new DOMParser().parseFromString(s,'text/html');
+  const scriptData=[...parsed.querySelectorAll('script')].map(el=>({
+    attrs:[...el.attributes].map(a=>[a.name,a.value]),
+    code:el.textContent||''
+  }));
+  parsed.querySelectorAll('script').forEach(el=>el.remove());
 
-  // 舊版頁尾不應顯示在目前封版 UI。
-  s=s.replace('</head>','<style>.footer{display:none!important}</style></head>');
+  document.documentElement.lang=parsed.documentElement.lang||'zh-TW';
+  document.head.innerHTML=parsed.head.innerHTML+'<style>.footer{display:none!important}</style>';
+  document.body.innerHTML=parsed.body.innerHTML;
 
-  // 重要：document.open/write/close 會終止外層目前這段執行流程，
-  // 所以啟動 initGoogle 必須注入「新文件本身」，不能寫在 document.close() 後面。
-  const bootScript = '<scr'+'ipt>setTimeout(function(){try{if(typeof window.initGoogle==="function"){window.initGoogle();}else{console.error("FARE initGoogle missing after document parse");}}catch(e){console.error("FARE initGoogle start error:",e);}},120);</scr'+'ipt>';
-  const dispatchScript = '<scr'+'ipt src="./dispatch-address-city-district-v1.js?v=20260830-2256"></scr'+'ipt>';
-  s=s.replace('</body>',bootScript+dispatchScript+'</body>');
+  const appendScript=async info=>{
+    const el=document.createElement('script');
+    for(const [name,value] of info.attrs) el.setAttribute(name,value);
+    const src=el.getAttribute('src');
+    if(src){
+      await new Promise((resolve,reject)=>{
+        el.onload=resolve;
+        el.onerror=()=>reject(new Error('script load failed: '+src));
+        document.body.appendChild(el);
+      });
+    }else{
+      el.textContent=info.code;
+      document.body.appendChild(el);
+    }
+  };
 
-  document.open();
-  document.write(s);
-  document.close();
+  for(const info of scriptData){
+    await appendScript(info);
+  }
+
+  // 所有 Google loader / LIFF / UI scripts 都已存在後才啟動地址系統。
+  if(typeof window.initGoogle!=='function'){
+    throw new Error('initGoogle missing after stable DOM boot');
+  }
+  await window.initGoogle();
+
+  const dispatch=document.createElement('script');
+  dispatch.src='./dispatch-address-city-district-v1.js?v=20260830-2302';
+  document.body.appendChild(dispatch);
 })().catch(e=>{
-  console.error(e);
-  document.body.textContent='頁面載入失敗，請重新整理';
+  console.error('FARE STABLE BOOT ERROR:',e);
+  const status=document.getElementById('status');
+  if(status){
+    status.textContent='地址系統載入失敗：'+String(e?.message||e);
+    status.classList.add('show','error');
+  }else{
+    document.body.innerHTML='<div style="padding:24px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;color:#b91c1c">車資試算載入失敗，請重新開啟頁面。</div>';
+  }
 });
 </script>
 </body>
