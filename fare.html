@@ -4,12 +4,17 @@
 <body>
 <script>
 (async()=>{
-  // 保留目前封版 UI／車資邏輯；修正 Google loader 與 initGoogle 的真正執行順序。
-  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2234',{cache:'no-store'});
+  // 保留目前封版 UI／車資邏輯；地址輸入框先建立，Google Places 改成使用時才載入。
+  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2242',{cache:'no-store'});
   if(!r.ok) throw new Error('fare base load failed: '+r.status);
   let s=await r.text();
 
-  // Places 地址搜尋先獨立完成。Routes 只有按「開始試算」時才載入。
+  // 1) initGoogle 啟動時不要先等待 Places，否則 Places 載入失敗會讓整個地址 UI 都不存在。
+  const placesInitPattern=/const\s*\{\s*AutocompleteSuggestion\s*,\s*AutocompleteSessionToken\s*\}\s*=\s*await\s+google\.maps\.importLibrary\(\s*["']places["']\s*\);/;
+  if(!placesInitPattern.test(s)) throw new Error('fare places init patch anchor not found');
+  s=s.replace(placesInitPattern,'');
+
+  // 2) Routes 只有按「開始試算」時才載入。
   const routeInitPattern=/const\s*\{\s*Route\s*\}\s*=\s*await\s+google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/;
   if(!routeInitPattern.test(s)) throw new Error('fare routes init patch anchor not found');
   s=s.replace(routeInitPattern,'RouteClass = null;');
@@ -33,12 +38,40 @@
     }`
   );
 
-  // fare 是 document.write 動態頁。不能等舊的 window.load，也不能在 Google loader 建立前呼叫 initGoogle。
+  // 3) 地址控制器先建立；session token 等真的搜尋時再建立。
+  const tokenInitPattern=/let\s+sessionToken\s*=\s*new\s+AutocompleteSessionToken\(\s*\);/;
+  if(!tokenInitPattern.test(s)) throw new Error('fare session token init anchor not found');
+  s=s.replace(tokenInitPattern,'let sessionToken = null;');
+
+  const tokenResetPattern=/sessionToken\s*=\s*new\s+AutocompleteSessionToken\(\s*\);/;
+  if(!tokenResetPattern.test(s)) throw new Error('fare session token reset anchor not found');
+  s=s.replace(tokenResetPattern,'sessionToken = null;');
+
+  // 4) 比照正常工作的 Ride：使用者真的輸入地址時，才 import Places 並建立 token。
+  const suggestionTryPattern=/try\s*\{\s*const\s+response\s*=\s*await\s+AutocompleteSuggestion\s*\.fetchAutocompleteSuggestions\(\{/;
+  if(!suggestionTryPattern.test(s)) throw new Error('fare suggestion lazy places anchor not found');
+  s=s.replace(
+    suggestionTryPattern,
+    `try {
+                        const {
+                            AutocompleteSuggestion,
+                            AutocompleteSessionToken
+                        } = await google.maps.importLibrary("places");
+
+                        sessionToken =
+                            sessionToken ||
+                            new AutocompleteSessionToken();
+
+                        const response =
+                            await AutocompleteSuggestion
+                                .fetchAutocompleteSuggestions({`
+  );
+
+  // fare 是 fetch + document.write 動態頁；Google loader 建立後再啟動 UI。
   const loadInitPattern=/window\.addEventListener\(\s*["']load["']\s*,\s*initGoogle\s*\);/;
   if(!loadInitPattern.test(s)) throw new Error('fare load init patch anchor not found');
   s=s.replace(loadInitPattern,'window.initGoogle = initGoogle;');
 
-  // Google loader 先建立 google.maps.importLibrary，再立刻啟動地址初始化；順序比照正常工作的 Ride。
   const loaderEndMarker='});\n\n</script>\n\n\n\n<script id="topTaxiAddressUxV2">';
   if(!s.includes(loaderEndMarker)) throw new Error('fare google loader end anchor not found');
   s=s.replace(
@@ -49,7 +82,7 @@
   // 保留目前派單地址顯示格式。
   s=s.replace(
     '</body>',
-    '<script src="./dispatch-address-city-district-v1.js?v=20260830-2234"><\\/script></body>'
+    '<script src="./dispatch-address-city-district-v1.js?v=20260830-2242"><\\/script></body>'
   );
 
   document.open();
