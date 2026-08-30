@@ -31,7 +31,7 @@
     };
   })();<\/script>`;
 
-  s=s.replace('</body>',bookingAddressGuard+'</body>');
+  s=s.replace('</body>',bookingAddressGuard+'<script src="./dispatch-address-city-district-v1.js?v=20260830-1805"><\/script></body>');
   document.open();document.write(s);document.close();
 })().catch(e=>{console.error(e);document.body.textContent='頁面載入失敗，請重新整理';});
 </script>
