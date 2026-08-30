@@ -4,10 +4,29 @@
 <body>
 <script>
 (async()=>{
-  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-1436',{cache:'no-store'});
+  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-1738',{cache:'no-store'});
   if(!r.ok) throw new Error('fare base load failed: '+r.status);
   let s=await r.text();
-  s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-1436');
+
+  // Google Places（地址搜尋）與 Routes（路線試算）分離初始化。
+  // Routes 若暫時載入失敗，不得連帶讓上／下車地址欄位整頁失效。
+  s=s.replace(
+    /const\s*\{\s*Route\s*\}\s*=\s*await\s+google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/,
+    `try {
+            const { Route } = await google.maps.importLibrary("routes");
+            RouteClass = Route;
+        } catch (routeError) {
+            RouteClass = null;
+            console.error("FARE ROUTES INIT ERROR:", routeError);
+        }`
+  );
+
+  // 若上面的正式 anchor 未命中，避免默默退回舊行為。
+  if(!s.includes('FARE ROUTES INIT ERROR:')){
+    throw new Error('fare routes init patch anchor not found');
+  }
+
+  s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-1738');
   document.open();document.write(s);document.close();
 })().catch(e=>{console.error(e);document.body.textContent='頁面載入失敗，請重新整理';});
 </script>
