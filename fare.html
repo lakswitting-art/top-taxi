@@ -21,12 +21,12 @@
         }`
   );
 
-  // 若上面的正式 anchor 未命中，避免默默退回舊行為。
   if(!s.includes('FARE ROUTES INIT ERROR:')){
     throw new Error('fare routes init patch anchor not found');
   }
 
   s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-1738');
+  s=s.replace('</body>','<script src="./dispatch-address-city-district-v1.js?v=20260830-1805"><\/script></body>');
   document.open();document.write(s);document.close();
 })().catch(e=>{console.error(e);document.body.textContent='頁面載入失敗，請重新整理';});
 </script>
