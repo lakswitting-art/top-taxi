@@ -29,10 +29,13 @@
   function compactAddressLine(raw){
     const line=String(raw??'');
     const trimmed=line.trim();
-    if(!trimmed || !trimmed.includes('｜')) return line;
 
-    const parts=trimmed.split('｜').map(v=>String(v||'').trim()).filter(Boolean);
-    if(parts.length<3) return line;
+    // Google 商家名稱可能混用半形 | 與全形 ｜；即時叫車兩種都處理。
+    // 這裡統一採相同規則，讓預約／試算／跑腿輸出完全一致。
+    if(!trimmed || !/[｜|]/.test(trimmed)) return line;
+
+    const parts=trimmed.split(/[｜|]/).map(v=>String(v||'').trim()).filter(Boolean);
+    if(parts.length<2) return line;
 
     let addressIndex=-1;
     for(let i=parts.length-1;i>=1;i--){
