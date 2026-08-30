@@ -4,8 +4,8 @@
 <body>
 <script>
 (async()=>{
-  // 保留目前封版 UI／車資邏輯，只把 Places 地址搜尋與 Routes 路線服務拆開。
-  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2118',{cache:'no-store'});
+  // 保留目前封版 UI／車資邏輯，只修正 Google 初始化時機與 Routes 延遲載入。
+  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2139',{cache:'no-store'});
   if(!r.ok) throw new Error('fare base load failed: '+r.status);
   let s=await r.text();
 
@@ -34,10 +34,15 @@
     }`
   );
 
+  // fare.html 是 fetch + document.write 動態重建頁面；原本等待 window.load 會錯過事件。
+  const loadInitPattern=/window\.addEventListener\(\s*["']load["']\s*,\s*initGoogle\s*\);/;
+  if(!loadInitPattern.test(s)) throw new Error('fare load init patch anchor not found');
+  s=s.replace(loadInitPattern,'initGoogle();');
+
   // 保留目前派單地址顯示格式。
   s=s.replace(
     '</body>',
-    '<script src="./dispatch-address-city-district-v1.js?v=20260830-2118"><\/script></body>'
+    '<script src="./dispatch-address-city-district-v1.js?v=20260830-2139"><\/script></body>'
   );
 
   document.open();
