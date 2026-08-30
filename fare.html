@@ -4,15 +4,40 @@
 <body>
 <script>
 (async()=>{
-  // 這份 base 與 2026-08-29 封版 fare.html 為同一個 blob（SHA: 7aaafcf...）。
-  // 不再改 Google Places / Routes / 車資試算流程，只在最後套用派單地址顯示格式。
-  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2035',{cache:'no-store'});
+  // 保留目前封版 UI／車資邏輯，只把 Places 地址搜尋與 Routes 路線服務拆開。
+  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2118',{cache:'no-store'});
   if(!r.ok) throw new Error('fare base load failed: '+r.status);
   let s=await r.text();
 
+  // 地址搜尋先獨立完成。Routes 不得在 initGoogle() 載入失敗時拖垮 Places。
+  const routeInitPattern=/const\s*\{\s*Route\s*\}\s*=\s*await\s+google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/;
+  if(!routeInitPattern.test(s)) throw new Error('fare routes init patch anchor not found');
+  s=s.replace(routeInitPattern,'RouteClass = null;');
+
+  // 真正按「開始試算」時才載入 Routes；即使 Routes 暫時失敗，地址欄位仍可正常使用。
+  const routeGatePattern=/if\s*\(\s*!RouteClass\s*\)\s*\{[\s\S]*?Google 路線服務尚未載入完成，請稍候再試。[\s\S]*?return;\s*\}/;
+  if(!routeGatePattern.test(s)) throw new Error('fare route gate patch anchor not found');
+  s=s.replace(
+    routeGatePattern,
+    `if (!RouteClass) {
+        try {
+            const { Route } = await google.maps.importLibrary("routes");
+            RouteClass = Route;
+        } catch (routeError) {
+            console.error("FARE ROUTES LAZY LOAD ERROR:", routeError);
+            showStatus(
+                "Google 路線服務暫時無法載入，請稍後再試。",
+                true
+            );
+            return;
+        }
+    }`
+  );
+
+  // 保留目前派單地址顯示格式。
   s=s.replace(
     '</body>',
-    '<script src="./dispatch-address-city-district-v1.js?v=20260830-2035"><\/script></body>'
+    '<script src="./dispatch-address-city-district-v1.js?v=20260830-2118"><\/script></body>'
   );
 
   document.open();
