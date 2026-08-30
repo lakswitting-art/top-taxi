@@ -1,32 +1,38 @@
 <!doctype html>
 <html lang="zh-TW">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>TOP Taxi｜24H 車資試算</title></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><title>TOP Taxi｜24H 車資試算</title></head>
 <body>
 <script>
 (async()=>{
-  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-1738',{cache:'no-store'});
+  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-1920',{cache:'no-store'});
   if(!r.ok) throw new Error('fare base load failed: '+r.status);
   let s=await r.text();
 
-  // Google Places（地址搜尋）與 Routes（路線試算）分離初始化。
-  // Routes 若暫時載入失敗，不得連帶讓上／下車地址欄位整頁失效。
+  // 地址搜尋（Places）一定要先能使用，不能被 Routes 載入狀態拖垮。
+  // 原本 initGoogle() 會 await routes；Routes 只要失敗，整個地址欄位就不建立。
+  // 改成背景預載，失敗只記錄，不影響上／下車與停靠點搜尋。
   s=s.replace(
     /const\s*\{\s*Route\s*\}\s*=\s*await\s+google\.maps\.importLibrary\(\s*["']routes["']\s*\);\s*RouteClass\s*=\s*Route\s*;/,
-    `try {
-            const { Route } = await google.maps.importLibrary("routes");
-            RouteClass = Route;
-        } catch (routeError) {
-            RouteClass = null;
-            console.error("FARE ROUTES INIT ERROR:", routeError);
-        }`
+    `google.maps.importLibrary("routes")
+            .then(({ Route }) => { RouteClass = Route; })
+            .catch((routeError) => {
+                RouteClass = null;
+                console.error("FARE ROUTES PRELOAD ERROR:", routeError);
+            });`
   );
-
-  if(!s.includes('FARE ROUTES INIT ERROR:')){
-    throw new Error('fare routes init patch anchor not found');
+  if(!s.includes('FARE ROUTES PRELOAD ERROR:')){
+    throw new Error('fare routes preload patch anchor not found');
   }
 
-  s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-1738');
-  s=s.replace('</body>','<script src="./dispatch-address-city-district-v1.js?v=20260830-1805"><\/script></body>');
+  // 使用者真正按「開始試算」時，如果 Routes 還沒完成預載，就現場再載一次。
+  // 這樣地址搜尋永遠不會因 Routes 問題一起掛掉。
+  const oldRouteGate=`    if (!RouteClass) {\n\n\n        showStatus(\n            "Google 路線服務尚未載入完成，請稍候再試。",\n            true\n        );\n\n\n        return;\n\n    }`;
+  const newRouteGate=`    if (!RouteClass) {\n        try {\n            const { Route } = await google.maps.importLibrary("routes");\n            RouteClass = Route;\n        } catch (routeError) {\n            console.error("FARE ROUTES LAZY LOAD ERROR:", routeError);\n            showStatus(\n                "Google 路線服務暫時無法載入，請稍後再試。",\n                true\n            );\n            return;\n        }\n    }`;
+  if(!s.includes(oldRouteGate)) throw new Error('fare route gate patch anchor not found');
+  s=s.replace(oldRouteGate,newRouteGate);
+
+  s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-1920');
+  s=s.replace('</body>','<script src="./dispatch-address-city-district-v1.js?v=20260830-1920"><\/script></body>');
   document.open();document.write(s);document.close();
 })().catch(e=>{console.error(e);document.body.textContent='頁面載入失敗，請重新整理';});
 </script>
