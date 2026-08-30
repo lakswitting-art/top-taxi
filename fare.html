@@ -4,7 +4,7 @@
 <body>
 <script>
 (async()=>{
-  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2249',{cache:'no-store'});
+  const r=await fetch('./fare-ui-base-20260830.html?v=20260830-2256',{cache:'no-store'});
   if(!r.ok) throw new Error('fare base load failed: '+r.status);
   let s=await r.text();
 
@@ -26,7 +26,7 @@
         }
     }`);
 
-  // 動態頁不等舊 window.load；先把 initGoogle 掛到 window，等整份 document.write 完成後由外層啟動。
+  // 動態頁不等舊 window.load；把 initGoogle 掛到 window，等新文件解析完後在新文件內啟動。
   const loadInitPattern=/window\.addEventListener\(\s*["']load["']\s*,\s*initGoogle\s*\);/;
   if(!loadInitPattern.test(s)) throw new Error('fare load init patch anchor not found');
   s=s.replace(loadInitPattern,'window.initGoogle = initGoogle;');
@@ -37,29 +37,18 @@
     '"Google 地址搜尋載入失敗：" + String(error?.message || error),\n            true'
   );
 
-  s=s.replace('</body>','<script src="./dispatch-address-city-district-v1.js?v=20260830-2249"><\/script></body>');
+  // 舊版頁尾不應顯示在目前封版 UI。
+  s=s.replace('</head>','<style>.footer{display:none!important}</style></head>');
+
+  // 重要：document.open/write/close 會終止外層目前這段執行流程，
+  // 所以啟動 initGoogle 必須注入「新文件本身」，不能寫在 document.close() 後面。
+  const bootScript = '<scr'+'ipt>setTimeout(function(){try{if(typeof window.initGoogle==="function"){window.initGoogle();}else{console.error("FARE initGoogle missing after document parse");}}catch(e){console.error("FARE initGoogle start error:",e);}},120);</scr'+'ipt>';
+  const dispatchScript = '<scr'+'ipt src="./dispatch-address-city-district-v1.js?v=20260830-2256"></scr'+'ipt>';
+  s=s.replace('</body>',bootScript+dispatchScript+'</body>');
 
   document.open();
   document.write(s);
   document.close();
-
-  // 關鍵：等新文件的 script 全部解析完，再從同一個 window 啟動 initGoogle。
-  setTimeout(() => {
-    try {
-      if (typeof window.initGoogle === 'function') {
-        window.initGoogle();
-      } else {
-        console.error('FARE initGoogle missing after document parse');
-        const status = document.getElementById('status');
-        if (status) {
-          status.textContent = '地址系統初始化失敗：initGoogle 未載入';
-          status.classList.add('show','error');
-        }
-      }
-    } catch (e) {
-      console.error('FARE initGoogle start error:', e);
-    }
-  }, 120);
 })().catch(e=>{
   console.error(e);
   document.body.textContent='頁面載入失敗，請重新整理';
