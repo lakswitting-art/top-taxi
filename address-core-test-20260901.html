@@ -26,16 +26,22 @@
   if(!r.ok)throw new Error('測試版載入失敗：'+r.status);
   let html=await r.text();
 
-  // TEST PATCH 2026-09-01: Google POI display names can include a redundant Taiwan prefix,
-  // e.g. "台灣台中地方法院". Strip it only from the selected display label;
-  // do not touch formattedAddress / place_id / coordinates / route data.
+  // TEST PATCH 2026-09-01: Google POI display names can include a redundant Taiwan prefix.
   html=html.replace(
     /const selectedMainText=([^;]+);/g,
     'const selectedMainText=String($1).replace(/^(?:台灣|臺灣)/u,"");'
   );
 
-  // The branch wrappers expect root-relative sibling files. Because this launcher lives at repo root,
-  // their ./ references continue to resolve against the production base assets without altering them.
+  // Errand branch wrapper had a wrapper-level Routes patch inserted into the fetched base HTML.
+  // Strip only that broken block here; the address-core patch remains active and production files stay untouched.
+  if(page==='errand'){
+    const start=html.indexOf('  // 在 shell 取得 errand-base 後');
+    const end=html.indexOf('  const patch=`',start);
+    if(start>=0&&end>start){
+      html=html.slice(0,start)+html.slice(end);
+    }
+  }
+
   document.open();document.write(html);document.close();
 })().catch(function(error){console.error(error);document.body.innerHTML='<div class="loading">測試入口載入失敗，請重新整理。<br>'+String(error.message||error)+'</div>';});
 </script>
