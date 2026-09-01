@@ -16,6 +16,42 @@ html,body{margin:0;min-height:100%;background:#f2f3f5;font-family:-apple-system,
   const response=await fetch('./errand-base.html?v=20260830-2022',{cache:'no-store'});
   if(!response.ok) throw new Error('Errand base load failed: '+response.status);
   let html=await response.text();
+
+  // ADDRESS CORE FIX 2026-09-01
+  // Preserve exact tapped Google suggestion and block nearby reverse-geocode door substitution.
+  html=html.replace(
+    'function placeToData(place,extra={}){\n const address=normalizeTW(place?.formattedAddress||extra.address||"");const parsed=extractArea(address);const loc=place?.location;',
+    'function placeToData(place,extra={}){\n const selectedText=String(place?.__topTaxiSelectedText||extra.selectedText||"").trim();const originalAddress=normalizeTW(place?.formattedAddress||extra.address||"");const parsed=extractArea(originalAddress);const address=normalizeTW(selectedText&&/(?:路|街|大道|段|巷|弄).*\\d+(?:-\\d+|之\\d+)?號/u.test(selectedText)?[parsed.city,parsed.district,selectedText].filter(Boolean).join(""):originalAddress);const loc=place?.location;'
+  );
+  html=html.replace(
+    'return{name:extra.name||"",displayName:placeName(place)||extra.name||"",address,city,district,areaLabel:[city,district].filter(Boolean).join(\'\'),placeId:place?.id||extra.placeId||"",lat:',
+    'return{name:extra.name||"",displayName:selectedText||placeName(place)||extra.name||"",address,city,district,areaLabel:[city,district].filter(Boolean).join(\'\'),placeId:place?.id||extra.placeId||"",selectedText,lat:'
+  );
+  html=html.replace(
+    'return{name:item.name||"",displayName:item.displayName||item.name||"",address,city:item.city||area.city,district:item.district||area.district,areaLabel:item.areaLabel||area.areaLabel,placeId:item.placeId||"",lat:coord(item.lat),lng:coord(item.lng),pickupNote:item.pickupNote||""};',
+    'return{name:item.name||"",displayName:item.displayName||item.name||"",address,city:item.city||area.city,district:item.district||area.district,areaLabel:item.areaLabel||area.areaLabel,placeId:item.placeId||"",selectedText:item.selectedText||"",lat:coord(item.lat),lng:coord(item.lng),pickupNote:item.pickupNote||""};'
+  );
+  html=html.replace(
+    'async function choose(pred){suppressAddStopUntil=Date.now()+900;const fallback=pred.text?.toString?.()||\'\';input.value=fallback;',
+    'async function choose(pred){suppressAddStopUntil=Date.now()+900;const fallback=pred.text?.toString?.()||\'\';const selectedMainText=pred.mainText?.toString?.()||fallback;input.value=selectedMainText||fallback;'
+  );
+  html=html.replace(
+    'await place.fetchFields({fields:[\'id\',\'displayName\',\'formattedAddress\',\'location\',\'addressComponents\']});slot.place=place;slot.data=placeToData(place);input.value=displayAddress(slot.data)||fallback;',
+    'await place.fetchFields({fields:[\'id\',\'displayName\',\'formattedAddress\',\'location\',\'addressComponents\']});try{place.__topTaxiSelectedText=selectedMainText}catch(e){}slot.place=place;slot.data=placeToData(place);input.value=selectedMainText||displayAddress(slot.data)||fallback;'
+  );
+  html=html.replace(
+    'if(hasStreetNumber(original)&&consistent)return normalizeAddress({...data,address:original,city:s.city||data.city||\'\',district:s.district||data.district||\'\',areaLabel:s.areaLabel||data.areaLabel||\'\'});',
+    'if(hasStreetNumber(original)&&consistent)return normalizeAddress({...data,address:original,city:s.city||data.city||\'\',district:s.district||data.district||\'\',areaLabel:s.areaLabel||data.areaLabel||\'\'});if(data.selectedText)return normalizeAddress(data);'
+  );
+
+  // 在 shell 取得 errand-base 後，把 Places 與 Routes 初始化拆開。
+  // Routes 掛掉時，地址搜尋仍要正常可用；只有路線／費用試算暫停。
+  const shellAnchor='let html=await response.text();';
+  const shellPatch=`let html=await response.text();\n  html=html.replace(\n    "   const routes=await google.maps.importLibrary('routes');RouteClass=routes.Route;",\n    "   try{const routes=await google.maps.importLibrary('routes');RouteClass=routes.Route;}catch(routeError){RouteClass=null;console.error('ERRAND ROUTES INIT ERROR:',routeError);}"\n  );\n  if(!html.includes('ERRAND ROUTES INIT ERROR:'))throw new Error('errand routes init patch anchor not found');`;
+
+  if(!html.includes(shellAnchor)) throw new Error('errand shell patch anchor not found');
+  html=html.replace(shellAnchor,shellPatch);
+
   const patch=`<style id="topTaxiErrandUIV220260818">
 html,body{background:#f2f3f5!important}body{min-height:100vh}.hero{display:none!important}.page{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!important}.booking-card{border-radius:22px!important;box-shadow:0 18px 50px rgba(0,0,0,.10)!important}.form-header{align-items:center!important;margin-bottom:0!important}.form-title{display:flex!important;align-items:center!important;gap:10px!important;color:#17171b!important;font-size:18px!important;font-weight:950!important;letter-spacing:.1px!important}.form-title::before{content:"";width:4px;height:23px;flex:0 0 4px;border-radius:999px;background:var(--red);box-shadow:0 2px 7px rgba(255,31,45,.18)}.form-label-small{font-size:0!important;letter-spacing:0!important;color:#17171b!important;font-weight:900!important;white-space:nowrap}.form-label-small::before{content:"TOP";color:var(--red);font-size:13px;font-weight:950}.form-label-small::after{content:" Taxi";color:#17171b;font-size:13px;font-weight:900}
 #errandForm{padding-right:0!important}

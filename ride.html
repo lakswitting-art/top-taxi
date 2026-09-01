@@ -19,6 +19,28 @@
     if(!response.ok)throw new Error('Ride UI base load failed: '+response.status);
     let html=await response.text();
 
+    // ADDRESS CORE FIX 2026-09-01
+    html=html.replace(
+      'function placeToAddressData(place,extra={}){\n      const city=addressComponent(place,["administrative_area_level_1"]);',
+      'function placeToAddressData(place,extra={}){\n      const selectedText=String((place&&place.__topTaxiSelectedText)||extra.selectedText||"").trim();\n      const city=addressComponent(place,["administrative_area_level_1"]);'
+    );
+    html=html.replace(
+      'displayName:displayNameOf(place),\n        address:place?.formattedAddress||extra.address||"",',
+      'displayName:selectedText||displayNameOf(place),\n        address:(selectedText&&/(?:路|街|大道|段|巷|弄).*\\d+(?:-\\d+|之\\d+)?號/u.test(selectedText))?[city,district,selectedText].filter(Boolean).join(""):(place?.formattedAddress||extra.address||""),'
+    );
+    html=html.replace(
+      'pickupNote:extra.pickupNote||""\n      };',
+      'pickupNote:extra.pickupNote||"",\n        selectedText:selectedText\n      };'
+    );
+    html=html.replace(
+      'const selectedData=placeToAddressData(place);input.value=addressDisplayText(selectedData)||getText(prediction.text)||place.formattedAddress||displayNameOf(place)||"";',
+      'const selectedMainText=getText(prediction.mainText)||getText(prediction.text)||"";try{place.__topTaxiSelectedText=selectedMainText}catch(e){}const selectedData=placeToAddressData(place);input.value=selectedMainText||addressDisplayText(selectedData)||getText(prediction.text)||place.formattedAddress||displayNameOf(place)||"";'
+    );
+    html=html.replace(
+      'const existingAddressIsConsistent = rideOrderAddressMatchesStructuredArea(\n        originalAddress,\n        data\n      );',
+      'const existingAddressIsConsistent = rideOrderAddressMatchesStructuredArea(\n        originalAddress,\n        data\n      );\n\n      // Never reverse-geocode a manually selected road/POI into a different nearby door number.\n      if (data.selectedText && !dispatchHasStreetNumber(originalAddress)) return data;'
+    );
+
     const oldStyle=`<style id="topTaxiRidePickupReset20260818">
 .pickup-label-row{
   display:flex;
