@@ -4,28 +4,23 @@
 <body>
 <script>
 (async()=>{
-  const r=await fetch('./errand-shell-v2.html?v=20260901-address-hotfix',{cache:'no-store'});
+  const r=await fetch('./errand-shell-v2.html?v=20260901-address-prod2',{cache:'no-store'});
   if(!r.ok) throw new Error('shell load failed');
   let s=await r.text();
 
-  // ADDRESS CORE MERGE HOTFIX 2026-09-01
-  // errand-shell-v2 temporarily contains a duplicated wrapper-level Routes patch.
-  // Remove only that duplicated block; keep the address-core changes intact.
+  // Production uses the exact boot path that passed the 2026-09-01 iPhone test:
+  // keep address-core changes, remove only the duplicated wrapper-level Routes patch.
   const badStart=s.indexOf('  // 在 shell 取得 errand-base 後');
   const badEnd=s.indexOf('  const patch=`',badStart);
   if(badStart>=0&&badEnd>badStart){
     s=s.slice(0,badStart)+s.slice(badEnd);
   }
 
-  // 正式入口原有保護：Routes 掛掉時，地址搜尋仍可正常使用。
-  const shellAnchor='let html=await response.text();';
-  const shellPatch=`let html=await response.text();\n  html=html.replace(\n    "   const routes=await google.maps.importLibrary('routes');RouteClass=routes.Route;",\n    "   try{const routes=await google.maps.importLibrary('routes');RouteClass=routes.Route;}catch(routeError){RouteClass=null;console.error('ERRAND ROUTES INIT ERROR:',routeError);}"\n  );\n  if(!html.includes('ERRAND ROUTES INIT ERROR:'))throw new Error('errand routes init patch anchor not found');`;
-
-  if(!s.includes(shellAnchor)) throw new Error('errand shell patch anchor not found');
-  s=s.replace(shellAnchor,shellPatch);
-
   document.open();document.write(s);document.close();
-})().catch(e=>{console.error(e);document.body.textContent='頁面載入失敗，請重新整理';});
+})().catch(e=>{
+  console.error('ERRAND PROD BOOT ERROR:',e);
+  document.body.textContent='頁面載入失敗，請重新整理';
+});
 </script>
 </body>
 </html>
