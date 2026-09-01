@@ -9,6 +9,35 @@
   let s=await r.text();
   s=s.replace('./dispatch-format-v3.js?v=20260819-001','./dispatch-format-v3.js?v=20260830-2022');
 
+  // ADDRESS CORE FIX 2026-09-01
+  // 1) Preserve the exact Google suggestion text the user tapped (e.g. 保寧路443號).
+  // 2) Carry that selected text into structured address data.
+  // 3) Never invent a nearby door number when the selected address itself has no door number.
+  s=s.replace(
+    'const fallbackText = getPredictionText(prediction);\n                input.value = fallbackText;',
+    'const fallbackText = getPredictionText(prediction);\n                const selectedMainText = prediction.mainText ? prediction.mainText.toString() : fallbackText;\n                input.value = selectedMainText || fallbackText;'
+  );
+  s=s.replace(
+    'await place.fetchFields({\n                        fields: ["id", "displayName", "formattedAddress", "location", "addressComponents"]\n                    });\n\n                    input.value = addressDisplayText(placeToAddressData(place)) || fallbackText ||',
+    'await place.fetchFields({\n                        fields: ["id", "displayName", "formattedAddress", "location", "addressComponents"]\n                    });\n                    try { place.__topTaxiSelectedText = selectedMainText || fallbackText || ""; } catch (e) {}\n\n                    input.value = selectedMainText || fallbackText || addressDisplayText(placeToAddressData(place)) ||'
+  );
+  s=s.replace(
+    'function placeToAddressData(place, extra = {}) {\n    const city = getAddressComponent(place, [',
+    'function placeToAddressData(place, extra = {}) {\n    const selectedText = String((place && place.__topTaxiSelectedText) || extra.selectedText || "").trim();\n    const city = getAddressComponent(place, ['
+  );
+  s=s.replace(
+    'displayName: getPlaceDisplayName(place),\n        address: (place && place.formattedAddress) || extra.address || "",',
+    'displayName: selectedText || getPlaceDisplayName(place),\n        address: (selectedText && /(?:路|街|大道|段|巷|弄).*\\d+(?:-\\d+|之\\d+)?號/u.test(selectedText))\n            ? [city, district, selectedText].filter(Boolean).join("")\n            : ((place && place.formattedAddress) || extra.address || ""),'
+  );
+  s=s.replace(
+    'pickupNote: extra.pickupNote || ""\n    };',
+    'pickupNote: extra.pickupNote || "",\n        selectedText: selectedText\n    };'
+  );
+  s=s.replace(
+    'const existingAddressIsConsistent = bookingOrderAddressMatchesStructuredArea(\n        originalAddress,\n        data\n      );',
+    'const existingAddressIsConsistent = bookingOrderAddressMatchesStructuredArea(\n        originalAddress,\n        data\n      );\n\n      // A manually selected Google suggestion must never be reverse-geocoded into a different nearby door number.\n      if (data.selectedText && !dispatchHasStreetNumber(originalAddress)) return data;'
+  );
+
   const bookingAddressGuard=`<script>(function(){
     const base=window.topTaxiFormatBookingMessageV2;
     if(typeof base!=="function")return;
