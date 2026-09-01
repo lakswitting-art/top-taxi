@@ -13,6 +13,30 @@
   if(!r.ok) throw new Error('fare base load failed: '+r.status);
   let s=await r.text();
 
+  // ADDRESS CORE FIX 2026-09-01
+  // Preserve the exact Google suggestion selected by the customer and never
+  // reverse-geocode that selected point into a different nearby door number.
+  s=s.replace(
+    'function farePlaceToAddressData(place, extra = {}) {\n    if (!place) return null;\n\n    const rawAddress =',
+    'function farePlaceToAddressData(place, extra = {}) {\n    if (!place) return null;\n\n    const selectedText = String((place && place.__topTaxiSelectedText) || extra.selectedText || "").trim();\n    const rawAddress ='
+  );
+  s=s.replace(
+    'displayName:\n            normalizeTaiwanDisplayText(\n                farePlaceDisplayName(place)\n            ),\n        address:\n            normalizeTaiwanDisplayText(\n                rawAddress\n            ),',
+    'displayName:\n            normalizeTaiwanDisplayText(\n                selectedText || farePlaceDisplayName(place)\n            ),\n        address:\n            normalizeTaiwanDisplayText(\n                selectedText && /(?:路|街|大道|段|巷|弄).*\\d+(?:-\\d+|之\\d+)?號/u.test(selectedText)\n                    ? [area.city, area.district, selectedText].filter(Boolean).join("")\n                    : rawAddress\n            ),'
+  );
+  s=s.replace(
+    'placeId: place.id || extra.placeId || "",',
+    'placeId: place.id || extra.placeId || "",\n        selectedText: selectedText,'
+  );
+  s=s.replace(
+    'await place.fetchFields({\n                            fields: [\n                                "id",\n                                "displayName",\n                                "formattedAddress",\n                                "location",\n                                "addressComponents"\n                            ]\n                        });\n\n                        input.value =\n                            fareAddressDisplayText(farePlaceToAddressData(place))',
+    'await place.fetchFields({\n                            fields: [\n                                "id",\n                                "displayName",\n                                "formattedAddress",\n                                "location",\n                                "addressComponents"\n                            ]\n                        });\n\n                        const selectedMainText = getText(prediction.mainText) || getText(prediction.text) || "";\n                        try { place.__topTaxiSelectedText = selectedMainText; } catch (e) {}\n\n                        input.value =\n                            selectedMainText || fareAddressDisplayText(farePlaceToAddressData(place))'
+  );
+  s=s.replace(
+    'const existingAddressIsConsistent = fareOrderAddressMatchesStructuredArea(',
+    'if (data.selectedText && !fareHasStreetNumber(originalAddress)) return data;\n\n    const existingAddressIsConsistent = fareOrderAddressMatchesStructuredArea('
+  );
+
   // Fare 的真正問題不是 API Key，而是舊 wrapper 用 async fetch + document.write
   // 重建整份文件，LINE iOS WKWebView 對這種 script / load lifecycle 很不穩定。
   // 改成先建立 DOM，再依原始順序重新執行 scripts，不再 document.open/write/close。
