@@ -37,6 +37,75 @@
     'if (data.selectedText && !fareHasStreetNumber(originalAddress)) return data;\n\n    const existingAddressIsConsistent = fareOrderAddressMatchesStructuredArea('
   );
 
+  // CONFIRM ROUTE LAYOUT 2026-09-01
+  // Match ride / booking: route on top, distance + time below instead of one crowded line.
+  s=s.replace('<span>🛣️ 路線</span>','<span>🛣️ 行車路線</span>');
+  const fareConfirmRouteStyle=`<style id="topTaxiFareConfirmRouteMatch20260901">
+.confirm-route-box{
+  display:block!important;
+  margin-top:16px!important;
+  padding:17px 18px!important;
+  background:#fff!important;
+  border:1px solid #ececef!important;
+  border-radius:18px!important;
+  box-shadow:0 7px 20px rgba(25,25,35,.06)!important;
+}
+.confirm-route-icon{display:none!important}
+.confirm-route-name{
+  min-width:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  padding:0 0 14px!important;
+  border-bottom:1px solid #eeeeee!important;
+}
+.confirm-route-name span{
+  display:block!important;
+  color:#999!important;
+  font-size:14px!important;
+  font-weight:700!important;
+}
+.confirm-route-name strong{
+  color:#111!important;
+  font-size:15px!important;
+  font-weight:800!important;
+  text-align:right!important;
+}
+.confirm-stats{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:12px!important;
+  padding:14px 0 0!important;
+  border:0!important;
+}
+.confirm-stats div{
+  min-width:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-start!important;
+  gap:5px!important;
+}
+.confirm-stats span{
+  width:auto!important;
+  overflow:visible!important;
+  white-space:normal!important;
+  color:#999!important;
+  font-size:12px!important;
+}
+.confirm-stats strong{
+  color:#222!important;
+  font-size:16px!important;
+  font-weight:800!important;
+  white-space:nowrap!important;
+}
+@media(max-width:390px){
+  .confirm-route-box{padding:16px!important}
+  .confirm-route-name strong{font-size:14px!important}
+  .confirm-stats strong{font-size:15px!important}
+}
+</style>`;
+
   // Fare 的真正問題不是 API Key，而是舊 wrapper 用 async fetch + document.write
   // 重建整份文件，LINE iOS WKWebView 對這種 script / load lifecycle 很不穩定。
   // 改成先建立 DOM，再依原始順序重新執行 scripts，不再 document.open/write/close。
@@ -72,7 +141,7 @@
   parsed.querySelectorAll('script').forEach(el=>el.remove());
 
   document.documentElement.lang=parsed.documentElement.lang||'zh-TW';
-  document.head.innerHTML=parsed.head.innerHTML+'<style>.footer{display:none!important}</style>';
+  document.head.innerHTML=parsed.head.innerHTML+'<style>.footer{display:none!important}</style>'+fareConfirmRouteStyle;
   document.body.innerHTML=parsed.body.innerHTML;
 
   const appendScript=async info=>{
