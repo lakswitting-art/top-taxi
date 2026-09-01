@@ -17,7 +17,7 @@
   const page=params.get('page');
   const files={ride:'ride.html',booking:'index.html',fare:'fare.html',errand:'errand-shell-v2.html',dispatch:'fare-public-address-fix.html'};
   if(!page||!files[page]){
-    document.getElementById('app').innerHTML=`<main class="page"><section class="card"><h1>TOP Taxi｜地址核心測試</h1><div class="sub">正式頁不受影響；以下頁面會載入 fix/address-core-20260901 分支版本。</div><div class="tag">標準測試：台中市沙鹿區保寧路443號</div><div class="grid"><a class="btn primary" href="?page=ride">即時叫車 <span>→</span></a><a class="btn" href="?page=booking">預約叫車 <span>→</span></a><a class="btn" href="?page=fare">車資試算 <span>→</span></a><a class="btn" href="?page=errand">跑腿服務 <span>→</span></a><a class="btn" href="?page=dispatch">調度車資試算 <span>→</span></a></div><div class="note">測試重點：輸入框、停靠點、確認畫面／試算摘要都必須保留 443號；不可出現保順路124號等無關門牌。</div></section></main>`;
+    document.getElementById('app').innerHTML=`<main class="page"><section class="card"><h1>TOP Taxi｜地址核心測試</h1><div class="sub">正式頁不受影響；以下頁面會載入 fix/address-core-20260901 分支版本。</div><div class="tag">標準測試：台中市沙鹿區保寧路443號</div><div class="grid"><a class="btn primary" href="?page=ride">即時叫車 <span>→</span></a><a class="btn" href="?page=booking">預約叫車 <span>→</span></a><a class="btn" href="?page=fare">車資試算 <span>→</span></a><a class="btn" href="?page=errand">跑腿服務 <span>→</span></a><a class="btn" href="?page=dispatch">調度車資試算 <span>→</span></a></div><div class="note">測試重點：輸入框、停靠點、確認畫面／試算摘要都必須保留 443號；不可出現保順路124號等無關門牌。地標名稱開頭若為「台灣／臺灣」會在顯示層移除，但 Place ID 與座標不變。</div></section></main>`;
     return;
   }
   document.getElementById('app').innerHTML='<div class="loading">正在載入地址修正版…</div>';
@@ -25,6 +25,15 @@
   const r=await fetch(raw,{cache:'no-store'});
   if(!r.ok)throw new Error('測試版載入失敗：'+r.status);
   let html=await r.text();
+
+  // TEST PATCH 2026-09-01: Google POI display names can include a redundant Taiwan prefix,
+  // e.g. "台灣台中地方法院". Strip it only from the selected display label;
+  // do not touch formattedAddress / place_id / coordinates / route data.
+  html=html.replace(
+    /const selectedMainText=([^;]+);/g,
+    'const selectedMainText=String($1).replace(/^(?:台灣|臺灣)/u,"");'
+  );
+
   // The branch wrappers expect root-relative sibling files. Because this launcher lives at repo root,
   // their ./ references continue to resolve against the production base assets without altering them.
   document.open();document.write(html);document.close();
