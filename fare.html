@@ -173,6 +173,10 @@
   const dispatch=document.createElement('script');
   dispatch.src='./dispatch-address-city-district-v1.js?v=20260830-2302';
   document.body.appendChild(dispatch);
+
+  const officialRedirect=document.createElement('script');
+  officialRedirect.src='./official-line-redirect.js?v=20261007-1';
+  document.body.appendChild(officialRedirect);
 })().catch(e=>{
   console.error('FARE STABLE BOOT ERROR:',e);
   const status=document.getElementById('status');

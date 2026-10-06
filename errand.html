@@ -16,6 +16,8 @@
     s=s.slice(0,badStart)+s.slice(badEnd);
   }
 
+  s=s.replace('</body>','<script src="./official-line-redirect.js?v=20261007-1"><\/script></body>');
+
   document.open();document.write(s);document.close();
 })().catch(e=>{
   console.error('ERRAND PROD BOOT ERROR:',e);
