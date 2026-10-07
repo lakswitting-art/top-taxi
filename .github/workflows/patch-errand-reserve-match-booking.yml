@@ -1,9 +1,7 @@
 name: Patch errand reserve fields to match booking
 
 on:
-  push:
-    paths:
-      - '.trigger-errand-reserve-match-booking'
+  workflow_dispatch:
 
 permissions:
   contents: write

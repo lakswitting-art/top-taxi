@@ -1,8 +1,6 @@
 name: Apply dispatch format v3
 on:
-  push:
-    paths:
-      - '.github/workflows/apply-dispatch-format-v3.yml'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:

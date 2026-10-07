@@ -1,11 +1,6 @@
 name: Seal dispatch message format 2026-08-15
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/scripts/seal-dispatch-message-format-20260815.py'
-      - '.github/workflows/seal-dispatch-message-format-20260815.yml'
   workflow_dispatch:
 
 permissions:

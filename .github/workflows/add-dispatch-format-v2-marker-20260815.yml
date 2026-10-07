@@ -1,9 +1,7 @@
 name: Add temporary DISPATCH FORMAT V2 marker
 
 on:
-  push:
-    paths:
-      - '.github/workflows/add-dispatch-format-v2-marker-20260815.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

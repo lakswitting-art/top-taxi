@@ -1,8 +1,6 @@
 name: Fix ride return and booking horizontal lock
 on:
-  push:
-    paths:
-      - '.github/workflows/fix-ride-return-booking-horizontal-20260815.yml'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:

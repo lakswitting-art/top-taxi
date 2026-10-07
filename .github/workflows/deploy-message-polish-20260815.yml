@@ -1,8 +1,6 @@
 name: Deploy message polish 2026-08-15
 on:
-  push:
-    paths:
-      - '.github/workflows/deploy-message-polish-20260815.yml'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:

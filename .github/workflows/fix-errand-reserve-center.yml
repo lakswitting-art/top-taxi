@@ -1,8 +1,6 @@
 name: Fix errand reserve center
 on:
-  push:
-    paths:
-      - '.trigger-fix-errand-reserve-center'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:

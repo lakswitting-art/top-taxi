@@ -1,8 +1,6 @@
 name: Fix real ride close and booking overflow
 on:
-  push:
-    paths:
-      - '.github/workflows/fix-real-ride-close-booking-overflow-20260815.yml'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:

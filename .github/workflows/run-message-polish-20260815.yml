@@ -1,9 +1,7 @@
 name: Run message polish patch
 
 on:
-  push:
-    paths:
-      - '.github/workflows/run-message-polish-20260815.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

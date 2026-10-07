@@ -1,9 +1,7 @@
 name: Remove booking horizontal guard 2026-08-15
 
 on:
-  push:
-    paths:
-      - '.github/workflows/remove-booking-horizontal-guard-20260815.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

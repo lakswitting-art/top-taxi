@@ -1,8 +1,6 @@
 name: Apply Booking UI V2
 on:
-  push:
-    paths:
-      - '.booking-ui-v2-trigger'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:

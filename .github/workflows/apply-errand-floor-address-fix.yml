@@ -1,10 +1,7 @@
 name: Apply errand floor and address stability fix
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/apply-errand-floor-address-fix.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

@@ -1,9 +1,7 @@
 name: Fix booking iOS focus viewport 2026-08-15
 
 on:
-  push:
-    paths:
-      - '.github/workflows/fix-booking-ios-focus-viewport-20260815.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

@@ -1,9 +1,7 @@
 name: Deploy Errand UI V2
 
 on:
-  push:
-    paths:
-      - '.deploy-errand-ui-v2'
+  workflow_dispatch:
 
 permissions:
   contents: write

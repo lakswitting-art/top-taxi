@@ -1,8 +1,6 @@
 name: Verify dispatch format v3
 on:
-  push:
-    paths:
-      - '.github/workflows/verify-dispatch-format-v3.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:

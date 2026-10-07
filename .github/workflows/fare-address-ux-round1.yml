@@ -1,9 +1,6 @@
 name: Fare Address UX Round 1
 
 'on':
-  push:
-    paths:
-      - '.github/workflows/fare-address-ux-round1.yml'
   workflow_dispatch:
 
 permissions:

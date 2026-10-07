@@ -1,9 +1,7 @@
 name: Tune TOP Taxi message header and booking core
 
 on:
-  push:
-    paths:
-      - '.github/workflows/tune-message-header-booking-core-20260815.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

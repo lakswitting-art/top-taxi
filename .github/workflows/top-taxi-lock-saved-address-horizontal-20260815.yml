@@ -1,9 +1,7 @@
 name: TOP Taxi ride saved address hint cleanup
 
 on:
-  push:
-    paths:
-      - '.github/workflows/top-taxi-lock-saved-address-horizontal-20260815.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

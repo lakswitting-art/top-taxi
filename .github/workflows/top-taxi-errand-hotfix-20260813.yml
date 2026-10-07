@@ -1,10 +1,7 @@
 name: TOP Taxi errand hotfix 2026-08-13
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/top-taxi-errand-hotfix-20260813.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

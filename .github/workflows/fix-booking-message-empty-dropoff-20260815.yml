@@ -1,8 +1,6 @@
 name: Fix booking message header and empty dropoff
 on:
-  push:
-    paths:
-      - '.github/workflows/fix-booking-message-empty-dropoff-20260815.yml'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:

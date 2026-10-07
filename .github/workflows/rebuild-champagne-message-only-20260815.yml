@@ -1,9 +1,7 @@
 name: Rebuild champagne base with message format only
 
 on:
-  push:
-    paths:
-      - '.github/workflows/rebuild-champagne-message-only-20260815.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

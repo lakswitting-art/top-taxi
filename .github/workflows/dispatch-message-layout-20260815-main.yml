@@ -1,9 +1,7 @@
 name: TOP Taxi dispatch message layout 2026-08-15
 
 on:
-  push:
-    paths:
-      - '.github/workflows/dispatch-message-layout-20260815-main.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
