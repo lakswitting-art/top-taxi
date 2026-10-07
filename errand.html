@@ -1,5 +1,4 @@
-<!doctype html>
-<!-- TOP Taxi direct static build: 2026-10-07 -->
+<!DOCTYPE html>
 <html lang="zh-TW">
 
 <head>
@@ -2767,16 +2766,7 @@ html,body{max-width:100%;overflow-x:clip;overscroll-behavior-x:none}
 .top-taxi-address-plain-input:focus{border-color:var(--red);background:#fff;box-shadow:0 0 0 3px rgba(255,31,45,.08),0 6px 18px rgba(255,31,45,.06)}
 .top-taxi-address-plain-control .address-suggestions{left:0;right:0;width:auto;max-width:100%;box-sizing:border-box}
 </style>
-<style id="topTaxiErrandUIV220260818">
-html,body{background:#f2f3f5!important}body{min-height:100vh}.hero{display:none!important}.page{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!important}.booking-card{border-radius:22px!important;box-shadow:0 18px 50px rgba(0,0,0,.10)!important}.form-header{align-items:center!important;margin-bottom:0!important}.form-title{display:flex!important;align-items:center!important;gap:10px!important;color:#17171b!important;font-size:18px!important;font-weight:950!important;letter-spacing:.1px!important}.form-title::before{content:"";width:4px;height:23px;flex:0 0 4px;border-radius:999px;background:var(--red);box-shadow:0 2px 7px rgba(255,31,45,.18)}.form-label-small{font-size:0!important;letter-spacing:0!important;color:#17171b!important;font-weight:900!important;white-space:nowrap}.form-label-small::before{content:"TOP";color:var(--red);font-size:13px;font-weight:950}.form-label-small::after{content:" Taxi";color:#17171b;font-size:13px;font-weight:900}
-#errandForm{padding-right:0!important}
-.errand-mode-switch{grid-template-columns:1fr 1fr!important;gap:4px!important;margin:16px 0 18px!important;padding:5px!important;border:1px solid #e3e3e7!important;border-radius:17px!important;background:linear-gradient(180deg,#fbfbfc 0%,#f2f2f4 100%)!important;box-shadow:0 7px 18px rgba(20,20,24,.08),inset 0 1px 0 rgba(255,255,255,.95)!important}.errand-mode-switch .errand-choice{min-height:49px!important;padding:0 12px!important;border:1px solid transparent!important;border-radius:13px!important;background:transparent!important;color:#55555d!important;font-size:15px!important;font-weight:900!important;letter-spacing:.1px!important;box-shadow:none!important;transition:background .18s,color .18s,box-shadow .18s!important}.errand-mode-switch .errand-choice:active{transform:none!important}.errand-mode-switch .errand-choice.active{border-color:rgba(181,0,21,.18)!important;background:linear-gradient(180deg,#ff263a 0%,#e5001c 100%)!important;color:#fff!important;box-shadow:0 7px 16px rgba(218,0,27,.24),inset 0 1px 0 rgba(255,255,255,.24)!important}.errand-mode-group{margin-bottom:0!important}.errand-mode-label-hidden{display:none!important}
-#reserveFields{display:flex!important;gap:18px!important;padding-right:0!important}#reserveFields.errand-hidden{display:none!important}#reserveFields .input-group{flex:1!important;min-width:0!important;margin-bottom:15px!important;padding:0!important}#reserveFields label{display:block!important;margin-bottom:8px!important;font-size:15px!important;color:#26262a!important;font-weight:800!important}#errandDate,#errandTime{width:100%!important;min-height:42px!important;height:42px!important;padding:0 9px!important;border:1px solid var(--gray-2)!important;border-radius:12px!important;background:#fafafa!important;color:#222!important;font-size:14px!important;outline:none!important;appearance:auto!important;text-align:center!important}#errandDate::-webkit-date-and-time-value,#errandTime::-webkit-date-and-time-value{text-align:center!important;margin:0 auto!important;width:100%!important}#errandDate::-webkit-datetime-edit,#errandTime::-webkit-datetime-edit{display:block!important;text-align:center!important;width:100%!important}#errandDate::-webkit-calendar-picker-indicator,#errandTime::-webkit-calendar-picker-indicator{margin-left:0!important}
-.errand-purchase-label-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-bottom:8px}.errand-purchase-label-row>label{margin:0!important}.errand-reset-btn{flex:0 0 auto;display:inline-flex!important;align-items:center;justify-content:center;gap:4px;margin-right:4px;padding:3px 0 3px 2px!important;border:0!important;background:transparent!important;color:#8d8d94!important;font-size:11px!important;font-weight:750!important;line-height:1.2;white-space:nowrap;box-shadow:none!important;min-height:auto!important;width:auto!important}.errand-reset-icon{width:15px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}.errand-reset-btn:active{opacity:.55}
-@media(max-width:520px){#reserveFields{gap:14px!important;padding-right:10px!important}#errandDate,#errandTime{height:40px!important;min-height:40px!important;font-size:13px!important;padding:0 7px!important}}
-@media(max-width:390px){.form-title{gap:9px!important}.form-title::before{height:21px}.form-label-small::before,.form-label-small::after{font-size:12.5px}.errand-mode-switch .errand-choice{min-height:47px!important;font-size:14.5px!important}.errand-reset-btn{margin-right:3px;font-size:10.5px!important}.errand-reset-icon{width:14.5px;height:13.5px}}
-@media(max-width:370px){#reserveFields{gap:10px!important}#errandDate,#errandTime{font-size:12px!important}}
-</style></head>
+</head>
 <body>
 <header class="hero">
   <div class="logo-wrap"><div class="logo-glow"></div><img src="logo.png" alt="TOP Taxi Logo" class="logo"></div>
@@ -3115,13 +3105,13 @@ function compactAddress(raw=""){
 function placeName(place){const d=place?.displayName;return d&&typeof d.toString==="function"?d.toString():String(d||"");}
 function addressComponent(place,types){const c=Array.isArray(place?.addressComponents)?place.addressComponents:[];for(const t of types){const m=c.find(x=>Array.isArray(x.types)&&x.types.includes(t));if(m)return m.longText||m.shortText||'';}return'';}
 function placeToData(place,extra={}){
- const selectedText=String(place?.__topTaxiSelectedText||extra.selectedText||"").trim();const originalAddress=normalizeTW(place?.formattedAddress||extra.address||"");const parsed=extractArea(originalAddress);const address=normalizeTW(selectedText&&/(?:路|街|大道|段|巷|弄).*\d+(?:-\d+|之\d+)?號/u.test(selectedText)?[parsed.city,parsed.district,selectedText].filter(Boolean).join(""):originalAddress);const loc=place?.location;
+ const address=normalizeTW(place?.formattedAddress||extra.address||"");const parsed=extractArea(address);const loc=place?.location;
  const city=normalizeTW(addressComponent(place,['administrative_area_level_1']))||parsed.city;
  let district=normalizeTW(addressComponent(place,['administrative_area_level_3','administrative_area_level_2','locality']))||parsed.district;
  if(/(?:里|村|鄰)$/u.test(district))district=parsed.district||'';
- return{name:extra.name||"",displayName:selectedText||placeName(place)||extra.name||"",address,city,district,areaLabel:[city,district].filter(Boolean).join(''),placeId:place?.id||extra.placeId||"",selectedText,lat:loc?coord(typeof loc.lat==="function"?loc.lat():loc.lat):coord(extra.lat),lng:loc?coord(typeof loc.lng==="function"?loc.lng():loc.lng):coord(extra.lng)};
+ return{name:extra.name||"",displayName:placeName(place)||extra.name||"",address,city,district,areaLabel:[city,district].filter(Boolean).join(''),placeId:place?.id||extra.placeId||"",lat:loc?coord(typeof loc.lat==="function"?loc.lat():loc.lat):coord(extra.lat),lng:loc?coord(typeof loc.lng==="function"?loc.lng():loc.lng):coord(extra.lng)};
 }
-function normalizeAddress(item={}){const address=normalizeTW(item.address||"");const area=extractArea(address);return{name:item.name||"",displayName:item.displayName||item.name||"",address,city:item.city||area.city,district:item.district||area.district,areaLabel:item.areaLabel||area.areaLabel,placeId:item.placeId||"",selectedText:item.selectedText||"",lat:coord(item.lat),lng:coord(item.lng),pickupNote:item.pickupNote||""};}
+function normalizeAddress(item={}){const address=normalizeTW(item.address||"");const area=extractArea(address);return{name:item.name||"",displayName:item.displayName||item.name||"",address,city:item.city||area.city,district:item.district||area.district,areaLabel:item.areaLabel||area.areaLabel,placeId:item.placeId||"",lat:coord(item.lat),lng:coord(item.lng),pickupNote:item.pickupNote||""};}
 function displayAddress(data){if(!data)return"";const n=data.displayName||data.name||"",a=data.address||"";return n&&a&&!a.includes(n)?`${n}｜${a}`:(n||a);}
 function orderAddress(data){data=normalizeAddress(data||{});const area=extractArea(data.address);const city=area.city||data.city||"",district=area.district||data.district||"";return{name:nullable(data.name),displayName:nullable(normalizeTW(data.displayName||"")),address:nullable(compactAddress(data.address)),city:nullable(city),district:nullable(district),areaLabel:nullable([city,district].filter(Boolean).join("")),placeId:nullable(data.placeId),lat:coord(data.lat),lng:coord(data.lng)};}
 function hasStreetNumber(raw=''){return /(?:路|街|大道|段|巷|弄).*\d+(?:-\d+)?號/u.test(compactAddress(raw));}
@@ -3131,7 +3121,7 @@ function geocoderHasStreetNumber(result){const c=Array.isArray(result?.address_c
 function candidateDistance(candidate,data={}){const pt=candidate?.geometry?.location;if(!pt||data.lat==null||data.lng==null)return 0;const lat2=typeof pt.lat==='function'?pt.lat():Number(pt.lat),lng2=typeof pt.lng==='function'?pt.lng():Number(pt.lng),lat1=Number(data.lat),lng1=Number(data.lng);if(![lat1,lng1,lat2,lng2].every(Number.isFinite))return 0;const rad=v=>v*Math.PI/180,dlat=rad(lat2-lat1),dlng=rad(lng2-lng1),a=Math.sin(dlat/2)**2+Math.cos(rad(lat1))*Math.cos(rad(lat2))*Math.sin(dlng/2)**2;return 6371000*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
 async function enrichAddress(data={}){
  if(!data||data.lat==null||data.lng==null)return normalizeAddress(data||{});const original=normalizeTW(data.address||''),s=structuredArea(data),consistent=addressMatchesArea(original,data);
- if(hasStreetNumber(original)&&consistent)return normalizeAddress({...data,address:original,city:s.city||data.city||'',district:s.district||data.district||'',areaLabel:s.areaLabel||data.areaLabel||''});if(data.selectedText)return normalizeAddress(data);
+ if(hasStreetNumber(original)&&consistent)return normalizeAddress({...data,address:original,city:s.city||data.city||'',district:s.district||data.district||'',areaLabel:s.areaLabel||data.areaLabel||''});
  try{const {Geocoder}=await google.maps.importLibrary('geocoding');const response=await new Geocoder().geocode({location:{lat:Number(data.lat),lng:Number(data.lng)}}),results=Array.isArray(response.results)?response.results:[];const acceptable=item=>{if(!item?.formatted_address||!geocoderHasStreetNumber(item))return false;const a=normalizeTW(item.formatted_address);if(!addressMatchesArea(a,data))return false;return candidateDistance(item,data)<=3000;};const c=results.find(x=>x.types?.includes('street_address')&&acceptable(x))||results.find(acceptable);if(!c?.formatted_address){if(!consistent&&s.areaLabel)return normalizeAddress({...data,address:s.areaLabel,city:s.city,district:s.district,areaLabel:s.areaLabel});return normalizeAddress(data);}const a=normalizeTW(c.formatted_address),p=extractArea(a),city=s.city||p.city||data.city||'',district=s.district||p.district||data.district||'';return normalizeAddress({...data,address:a,city,district,areaLabel:[city,district].filter(Boolean).join('')});}
  catch(e){console.warn('ERRAND ADDRESS ENRICH SKIPPED:',e);if(!consistent&&s.areaLabel)return normalizeAddress({...data,address:s.areaLabel,city:s.city,district:s.district,areaLabel:s.areaLabel});return normalizeAddress(data);}
 }
@@ -3547,7 +3537,7 @@ function initAutocompleteForVisibleSlots(){Object.values(addressSlots).filter(s=
 function initAutocompleteForSlot(slot){
  const box=$(`#${slot.key}Box`),input=$(`#${slot.key}Input`),clear=$(`#${slot.key}Clear`),sug=$(`#${slot.key}Suggestions`);if(!box||!input||!sug||box.dataset.ready==='1'||!AutocompleteSuggestion)return;box.dataset.ready='1';let token=new AutocompleteSessionToken(),timer=null,req=0;
  function hide(){sug.classList.remove('show');sug.innerHTML='';}
- async function choose(pred){suppressAddStopUntil=Date.now()+900;const fallback=pred.text?.toString?.()||'';const selectedMainText=pred.mainText?.toString?.()||fallback;input.value=selectedMainText||fallback;if(clear)clear.hidden=false;hide();try{const place=pred.toPlace();await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});try{place.__topTaxiSelectedText=selectedMainText}catch(e){}slot.place=place;slot.data=placeToData(place);input.value=selectedMainText||displayAddress(slot.data)||fallback;syncDeliveryVisibility();renderPhoto();updateEstimate();}catch(e){console.warn('PLACE DETAIL ERROR',e);}token=new AutocompleteSessionToken();}
+ async function choose(pred){suppressAddStopUntil=Date.now()+900;const fallback=pred.text?.toString?.()||'';input.value=fallback;if(clear)clear.hidden=false;hide();try{const place=pred.toPlace();await place.fetchFields({fields:['id','displayName','formattedAddress','location','addressComponents']});slot.place=place;slot.data=placeToData(place);input.value=displayAddress(slot.data)||fallback;syncDeliveryVisibility();renderPhoto();updateEstimate();}catch(e){console.warn('PLACE DETAIL ERROR',e);}token=new AutocompleteSessionToken();}
  function render(items){sug.innerHTML='';const preds=(items||[]).map(x=>x.placePrediction).filter(Boolean).slice(0,6);if(!preds.length){sug.innerHTML='<div class="address-no-results">找不到相符地點，請輸入更完整的名稱或地址</div>';sug.classList.add('show');return;}preds.forEach(pred=>{const r=document.createElement('button');r.type='button';r.className='address-suggestion';const ic=document.createElement('span');ic.className='address-suggestion-icon';ic.textContent='📍';const tx=document.createElement('span'),m=document.createElement('strong'),ss=document.createElement('span');m.className='address-suggestion-main';ss.className='address-suggestion-secondary';m.textContent=pred.mainText?.toString?.()||pred.text?.toString?.()||'';ss.textContent=pred.secondaryText?.toString?.()||'';tx.append(m,ss);r.append(ic,tx);r.addEventListener('click',e=>{suppressAddStopUntil=Date.now()+900;e.preventDefault();e.stopPropagation();choose(pred);});sug.append(r);});const a=document.createElement('div');a.className='address-google-attribution';a.textContent='Google Maps';sug.append(a);sug.classList.add('show');}
  async function fetchSug(q){const n=++req;try{const res=await AutocompleteSuggestion.fetchAutocompleteSuggestions({input:q,includedRegionCodes:['tw'],language:'zh-TW',region:'TW',locationBias:{center:searchCenter,radius:50000},origin:searchCenter,sessionToken:token});if(n===req)render(res.suggestions||[]);}catch(e){if(n===req)hide();}}
  input.addEventListener('input',()=>{const q=input.value.trim();clearTimeout(timer);if(!q){req++;hide();return;}timer=setTimeout(()=>fetchSug(q),220);});input.addEventListener('focus',()=>{if(input.value.trim())fetchSug(input.value.trim());});document.addEventListener('pointerdown',e=>{if(!box.contains(e.target))hide();});
@@ -4108,8 +4098,7 @@ function topTaxiSplitAddressBlocksV2(lines){
 function topTaxiFormatErrandMessageV2(text){
   const task=TASKS[taskType]||'跑腿';
   const icon={purchase:'🛒',delivery:'📦',queue:'🧾',pet:'🐾',move:'📦',other:'🛵'}[taskType]||'🛵';
-  const header='TOP Taxi｜跑腿服務';
-  const isNearPurchase=taskType==='purchase'&&purchaseLocationMode==='unspecified';
+  const header=`TOP Taxi｜${task}`;
   const split=topTaxiSplitAddressBlocksV2(String(text||'').split('\n'));
   const body=[];
   for(let i=0;i<split.body.length;i++){
@@ -4120,52 +4109,17 @@ function topTaxiFormatErrandMessageV2(text){
     if(t.startsWith('📅 預約日期：') || t.startsWith('⏰ 預約時間：')) continue;
     if(t.startsWith('📡 TOP Taxi｜')) continue;
     if(t.startsWith('💳 付款方式：') && t.includes('現金')) continue;
-    if(isNearPurchase && t==='⚠️ 購買地點｜送達地點附近購買') continue;
-    if(isNearPurchase && t==='請於送達地點附近就近購買，實際店家依商品供應狀況選擇。') continue;
     body.push(line);
   }
-  const cleanBody=topTaxiCleanMessageLinesV2(body);
-  const hasRouteLine=cleanBody.some(line=>String(line||'').trim().startsWith('🛣️ 行車路線：'));
-  const spacedBody=[];
-  for(const line of cleanBody){
-    const t=String(line??'').trim();
-    const estimateStart=hasRouteLine
-      ? t.startsWith('🛣️ 行車路線：')
-      : (t.startsWith('💰 預估跑腿費：') || t.startsWith('💰 預估搬家費：'));
-    if(estimateStart && spacedBody.length && String(spacedBody[spacedBody.length-1]||'').trim()!=='') spacedBody.push('');
-    spacedBody.push(line);
-  }
   const core=errandMode==='reserve'
-    ? [`🕐 ${$('#errandDate').value} ${$('#errandTime').value}`,`${icon} ${task}`]
-    : [`⚡ 即時｜${icon} ${task}`];
-  const out=[header,'',...spacedBody,'',...core];
-  if(isNearPurchase){
-    out.push('','⚠️ 購買地點｜送達地點附近購買','請於送達地點附近就近購買，實際店家依商品供應狀況選擇。');
-  }
-  const rawBlocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
-  const hasFinal=!!addressValue('final');
-  const blocks=rawBlocks.map((b,idx)=>{
-    const next=[...b];
-    const head=String(next[0]||'');
-    const sep=head.indexOf('｜');
-    const suffix=sep>=0?head.slice(sep):'';
-    let label='';
-    if(isNearPurchase){
-      label=hasFinal&&idx===rawBlocks.length-1?'🏁 下車':`🟡 停靠 ${idx+1}`;
-    }else if(idx===0){
-      label='📍 上車';
-    }else if(hasFinal&&idx===rawBlocks.length-1){
-      label='🏁 下車';
-    }else{
-      label=`🟡 停靠 ${idx}`;
-    }
-    next[0]=`${label}${suffix}`;
-    return next;
-  });
+    ? `🕐 ${$('#errandDate').value} ${$('#errandTime').value}｜${icon} ${task}`
+    : `⚡ 即時｜${icon} ${task}`;
+  const out=[header,'',...topTaxiCleanMessageLinesV2(body),'',core];
+  const blocks=split.blocks.filter(b=>!String(b[0]||'').includes('未提供'));
   if(blocks.length) out.push('',...blocks.flatMap((b,idx)=>idx?[ '', ...b ]:b));
   return topTaxiCleanMessageLinesV2(out).join('\n');
 }
 
 </script>
-<script id="topTaxiErrandUIV2Behavior20260818">(function(){function text(el){return(el&&el.textContent||'').replace(/\s+/g,' ').trim()}function findExactOrContains(selector,needle){return Array.from(document.querySelectorAll(selector)).find(el=>text(el).includes(needle))}function apply(){const slashN=String.fromCharCode(92)+'n';Array.from(document.body.childNodes).forEach(n=>{const t=String(n.textContent||'').trim();if(n.nodeType===3&&t&&t.split(slashN).join('')==='')n.remove()});const title=document.querySelector('.form-title');if(title)title.textContent='跑腿服務';const header=document.querySelector('.form-header');if(header&&!header.querySelector('.form-label-small')){const brand=document.createElement('div');brand.className='form-label-small';brand.textContent='TOP Taxi';header.appendChild(brand)}const modeSwitch=document.querySelector('.errand-mode-switch');if(modeSwitch){const group=modeSwitch.closest('.input-group');if(group)group.classList.add('errand-mode-group');const label=group?Array.from(group.children).find(el=>el.tagName==='LABEL'&&text(el)==='服務時間'):null;if(label)label.classList.add('errand-mode-label-hidden')}const dateLabel=document.querySelector('label[for="errandDate"]');if(dateLabel)dateLabel.innerHTML='預約日期 <span class="field-tag required-tag">必填</span>';const timeLabel=document.querySelector('label[for="errandTime"]');if(timeLabel)timeLabel.innerHTML='預約時間 <span class="field-tag required-tag">必填</span>';const clearCandidates=Array.from(document.querySelectorAll('button,a,[role="button"]')).filter(el=>/清除(?:本次)?行程/.test(text(el)));const clear=clearCandidates[0];if(clear)clear.style.display='none';const labels=Array.from(document.querySelectorAll('label,.label,.field-label,.input-label'));const purchaseLabel=labels.find(el=>text(el).includes('購買地點'))||findExactOrContains('*','購買地點');if(purchaseLabel&&!document.querySelector('#clearErrandTripV2')){let labelEl=purchaseLabel;const parent=labelEl.parentElement;if(parent){const row=document.createElement('div');row.className='errand-purchase-label-row';parent.insertBefore(row,labelEl);row.appendChild(labelEl);const btn=document.createElement('button');btn.id='clearErrandTripV2';btn.type='button';btn.className='errand-reset-btn';btn.innerHTML='<svg class="errand-reset-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4.8c0-.45.35-.8.8-.8h4.4c.45 0 .8.35.8.8V7"/><path d="M6.5 8l.85 11.2c.04.46.4.8.86.8h7.58c.46 0 .82-.34.86-.8L17.5 8"/><path d="M10 10.5v6.5M14 10.5v6.5"/></svg><span>清除本次行程</span>';btn.addEventListener('click',()=>{if(clear)clear.click()});row.appendChild(btn)}}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(apply,0));else setTimeout(apply,0);setTimeout(apply,350);setTimeout(apply,1200)})();</script><script src="./dispatch-format-v3.js?v=20261007-static"></script><script src="./dispatch-format-v4.js?v=20260830-2022"></script><script src="./dispatch-address-city-district-v1.js?v=20260830-2022"></script></body>
+</body>
 </html>

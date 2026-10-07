@@ -1,5 +1,4 @@
-<!doctype html>
-<!-- TOP Taxi direct static build: 2026-10-07 -->
+<!DOCTYPE html>
 <html lang="zh-TW">
 
 <head>
@@ -7,7 +6,7 @@
 
 <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
 >
 
 <title>TOP Taxi｜24H 預約系統</title>
@@ -2588,43 +2587,6 @@ body {
 }
 </style>
 
-
-<style id="topTaxiBookingUIV220260818">
-html,body{background:#f2f3f5!important}
-body{min-height:100vh}
-.hero{display:none!important}
-.page{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!important}
-.booking-card{border-radius:22px!important;box-shadow:0 18px 50px rgba(0,0,0,.10)!important}
-.form-header{align-items:center!important;margin-bottom:0!important}
-#bookingTitle{display:flex;align-items:center;gap:10px;color:#17171b!important;font-size:18px!important;font-weight:950!important;letter-spacing:.1px}
-#bookingTitle::before{content:"";width:4px;height:23px;flex:0 0 4px;border-radius:999px;background:var(--red);box-shadow:0 2px 7px rgba(255,31,45,.18)}
-.form-header-actions{display:flex!important;flex-direction:row!important;align-items:center!important;gap:0!important}
-.form-header-actions .form-label-small{font-size:0!important;letter-spacing:0!important;color:#17171b!important;font-weight:900!important;white-space:nowrap}
-.form-header-actions .form-label-small::before{content:"TOP";color:var(--red);font-size:13px;font-weight:950}
-.form-header-actions .form-label-small::after{content:" Taxi";color:#17171b;font-size:13px;font-weight:900}
-.form-header-actions #clearBookingTrip{display:none!important}
-.service-switch{grid-template-columns:1fr 1fr!important;gap:4px!important;margin:16px 0 18px!important;padding:5px!important;border:1px solid #e3e3e7!important;border-radius:17px!important;background:linear-gradient(180deg,#fbfbfc 0%,#f2f2f4 100%)!important;box-shadow:0 7px 18px rgba(20,20,24,.08),inset 0 1px 0 rgba(255,255,255,.95)!important}
-.service-option{min-height:49px!important;padding:0 12px!important;border:1px solid transparent!important;border-radius:13px!important;background:transparent!important;color:#55555d!important;font-size:15px!important;font-weight:900!important;letter-spacing:.1px;box-shadow:none!important}
-.service-option.active{border-color:rgba(181,0,21,.18)!important;background:linear-gradient(180deg,#ff263a 0%,#e5001c 100%)!important;color:#fff!important;box-shadow:0 7px 16px rgba(218,0,27,.24),inset 0 1px 0 rgba(255,255,255,.24)!important}
-.booking-date-row label{display:flex!important;align-items:center!important;gap:7px!important}
-.booking-date-row label::before{content:none!important;display:none!important}
-.pickup-label-row{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin-bottom:8px}
-.pickup-label-row>label{margin:0!important}
-.pickup-reset-btn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:4px;margin-right:4px;padding:3px 0 3px 2px!important;color:#8d8d94!important;font-size:11px!important;font-weight:750!important;line-height:1.2;white-space:nowrap}
-.pickup-reset-icon{width:15px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
-.booking-saved-place-line .saved-address-chip{color:#66666c!important;background:#f3f3f5!important;border-color:#e3e3e7!important;box-shadow:none!important}
-.booking-saved-place-line .saved-address-chip.active{color:#55555b!important;background:#e9e9ed!important;border-color:#d9d9de!important;box-shadow:none!important}
-@media(max-width:390px){#bookingTitle{gap:9px}#bookingTitle::before{height:21px}.form-header-actions .form-label-small::before,.form-header-actions .form-label-small::after{font-size:12.5px}.service-option{min-height:47px!important;font-size:14.5px!important}.pickup-reset-btn{margin-right:3px;font-size:10.5px!important}.pickup-reset-icon{width:14.5px;height:13.5px}}
-</style>
-
-<style>
-/* TOP Taxi V2 booking date/time alignment 2026-08-18 */
-@media (max-width: 520px) {
-  .row:has(#bookDate) {
-    padding-right: 10px;
-  }
-}
-</style>
 </head>
 
 
@@ -2702,7 +2664,7 @@ body{min-height:100vh}
     <!-- FORM HEADER -->
 
     <div class="form-header">
-        <div class="form-title" id="bookingTitle">預約叫車</div>
+        <div class="form-title" id="bookingTitle">🚕 預約叫車</div>
         <div class="form-header-actions">
             <div class="form-label-small">TOP TAXI BOOKING</div>
             <button id="clearBookingTrip" class="trip-reset-btn" type="button">清除本次行程</button>
@@ -2726,7 +2688,7 @@ body{min-height:100vh}
                 aria-pressed="true"
                 onclick="setBookingService('taxi')"
             >
-                一般搭車
+                🚕 一般搭車
             </button>
 
             <button
@@ -2736,7 +2698,7 @@ body{min-height:100vh}
                 aria-pressed="false"
                 onclick="setBookingService('driver')"
             >
-                代駕服務
+                🚘 代駕服務
             </button>
 
         </div>
@@ -2744,14 +2706,14 @@ body{min-height:100vh}
 
         <!-- DATE / TIME -->
 
-        <div class="row booking-date-row">
+        <div class="row">
 
 
             <div class="input-group">
 
                 <label for="bookDate">
 
-                    預約日期 <span class="field-tag required-tag">必填</span>
+                    📅 預約日期 <span class="field-tag required-tag">必填</span>
 
                 </label>
 
@@ -2770,7 +2732,7 @@ body{min-height:100vh}
 
                 <label for="bookTime">
 
-                    預約時間 <span class="field-tag required-tag">必填</span>
+                    ⏰ 預約時間 <span class="field-tag required-tag">必填</span>
 
                 </label>
 
@@ -2791,7 +2753,9 @@ body{min-height:100vh}
         <!-- PICKUP -->
 
         <div class="input-group">
-            <div class="pickup-label-row"><label for="pickup">📍 上車地點 <span class="field-tag required-tag">必填</span></label><button id="clearBookingTripV2" class="trip-reset-btn pickup-reset-btn" type="button"><svg class="pickup-reset-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M9 7V4.8c0-.45.35-.8.8-.8h4.4c.45 0 .8.35.8.8V7"/><path d="M6.5 8l.85 11.2c.04.46.4.8.86.8h7.58c.46 0 .82-.34.86-.8L17.5 8"/><path d="M10 10.5v6.5M14 10.5v6.5"/></svg><span>清除本次行程</span></button></div>
+            <label for="pickup">
+                📍 上車地點 <span class="field-tag required-tag">必填</span>
+            </label>
 
             <div id="pickupBox"></div>
             <div id="bookingPickupStatus" class="booking-location-status"></div>
@@ -3823,7 +3787,6 @@ function getPlaceDisplayName(place) {
 }
 
 function placeToAddressData(place, extra = {}) {
-    const selectedText = String((place && place.__topTaxiSelectedText) || extra.selectedText || "").trim();
     const city = getAddressComponent(place, [
         "administrative_area_level_1"
     ]);
@@ -3844,18 +3807,15 @@ function placeToAddressData(place, extra = {}) {
 
     return {
         name: extra.name || "",
-        displayName: selectedText || getPlaceDisplayName(place),
-        address: (selectedText && /(?:路|街|大道|段|巷|弄).*\d+(?:-\d+|之\d+)?號/u.test(selectedText))
-            ? [city, district, selectedText].filter(Boolean).join("")
-            : ((place && place.formattedAddress) || extra.address || ""),
+        displayName: getPlaceDisplayName(place),
+        address: (place && place.formattedAddress) || extra.address || "",
         city: city,
         district: district,
         areaLabel: [city, district].filter(Boolean).join(""),
         placeId: (place && place.id) || extra.placeId || "",
         lat: lat,
         lng: lng,
-        pickupNote: extra.pickupNote || "",
-        selectedText: selectedText
+        pickupNote: extra.pickupNote || ""
     };
 }
 
@@ -4155,9 +4115,6 @@ function addressDisplayText(item = {}) {
         originalAddress,
         data
       );
-
-      // A manually selected Google suggestion must never be reverse-geocoded into a different nearby door number.
-      if (data.selectedText && !dispatchHasStreetNumber(originalAddress)) return data;
 
       // A complete address is only trusted when its administrative area agrees
       // with the structured Google Place metadata. This prevents a stale/wrong
@@ -5336,8 +5293,8 @@ function setBookingService(service) {
     }
 
     bookingTitle.textContent = isDriver
-        ? "預約代駕"
-        : "預約叫車";
+        ? "🚘 預約代駕"
+        : "🚕 預約叫車";
 
     if (!submitButton.disabled) {
         submitButton.textContent = getSubmitButtonText();
@@ -5831,7 +5788,7 @@ function openBookingConfirmation() {
     if (bookingSendInProgress) return;
     if (!validateBookingForConfirmation()) return;
 
-    const serviceType = bookingService === "driver" ? "代駕服務" : "一般搭車";
+    const serviceType = bookingService === "driver" ? "🚘 代駕服務" : "🚕 一般搭車";
     const pickup = (document.getElementById("pickup")?.value || "").trim();
     const pickupNote = (document.getElementById("pickupNote")?.value || "").trim();
     const dropoff = (document.getElementById("dropoff")?.value || "").trim();
@@ -6654,8 +6611,7 @@ async function initGoogle() {
             async function choosePrediction(prediction) {
                 armBookingAddressSelectionGuard();
                 const fallbackText = getPredictionText(prediction);
-                const selectedMainText = prediction.mainText ? prediction.mainText.toString() : fallbackText;
-                input.value = selectedMainText || fallbackText;
+                input.value = fallbackText;
                 clearButton.hidden = !input.value;
                 hideSuggestions();
 
@@ -6664,9 +6620,8 @@ async function initGoogle() {
                     await place.fetchFields({
                         fields: ["id", "displayName", "formattedAddress", "location", "addressComponents"]
                     });
-                    try { place.__topTaxiSelectedText = selectedMainText || fallbackText || ""; } catch (e) {}
 
-                    input.value = selectedMainText || fallbackText || addressDisplayText(placeToAddressData(place)) ||
+                    input.value = addressDisplayText(placeToAddressData(place)) || fallbackText ||
                         (place.displayName ? place.displayName.toString() : "");
                     clearButton.hidden = !input.value;
 
@@ -8031,8 +7986,8 @@ function topTaxiSplitAddressBlocksV2(lines){
 
 function topTaxiFormatBookingMessageV2(ctx){
   const isDriver=ctx.bookingService==='driver';
-  const header='TOP Taxi｜預約叫車';
-  const serviceShort=isDriver?'🚘 代駕':'一般搭車';
+  const header=isDriver?'TOP Taxi｜代駕':'TOP Taxi｜一般搭車';
+  const serviceShort=isDriver?'🚘 代駕':'🚕 一般搭車';
   const out=[header];
   const addSection=(text)=>{
     const x=String(text||'').trim();
@@ -8051,30 +8006,6 @@ function topTaxiFormatBookingMessageV2(ctx){
 }
 
 </script>
-
-
-<script>document.addEventListener('DOMContentLoaded',()=>{const p=document.getElementById('clearBookingTripV2'),o=document.getElementById('clearBookingTrip');if(p&&o)p.addEventListener('click',()=>o.click());});</script>
-<script src="./dispatch-format-v3.js?v=20261007-static"></script>
-<script>(function(){
-    const base=window.topTaxiFormatBookingMessageV2;
-    if(typeof base!=="function")return;
-    const isAddr=s=>/(?:縣|市|區|鄉|鎮).*(?:路|街|段|巷|弄).*\d|(?:路|街|段|巷|弄).*\d+.*號|\d+.*號/u.test(String(s||""));
-    const compactLine=line=>{
-      const raw=String(line||"");
-      if(!/[｜|]/.test(raw))return raw;
-      const p=raw.split(/[｜|]/).map(x=>x.trim()).filter(Boolean);
-      if(p.length<2)return raw;
-      let ai=-1;
-      for(let i=p.length-1;i>=1;i--){if(isAddr(p[i])){ai=i;break;}}
-      if(ai<1)return raw;
-      let name=p[0];
-      const m=name.match(/^(.{2,24}?)[\-－–—](.+)$/u);
-      if(m&&/(?:買賣|估車|收購|認證|優質|中古車|二手車|推薦|專營|汽車)/u.test(m[2]))name=m[1].trim();
-      return name+"｜"+p[ai];
-    };
-    window.topTaxiFormatBookingMessageV2=function(ctx){
-      return String(base(ctx)||"").split("\n").map(compactLine).join("\n");
-    };
-  })();</script><script src="./dispatch-address-city-district-v1.js?v=20260830-2022"></script></body>
+</body>
 
 </html>
