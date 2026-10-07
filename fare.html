@@ -6676,7 +6676,7 @@ document.getElementById("clearFareTrip")?.addEventListener("click", resetFareTri
    START
 ========================================= */
 
-window.addEventListener("load", initGoogle);
+// Start below, immediately after the Maps loader is installed.
 
 
 </script>
@@ -6871,6 +6871,11 @@ window.addEventListener("load", initGoogle);
 </script>
 
 
+
+<script id="topTaxiFareStartupC1">
+// Address setup does not need to wait for images or the window load event.
+initGoogle();
+</script>
 
 <script id="topTaxiAddressUxV2">
 (function () {
