@@ -3490,11 +3490,9 @@ function compactBookingOrderTaiwanAddress(raw = "") {
         .replace(/^台灣/u, "")
         .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "");
 
-    // Remove village / neighborhood level text while preserving official names
-    // such as 后里區 ("里" followed by 區 must not be stripped).
+    // Preserve village text: a free-text address cannot safely distinguish
+    // administrative villages from road names such as 美村路 or district 后里區.
     address = address
-        .replace(/(區|鄉|鎮|市)([^0-9縣市區鄉鎮路街巷弄號]{1,12}(?:里|村))(?!區|鄉|鎮|市)(?=[^0-9]*(?:路|街|大道|段|巷|弄|號))/gu, "$1")
-        .replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)(?!區|鄉|鎮|市)/gu, "")
         .replace(/\d+\s*鄰/gu, "");
 
     address = address
@@ -3884,8 +3882,7 @@ function compactTaiwanAddress(raw = "") {
     // Remove common Taiwan postal codes at the beginning (3, 5, or 6 digits).
     address = address.replace(/^\s*\d{3}(?:\d{2,3})?\s*/, "");
 
-    // Remove village / neighborhood level text that is not useful for riders.
-    address = address.replace(/[^縣市區鄉鎮路街段巷弄號\d\s]{1,12}(?:里|村)/g, "");
+    // Preserve village and road names; never strip text merely ending in 里/村.
     address = address.replace(/\d+\s*鄰/g, "");
 
     // Remove floor / room / unit details from customer-facing text.
@@ -3980,7 +3977,6 @@ function addressDisplayText(item = {}) {
         .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "");
 
       address = address
-        .replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)/gu, "")
         .replace(/\d+\s*鄰/gu, "");
 
       address = address

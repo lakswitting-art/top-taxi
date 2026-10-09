@@ -3111,7 +3111,8 @@ function extractArea(raw=""){
 }
 function compactAddress(raw=""){
  let a=normalizeTW(raw).replace(/^台灣/u,"").replace(/^\s*\d{3}(?:\d{2,3})?\s*/u,"");
- a=a.replace(/(區|鄉|鎮|市)([^0-9縣市區鄉鎮路街巷弄號]{1,12}(?:里|村))(?!區|鄉|鎮|市)(?=[^0-9]*(?:路|街|大道|段|巷|弄|號))/gu,"$1").replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)(?!區|鄉|鎮|市)/gu,"").replace(/\d+\s*鄰/gu,"");
+ // Preserve village and road names such as 美村路 and 后里區.
+ a=a.replace(/\d+\s*鄰/gu,"");
  return a.replace(/[，,、\s-]*(?:地下)?\d+\s*樓(?:之\d+)?(?:\s*\d+\s*室)?/gu,"").replace(/[，,、\s-]*B\d+\s*(?:樓)?/giu,"").replace(/[，,、\s-]*\d+\s*F(?:-\d+)?/giu,"").replace(/[，,、\s-]*\d+\s*室/gu,"").replace(/[，,、]{2,}/g,"，").replace(/^[，,、\s-]+|[，,、\s-]+$/g,"").replace(/\s+/g,"");
 }
 function placeName(place){const d=place?.displayName;return d&&typeof d.toString==="function"?d.toString():String(d||"");}

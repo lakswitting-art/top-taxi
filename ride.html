@@ -2195,8 +2195,7 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
         // Remove common Taiwan postal codes at the beginning (3, 5, or 6 digits).
         address = address.replace(/^\s*\d{3}(?:\d{2,3})?\s*/, "");
 
-        // Remove village / neighborhood level text that is not useful for riders.
-        address = address.replace(/[^縣市區鄉鎮路街段巷弄號\d\s]{1,12}(?:里|村)/g, "");
+        // Preserve village and road names; never strip text merely ending in 里/村.
         address = address.replace(/\d+\s*鄰/g, "");
 
         // Remove floor / room / unit details from customer-facing text.
@@ -2296,8 +2295,6 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
         .replace(/^\s*\d{3}(?:\d{2,3})?\s*/u, "");
 
       address = address
-        .replace(/(區|鄉|鎮|市)([^0-9縣市區鄉鎮路街巷弄號]{1,12}(?:里|村))(?!區|鄉|鎮|市)(?=[^0-9]*(?:路|街|大道|段|巷|弄|號))/gu, "$1")
-        .replace(/[^縣市區鄉鎮路街大道段巷弄號\d\s]{1,12}(?:里|村)(?!區|鄉|鎮|市)/gu, "")
         .replace(/\d+\s*鄰/gu, "");
 
       address = address
