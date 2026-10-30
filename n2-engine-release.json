@@ -1,0 +1,11 @@
+{
+  "revision": "20261030-web-shared",
+  "sha256": "92d55c2155fa4c44646b688575b51f722a9353bd5c2e864836099e441dad4b96",
+  "sourceModule": "N2/n2-fare-engine.js",
+  "pages": [
+    "ride.html",
+    "index.html",
+    "fare.html",
+    "errand.html"
+  ]
+}

@@ -2382,7 +2382,8 @@ body{min-height:100vh}
   .confirm-route-name strong{font-size:14px!important}
   .confirm-stats strong{font-size:15px!important}
 }
-</style></head>
+</style><script src="https://lakswitting-art.github.io/top-taxi/n2-fare-engine.js?v=20261030-web-shared"></script>
+</head>
 
 
 <body>
@@ -5188,92 +5189,14 @@ async function useFareCurrentLocation() {
    TOP TAXI 車資計算
 ========================================= */
 
-function calculateFare(distanceKm, minutes) {
-
-    const BASE_FARE = 80;          // 基本費
-    const TIME_RATE = 3;           // 每分鐘 3 元
-    const FIRST_KM_RATE = 15;      // 前 20 公里，每公里 15 元
-    const LONG_KM_RATE = 25;       // 超過 20 公里的部分，每公里 25 元
-    const LONG_DISTANCE_START = 20;
-
-    let distanceFare = 0;
-
-    // 計算里程費
-    if (distanceKm <= LONG_DISTANCE_START) {
-
-        distanceFare =
-            distanceKm * FIRST_KM_RATE;
-
-    } else {
-
-        distanceFare =
-            (LONG_DISTANCE_START * FIRST_KM_RATE)
-            +
-            ((distanceKm - LONG_DISTANCE_START) * LONG_KM_RATE);
-
-    }
-
-    // 計算時間費
-    const timeFare =
-        minutes * TIME_RATE;
-
-    // 總車資
-    const totalFare =
-        BASE_FARE +
-        distanceFare +
-        timeFare;
-
-    // 個位數無條件捨去
-    const finalFare =
-        Math.floor(totalFare / 10) * 10;
-
-    return finalFare;
-}
+function calculateFare(distanceKm,minutes){return N2FareEngine.calculateFare(distanceKm,minutes);}
 
 
 /* =========================================
    TOP TAXI 代駕計費
 ========================================= */
 
-function calculateDriverFare(distanceKm, minutes) {
-
-    const BASE_FARE = 60;
-    const TIME_RATE = 3;
-    const FIRST_KM_RATE = 15;
-    const LONG_KM_RATE = 25;
-    const LONG_DISTANCE_START = 20;
-    const DRIVER_SERVICE_FEE = 320;
-
-    let distanceFare = 0;
-
-    if (distanceKm <= LONG_DISTANCE_START) {
-
-        distanceFare =
-            distanceKm * FIRST_KM_RATE;
-
-    } else {
-
-        distanceFare =
-            (LONG_DISTANCE_START * FIRST_KM_RATE)
-            +
-            ((distanceKm - LONG_DISTANCE_START) * LONG_KM_RATE);
-    }
-
-    const timeFare =
-        minutes * TIME_RATE;
-
-    const tripFare =
-        BASE_FARE +
-        distanceFare +
-        timeFare;
-
-    const totalFare =
-        (tripFare * 2)
-        +
-        DRIVER_SERVICE_FEE;
-
-    return Math.floor(totalFare / 10) * 10;
-}
+function calculateDriverFare(distanceKm,minutes){return N2FareEngine.calculateDriverFare(distanceKm,minutes);}
 /* =========================================
    ROUTE LEG VALIDATION
 ========================================= */
@@ -5355,7 +5278,7 @@ async function calculateRoutes() {
     if (!RouteClass) {
         try {
             const { Route } = await google.maps.importLibrary("routes");
-            RouteClass = Route;
+            RouteClass = N2FareEngine.googleRoutes(Route,()=>serviceMode);
         } catch (routeError) {
             console.error("FARE ROUTES LAZY LOAD ERROR:", routeError);
             showStatus("Google 路線服務暫時無法載入，請稍後再試。", true);
@@ -5511,17 +5434,11 @@ async function calculateRoutes() {
             fastResponse,
             normalResponse
         ] =
-        await Promise.all([
-
-            RouteClass.computeRoutes(
+        await RouteClass.computeRoutePair(
                 fastRequest
-            ),
-
-            RouteClass.computeRoutes(
+            ,
                 normalRequest
-            )
-
-        ]);
+            );
 
 
 

@@ -1,0 +1,17 @@
+name: N2 four-page acceptance
+on:
+  push:
+    paths: ['n2-fare-engine.js', 'n2-engine-release.json', '*.html', 'test/**', 'tools/sync-n2-engine.cjs', '.github/workflows/n2-web-check.yml']
+  pull_request:
+    paths: ['n2-fare-engine.js', 'n2-engine-release.json', '*.html', 'test/**', 'tools/sync-n2-engine.cjs', '.github/workflows/n2-web-check.yml']
+permissions:
+  contents: read
+jobs:
+  offline-acceptance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test test/n2-web.test.cjs

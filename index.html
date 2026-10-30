@@ -2625,6 +2625,7 @@ body{min-height:100vh}
   }
 }
 </style>
+<script src="https://lakswitting-art.github.io/top-taxi/n2-fare-engine.js?v=20261030-web-shared"></script>
 </head>
 
 
@@ -4851,36 +4852,7 @@ async function useBookingCurrentLocation() {
     }
 }
 
-function bookingExtras() {
-    if (bookingService === "driver") {
-        return { amount: 0, items: [], quoteRequired: false };
-    }
-
-    let amount = 0;
-    const items = [];
-    const passenger = document.getElementById("passengerCount")?.value || "1人";
-
-    if (passenger === "5人") {
-        amount += 50;
-        items.push("5 人上車 +$50");
-    }
-
-    if (passenger === "7人座") {
-        amount += 200;
-        items.push("7 人座 +$200");
-    }
-
-    if (bookingPetMode === "no-carrier") {
-        amount += 50;
-        items.push("寵物無籠 +$50");
-    }
-
-    return {
-        amount: amount,
-        items: items,
-        quoteRequired: passenger === "9人座"
-    };
-}
+function bookingExtras(){return N2FareEngine.passengerExtras({serviceType:bookingService,passengers:document.getElementById('passengerCount')?.value||'1人',petMode:bookingPetMode});}
 
 function getBookingFareQuote() {
     if (!currentFareEstimate) return null;
@@ -5104,32 +5076,10 @@ function renderBookingFareEstimate() {
     document.getElementById("fareEstimate").hidden = false;
 }
 
-function calculateTaxiFare(distanceKm, minutes) {
-
-    const baseFare = 80;
-    const timeFare = minutes * 3;
-    const distanceFare = distanceKm <= 20
-        ? distanceKm * 15
-        : (20 * 15) + ((distanceKm - 20) * 25);
-
-    return Math.floor((baseFare + distanceFare + timeFare) / 10) * 10;
-
-}
+function calculateTaxiFare(distanceKm,minutes){return N2FareEngine.calculateFare(distanceKm,minutes);}
 
 
-function calculateDriverFare(distanceKm, minutes) {
-
-    const baseFare = 60;
-    const timeFare = minutes * 3;
-    const distanceFare = distanceKm <= 20
-        ? distanceKm * 15
-        : (20 * 15) + ((distanceKm - 20) * 25);
-
-    const tripFare = baseFare + distanceFare + timeFare;
-
-    return Math.floor(((tripFare * 2) + 320) / 10) * 10;
-
-}
+function calculateDriverFare(distanceKm,minutes){return N2FareEngine.calculateDriverFare(distanceKm,minutes);}
 
 
 function resetFareEstimate(message) {
@@ -5206,24 +5156,21 @@ async function updateFareEstimate() {
             fields: ["legs"]
         };
 
-        const results = await Promise.all([
-            BookingRouteClass.computeRoutes({
+        const results = await BookingRouteClass.computeRoutePair({
                 ...baseRequest,
                 routeModifiers: {
                     avoidHighways: false,
                     avoidTolls: false,
                     avoidFerries: true
                 }
-            }),
-            BookingRouteClass.computeRoutes({
+            },{
                 ...baseRequest,
                 routeModifiers: {
                     avoidHighways: true,
                     avoidTolls: true,
                     avoidFerries: true
                 }
-            })
-        ]);
+            });
 
         if (requestNumber !== fareRequestNumber) return;
 
@@ -6572,7 +6519,7 @@ async function initGoogle() {
             Route
         } = await google.maps.importLibrary("routes");
 
-        BookingRouteClass = Route;
+        BookingRouteClass = N2FareEngine.googleRoutes(Route,()=>bookingService);
 
         let searchCenter = {
             lat: 24.1477,

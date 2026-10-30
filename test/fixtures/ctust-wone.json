@@ -1,0 +1,24 @@
+{
+  "capturedAt": "2026-10-30T06:44:01.053Z",
+  "trip": "中臺科技大學 → 富旺天際 W ONE",
+  "surface": [
+    {
+      "distanceMeters": 16099,
+      "duration": "1958s"
+    },
+    {
+      "distanceMeters": 11598,
+      "duration": "2223s"
+    },
+    {
+      "distanceMeters": 12401,
+      "duration": "2270s"
+    }
+  ],
+  "fast": [
+    {
+      "distanceMeters": 16064,
+      "duration": "1249s"
+    }
+  ]
+}

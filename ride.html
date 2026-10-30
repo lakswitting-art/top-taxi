@@ -1433,7 +1433,8 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
 #pageStatus:not([style*="display: none"]){
   margin-top:14px;
 }
-</style></head>
+</style><script src="https://lakswitting-art.github.io/top-taxi/n2-fare-engine.js?v=20261030-web-shared"></script>
+</head>
 <body>
 <main>
     <section class="card">
@@ -2585,17 +2586,9 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
     let savedAddresses=loadAddresses();
     let draftAddressData=savedAddresses.map(x=>normalizeAddress(x));
 
-    function calculateRideTaxiFare(km,min){
-      const distanceFare=km<=20?km*15:300+(km-20)*25;
-      return Math.floor((80+distanceFare+min*3)/10)*10;
-    }
+    function calculateRideTaxiFare(km,min){return N2FareEngine.calculateFare(km,min);}
 
-    function calculateRideDriverFare(km,min){
-      const baseFare=60;
-      const distanceFare=km<=20?km*15:300+(km-20)*25;
-      const tripFare=baseFare+distanceFare+min*3;
-      return Math.floor(((tripFare*2)+320)/10)*10;
-    }
+    function calculateRideDriverFare(km,min){return N2FareEngine.calculateDriverFare(km,min);}
 
     function fareFormula(km,min){
       return rideService==="driver"
@@ -2603,26 +2596,7 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
         :calculateRideTaxiFare(km,min);
     }
 
-    function extras(){
-      if(rideService==="driver"){
-        return{amount:0,items:[]};
-      }
-
-      let amount=0,items=[];
-      if($("#passengers").value==="5"){
-        amount+=50;
-        items.push("5 人上車 +$50");
-      }
-      if($("#passengers").value==="7"){
-        amount+=200;
-        items.push("7 人座 +$200");
-      }
-      if(petMode==="no-carrier"){
-        amount+=50;
-        items.push("寵物無籠 +$50");
-      }
-      return{amount,items};
-    }
+    function extras(){return N2FareEngine.passengerExtras({serviceType:rideService,passengers:$('#passengers').value,petMode});}
     function renderSaved(){
       const box=$("#savedChips");
       box.innerHTML="";
@@ -2769,25 +2743,7 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
         :"確認送出叫車單 →";
     }
 
-    function refreshRideFareForService(){
-      ["FAST","SURFACE"].forEach(mode=>{
-        const item=rideRouteOptions[mode];
-        if(item){
-          item.baseFare=fareFormula(item.km,item.min);
-        }
-      });
-
-      routeData=
-        rideRouteOptions[selectedRideRouteMode]||
-        rideRouteOptions.FAST||
-        null;
-
-      if(routeData){
-        renderEstimate();
-      }else{
-        updateSubmit();
-      }
-    }
+    function refreshRideFareForService(){if(pickupPlace&&dropoffPlace){recalculate();}else{updateSubmit();}}
 
     function setRideService(service){
       rideService=service==="driver"?"driver":"taxi";
@@ -2935,6 +2891,9 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
       if(!pickupPlace||!dropoffPlace){hideEstimate();return}
       if(!validateRideWaypoints(false)){hideEstimate();return}
       const seq=++calcSeq;
+      routeData=null;
+      rideRouteOptions={FAST:null,SURFACE:null};
+      updateSubmit();
       $("#estimate").hidden=false;
       $("#duration").textContent="計算中";
       $("#distance").textContent="正在取得完整路線…";
@@ -2953,10 +2912,7 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
           departureTime,
           fields:["legs"]
         };
-        const [fastResponse,surfaceResponse]=await Promise.all([
-          RouteClass.computeRoutes({...baseRequest,routeModifiers:{avoidHighways:false,avoidTolls:false,avoidFerries:true}}),
-          RouteClass.computeRoutes({...baseRequest,routeModifiers:{avoidHighways:true,avoidTolls:true,avoidFerries:true}})
-        ]);
+        const [fastResponse,surfaceResponse]=await RouteClass.computeRoutePair({...baseRequest,routeModifiers:{avoidHighways:false,avoidTolls:false,avoidFerries:true}},{...baseRequest,routeModifiers:{avoidHighways:true,avoidTolls:true,avoidFerries:true}});
         if(seq!==calcSeq)return;
         const fastRoute=fastResponse.routes?.[0],surfaceRoute=surfaceResponse.routes?.[0];
         if(!fastRoute||!surfaceRoute)throw new Error("no route");
@@ -2977,6 +2933,7 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
         routeData=rideRouteOptions[selectedRideRouteMode]||rideRouteOptions.FAST;
         renderEstimate();
       }catch(e){
+        if(seq!==calcSeq)return;
         console.error("RIDE ROUTE ERROR:",e);
         hideEstimate();
         setStatus("pageStatus","路線計算失敗，請重新選擇地址。","error");
@@ -3765,7 +3722,7 @@ main{margin:0 auto!important;padding-top:max(12px,env(safe-area-inset-top))!impo
       setupAutocomplete("waypoint2","waypoint2Suggestions",p=>{rideWaypointPlaces[1]=p;rideWaypointAddressData[1]=placeToAddressData(p);recalculate()},()=>{rideWaypointPlaces[1]=null;rideWaypointAddressData[1]=null;hideEstimate()});
       setupAutocomplete("dropoff","dropoffSuggestions",p=>{dropoffPlace=p;recalculate()},()=>{dropoffPlace=null;hideEstimate()});
       [["homeAddress","homeAddressSuggestions"],["workAddress","workAddressSuggestions"],["fav1Address","fav1AddressSuggestions"],["fav2Address","fav2AddressSuggestions"]].forEach((ids,index)=>setupAutocomplete(ids[0],ids[1],place=>{draftAddressData[index]=placeToAddressData(place,{name:savedAddresses[index]?.name||"",pickupNote:savedAddresses[index]?.pickupNote||""})},()=>{draftAddressData[index]=normalizeAddress({...savedAddresses[index],displayName:"",city:"",district:"",areaLabel:"",placeId:"",lat:null,lng:null,address:$("#"+ids[0]).value.trim()})}));
-      const {Route}=await google.maps.importLibrary("routes");RouteClass=Route;
+      const {Route}=await google.maps.importLibrary("routes");RouteClass=N2FareEngine.googleRoutes(Route,()=>rideService);
       updateRideWaypointUi();
       selectRideRouteMode("FAST");
     }
