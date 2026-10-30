@@ -1,8 +1,10 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const root=path.join(__dirname,'..'),N2=require('../n2-fare-engine');
+const root=path.join(__dirname,'..'),site=process.env.N2_WEB_SITE_DIR||'';
+const file=name=>site?path.join(site,({'ride.html':'ride/index.html','index.html':'booking/index.html','fare.html':'fare/index.html','errand.html':'errand/index.html'}[name]||'assets/'+name)):path.join(root,name);
+const N2=require(file('n2-fare-engine.js'));
 const pages=['ride.html','index.html','fare.html','errand.html'];
-const source=name=>fs.readFileSync(path.join(root,name),'utf8');
+const source=name=>fs.readFileSync(file(name),'utf8');
 function fn(html,name){const at=html.indexOf('function '+name+'(');assert.ok(at>=0,name);let i=html.indexOf('{',at)+1,n=1;while(n&&i<html.length){if(html[i]==='{')n++;else if(html[i]==='}')n--;i++;}assert.equal(n,0);return html.slice(html.slice(at-6,at)==='async '?at-6:at,i);}
 function fixture(km,minutes,description='test',legs=1){return{distanceMeters:km*1000,durationMillis:minutes*60000,description,legs:Array.from({length:legs},()=>({distanceMeters:km*1000/legs,durationMillis:minutes*60000/legs}))};}
 const surface=[fixture(16.099,33,'outer ring'),fixture(11.598,38,'shorter surface'),fixture(12.401,38,'another surface')];
@@ -10,7 +12,7 @@ const fast=[fixture(16.064,21,'expressway')];
 function dom(){const elements=new Map();const get=id=>{id=id.replace(/^#/,'');if(!elements.has(id))elements.set(id,{textContent:'',value:'1',hidden:false,classList:{toggle(){},remove(){},add(){}},style:{},setAttribute(){}});return elements.get(id);};return{get,elements,document:{getElementById:get,querySelector:get,querySelectorAll:()=>[]}};}
 test('browser and Node expose the same N2 engine and release',()=>{const ctx={};vm.runInNewContext(source('n2-fare-engine.js'),ctx);assert.equal(ctx.N2FareEngine.RELEASE,N2.RELEASE);assert.equal(ctx.N2FareEngine.calculateDriverFare(16.064,21),1060);});
 for(const page of pages)test(page+' inline scripts compile and shared engine loads first',()=>{
- const html=source(page);assert.ok(html.includes('<script src="https://lakswitting-art.github.io/top-taxi/n2-fare-engine.js?'));
+ const html=source(page);assert.ok(html.includes('<script src="'+(site?'/assets/':'https://lakswitting-art.github.io/top-taxi/')+'n2-fare-engine.js?'));
  for(const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/giu)){if(/application\/ld\+json|src=/iu.test(m[1])||!m[2].trim())continue;new vm.Script(m[2],{filename:page});}
  assert.ok(html.indexOf('n2-fare-engine.js')<html.indexOf('function calculate'));
 });
@@ -55,7 +57,7 @@ test('missing moving route never invents a starting total',()=>assert.equal(N2.e
 test('release manifest matches the module bytes and every page cache version',()=>{
  const crypto=require('node:crypto'),manifest=JSON.parse(source('n2-engine-release.json'));
  assert.equal(manifest.revision,N2.RELEASE);
- assert.equal(manifest.sha256,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'n2-fare-engine.js'))).digest('hex'));
+ assert.equal(manifest.sha256,crypto.createHash('sha256').update(fs.readFileSync(file('n2-fare-engine.js'))).digest('hex'));
  for(const page of pages){const html=source(page);assert.ok(html.includes('n2-fare-engine.js?v='+N2.RELEASE));assert.ok(html.includes('.computeRoutePair('));}
 });
 test('recorded Google route pair matches the N2 backend incident regression',async()=>{
