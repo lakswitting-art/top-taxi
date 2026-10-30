@@ -58,7 +58,7 @@ test('release manifest matches the module bytes and every page cache version',()
  const crypto=require('node:crypto'),manifest=JSON.parse(source('n2-engine-release.json'));
  assert.equal(manifest.revision,N2.RELEASE);
  assert.equal(manifest.sha256,crypto.createHash('sha256').update(fs.readFileSync(file('n2-fare-engine.js'))).digest('hex'));
- for(const page of pages){const html=source(page);assert.ok(html.includes('n2-fare-engine.js?v='+N2.RELEASE));assert.ok(html.includes('.computeRoutePair('));}
+ for(const page of pages){const html=source(page);assert.ok(html.includes('n2-fare-engine.js?v='+(N2.DISPLAY_REVISION||N2.RELEASE)));assert.ok(html.includes('.computeRoutePair('));}
 });
 test('recorded Google route pair matches the N2 backend incident regression',async()=>{
  const captured=require('./fixtures/ctust-wone.json');

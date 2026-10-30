@@ -1,11 +1,12 @@
 {
   "revision": "20261030-web-shared",
-  "sha256": "836205d2d1e93534b3d2acd83ca7d455f163be74ee6ec7060e101945412dbedf",
+  "sha256": "c6ff49696179d0fa049c718d7624e5deaabd7bd669768d0306c917b2eac93966",
   "sourceModule": "N2/n2-fare-engine.js",
   "pages": [
     "ride.html",
     "index.html",
     "fare.html",
     "errand.html"
-  ]
+  ],
+  "displayRevision": "20261031-all-route-messages"
 }

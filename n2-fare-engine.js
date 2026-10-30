@@ -1,6 +1,7 @@
 /* N2 shared fare and route policy. Same source is loaded by Node/V2 and the four customer pages. */
 (function(root,factory){'use strict';const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.N2FareEngine=api;})(typeof globalThis==='object'?globalThis:this,function(){'use strict';
 const RELEASE='20261030-web-shared';
+const DISPLAY_REVISION='20261031-all-route-messages';
 
 // Extracted from local fare.html; verified against published normal-taxi fare.
 function calculateFare(distanceKm, minutes) {
@@ -192,7 +193,18 @@ function googleRoutes(RouteClass,getServiceType=()=> 'taxi'){
    const [fast,surface]=await Promise.all([RouteClass.computeRoutes(request(fastInput)),RouteClass.computeRoutes(request(surfaceInput))]);
    const selectedSurface=selectGoogleRoutes(surface.routes,options(surfaceInput,serviceType));
    const selectedFast=selectGoogleRoutes(fast.routes,{...options(fastInput,serviceType),surfaceRoute:selectedSurface});
-   return [{...fast,routes:[selectedFast]},{...surface,routes:[selectedSurface]}];
+   // Preserve every useful quote from these same two responses for outgoing messages.
+   // The two interactive tabs retain their existing selected-route behavior.
+   const legCount=options(fastInput,serviceType).expectedLegCount;
+   const calculate=serviceType==='driver'?calculateDriverFare:serviceType==='errand'?(km,min)=>Math.max(220,calculateFare(km,min)):calculateFare;
+   const surfaceQuote=routeResult(restLike(selectedSurface,legCount),'SURFACE',calculate);
+   const fastMetrics=[];
+   for(const route of fast.routes||[]){try{fastMetrics.push(restLike(route,legCount));}catch{}}
+   const picked=selectFastAndEconomy(fastMetrics,calculate,0,surfaceQuote,serviceType);
+   const quotes=[surfaceQuote,picked.fast,...(!(fastInput.intermediates||[]).length&&picked.economy?[picked.economy]:[])];
+   const displayed=presentRoutes(quotes,serviceType);
+   const n2RouteQuotes=quotes.filter(q=>q.mode!=='ECONOMY'||displayed.some(d=>d.recommended&&d.modes.includes('ECONOMY')));
+   return [{...fast,routes:[selectedFast],n2RouteQuotes},{...surface,routes:[selectedSurface],n2RouteQuotes}];
   }
  };
 }
@@ -224,5 +236,5 @@ function errandQuote({meterFare=null,taskType='delivery',extras={amount:0,items:
  const base=meterFare==null?220:Math.max(220,meterFare);
  return {base,extras,total:base+extras.amount,isStarting:meterFare==null||meterFare<=220};
 }
-return Object.freeze({RELEASE,sameRouteSummary,ECONOMY_MAX_EXTRA_SECONDS,ECONOMY_MIN_SAVINGS,DRIVER_RECOMMENDED_MIN_DISTANCE_SAVINGS_KM,calculateFare,calculateDriverFare,presentRoutes,dominates,seconds,sameSummary,routeResult,selectFastAndEconomy,selectSurfaceRoute,selectGoogleRoutes,googleRoutes,passengerExtras,errandExtras,errandQuote});
+return Object.freeze({RELEASE,DISPLAY_REVISION,sameRouteSummary,ECONOMY_MAX_EXTRA_SECONDS,ECONOMY_MIN_SAVINGS,DRIVER_RECOMMENDED_MIN_DISTANCE_SAVINGS_KM,calculateFare,calculateDriverFare,presentRoutes,dominates,seconds,sameSummary,routeResult,selectFastAndEconomy,selectSurfaceRoute,selectGoogleRoutes,googleRoutes,passengerExtras,errandExtras,errandQuote});
 });

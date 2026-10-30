@@ -2382,7 +2382,7 @@ body{min-height:100vh}
   .confirm-route-name strong{font-size:14px!important}
   .confirm-stats strong{font-size:15px!important}
 }
-</style><script src="https://lakswitting-art.github.io/top-taxi/n2-fare-engine.js?v=20261030-web-shared"></script>
+</style><script src="https://lakswitting-art.github.io/top-taxi/n2-fare-engine.js?v=20261031-all-route-messages"></script>
 </head>
 
 
@@ -5667,6 +5667,7 @@ const activeWaypointData =
 
 routeResults = {
     SURFACE: {
+        routeQuotes: fastResponse.n2RouteQuotes,
         routeMode: "SURFACE",
         routeName: "平面道路",
         routeStrategy: "WHOLE_TRIP",
@@ -5683,6 +5684,7 @@ routeResults = {
         dropoff: dropoffAddressData
     },
     FAST: {
+        routeQuotes: fastResponse.n2RouteQuotes,
         routeMode: "FAST",
         routeName: "推薦快速路線",
         routeStrategy: "WHOLE_TRIP",
@@ -7158,6 +7160,6 @@ function topTaxiFormatFareMessageV2(text,mode){
 document.addEventListener('DOMContentLoaded',function(){const proxy=document.getElementById('clearFareTripV2');const original=document.getElementById('clearFareTrip');if(proxy&&original)proxy.addEventListener('click',()=>original.click());});
 </script>
 <script src="./dispatch-format-v3.js?v=20261007-static"></script>
-<script src="./dispatch-address-city-district-v1.js?v=20261007-static"></script></body>
+<script src="./dispatch-address-city-district-v1.js?v=20261007-static"></script><script src="https://lakswitting-art.github.io/top-taxi/n2-route-messages.js?v=20261031-all-route-messages"></script></body>
 
 </html>

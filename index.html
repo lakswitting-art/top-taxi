@@ -2625,7 +2625,7 @@ body{min-height:100vh}
   }
 }
 </style>
-<script src="https://lakswitting-art.github.io/top-taxi/n2-fare-engine.js?v=20261030-web-shared"></script>
+<script src="https://lakswitting-art.github.io/top-taxi/n2-fare-engine.js?v=20261031-all-route-messages"></script>
 </head>
 
 
@@ -5193,6 +5193,7 @@ async function updateFareEstimate() {
                 : calculateTaxiFare(distanceKm, minutes);
 
             return {
+                routeQuotes: results[0].n2RouteQuotes,
                 routeMode: mode,
                 routeName: mode === "FAST" ? "推薦快速路線" : "平面道路",
                 routeStrategy: "WHOLE_TRIP",
@@ -8018,6 +8019,6 @@ function topTaxiFormatBookingMessageV2(ctx){
     window.topTaxiFormatBookingMessageV2=function(ctx){
       return String(base(ctx)||"").split("\n").map(compactLine).join("\n");
     };
-  })();</script><script src="./dispatch-address-city-district-v1.js?v=20260830-2022"></script></body>
+  })();</script><script src="./dispatch-address-city-district-v1.js?v=20260830-2022"></script><script src="https://lakswitting-art.github.io/top-taxi/n2-route-messages.js?v=20261031-all-route-messages"></script></body>
 
 </html>
